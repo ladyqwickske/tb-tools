@@ -216,6 +216,48 @@
 
   .tool-card li { margin-bottom: 6px; }
 
+  .tool-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 24px;
+  }
+
+  .cta {
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 26px;
+    border-radius: 2px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .cta.primary {
+    color: var(--void);
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  }
+
+  .cta.primary:hover,
+  .cta.primary:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(212,175,55,0.25);
+  }
+
+  .cta.secondary {
+    color: var(--gold-bright);
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+  }
+
+  .cta.secondary:hover,
+  .cta.secondary:focus-visible {
+    border-color: var(--gold);
+    color: var(--gold-bright);
+    background: rgba(212,175,55,0.08);
+  }
+
   .tool-card.placeholder {
     text-align: center;
     color: var(--ink-dim);
@@ -275,7 +317,7 @@
 </header>
 
 <section class="hero">
-  <p class="eyebrow">TB Tools</p>
+  <p class="eyebrow">Kingdom 276</p>
   <img class="hero-logo" src="tools-logo.png" alt="Total Battle Tools" />
   <p class="tagline">Tools built by the cCc Family to make life in Total Battle a little easier — starting with Auto-Crypt, with more on the way.</p>
 </section>
@@ -288,9 +330,14 @@
     <ul>
       <li>Signs in with your Google account — no separate password to manage</li>
       <li>Runs multiple captains per round, one after another</li>
-      <li>Optional march speed-ups, and filters to skip crypt types you're not after</li>
-      <li>Subscription-based access</li>
+      <li>Optional speed-ups and crypt filtering</li>
+      <li>Subscription-based access; price will be announced soon</li>
+	  <li>For now limited for Windows systems, with a fixed resolution. More platforms and resolutions will become available soon.</li>
     </ul>
+    <div class="tool-actions">
+      <a class="cta primary" href="#subscribe">Subscribe →</a>
+      <a class="cta secondary" href="https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.4/TBAutoCrypt_0.0.4.zip">Download v0.0.4</a>
+    </div>
   </article>
 
   <article class="tool-card placeholder">
@@ -301,7 +348,7 @@
 
 <footer>
   <img src="tools-logo.png" alt="Total Battle Tools" />
-  <p class="foot-word">cCc Family</p>
+  <p class="foot-word">cCc Family · Kingdom 276</p>
 </footer>
 
 </body>
