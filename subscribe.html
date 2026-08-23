@@ -411,11 +411,11 @@
   // price/billed are display text only -- the actual amount charged always
   // comes from the Stripe Price itself, this just needs to describe it
   // accurately so nobody's surprised at checkout.
+  //{ key: "annual", label: "Yearly", price: "€79.99 / yr", billed: "Billed per year", badge: "Save 33% • Best value", checked: false },
   const PLANS = [
     { key: "monthly", label: "Monthly", price: "€9.99 / mo", billed: "Billed monthly", badge: null, checked: true },
     { key: "quarterly", label: "3 Months", price: "€24.99 / 3 mo", billed: "Billed every 3 months", badge: "Save 17%", checked: false },
     { key: "semiannual", label: "6 Months", price: "€44.99 / 6 mo", billed: "Billed every 6 months", badge: "Save 25%", checked: false },
-    { key: "annual", label: "Yearly", price: "€79.99 / yr", billed: "Billed per year", badge: "Save 33% • Best value", checked: false },
   ];
 
   // Trials are a ONE-TIME payment (no auto-renewal) -- matches
