@@ -269,6 +269,19 @@
     margin: 0 0 4px;
   }
   .benefit-desc { font-size: 0.82rem; color: var(--ink-dim); margin: 0; }
+  .benefit-grid.advantage-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  @media (max-width: 720px) {
+    .benefit-grid.advantage-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 420px) {
+    .benefit-grid.advantage-grid {
+      grid-template-columns: 1fr;
+    }
+  }
   .pricing-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -442,23 +455,36 @@
   <article class="tool-card">
     <span class="tool-status">Available</span>
     <h2>Total Battle Auto-Crypter</h2>
-    <p class="tool-hook">Let your crypts take care of themselves.</p>
-    <p>Tired of constantly checking your crypts, selecting the right type, sending commanders and waiting for them to return? Auto-Crypter automates the crypting process for you.</p>
-    <p>Set your preferences, start the tool, and let it handle your crypts while you focus on playing the game.</p>
+    <p class="tool-hook">Hit your crypting target without babysitting a crypt run.</p>
+    <p>You know the drill: scroll the watchtower, find a crypt, pick the type, send a commander, wait, repeat — for as long as it takes to hit whatever your clan expects from you. It's not hard, it's just tedious, and it ties up your attention the whole time.</p>
+    <p>Auto-Crypter does that loop for you. Set your preferences once, hit start, and it works through your crypts on its own — so you consistently hit your numbers without a dedicated crypting session eating your evening.</p>
 
-    <h3 class="tool-subheading">What does Auto-Crypter do?</h3>
+    <div class="benefit-grid advantage-grid">
+      <div class="benefit-tile">
+        <p class="benefit-title">Hit clan targets, consistently</p>
+        <p class="benefit-desc">Runs through your crypts the same reliable way every time, so you're not scrambling to catch up before a deadline.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Get your time back</p>
+        <p class="benefit-desc">What used to be a dedicated sitting is now something that runs on your computer while you do something else.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">One less thing to juggle</p>
+        <p class="benefit-desc">No more tabbing back and forth to click through crypts between everything else you're doing.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Skip the boring part</p>
+        <p class="benefit-desc">The repetitive clicking is the least fun part of crypting anyway — let the tool grind it out instead of you.</p>
+      </div>
+    </div>
+
+    <h3 class="tool-subheading">How it works</h3>
     <ul>
-      <li><strong>Automatic crypt selection</strong> — automatically handles the crypts based on your watchtower selection.</li>
-      <li><strong>Crypt type selection</strong> — choose which types of crypts you want to run.</li>
-      <li><strong>Crypt filters</strong> — exclude crypts you don't want to run.</li>
-      <li><strong>Tartaros support</strong> — Tartaros crypts are handled as well.</li>
-      <li><strong>Up to 3 commanders</strong> — automatically manage up to three commanders.</li>
-      <li><strong>Automatic crypt finding spot</strong> — if crypts appear off-center, the application will automatically try to find it and save the location for future reference.</li>
-      <li><strong>Second-crypt support</strong> — send two commanders to a second crypt when necessary.</li>
-      <li><strong>Smart scrolling</strong> — if wheel scrolling is blocked by touchpad or mouse drivers, Auto-Crypter can drag the crypt list instead.</li>
-      <li><strong>Multiple resolutions supported</strong> — with more resolutions added based on user requests.</li>
-      <li><strong>Unlimited crypting</strong> — no limits on marches, crypts or hours of use.</li>
+      <li><strong>You tell it what to run.</strong> Pick your commanders (up to three), choose which crypt types to include, and filter out the ones you don't want. It also works on Tartaros crypts.</li>
+      <li><strong>It finds the crypts for you.</strong> Auto-Crypter reads your watchtower list and works through it on its own and navigates to the crypt. It will find it even if a crypt shows up off-center on screen.</li>
+      <li><strong>It doesn't stop until you want it to.</strong> No caps on marches, crypts, or hours — run it for a quick top-up or let it carry a full session.</li>
     </ul>
+    <p style="font-size:0.85rem; color:var(--ink-dim);">Works at 1024×768, 1366×768, 1680×1050, 1760×990, and 1920×1080. Need another resolution? Email support@ccc-hq.com. Full setup details are in the user manual.</p>
 
     <h3 class="tool-subheading">One subscription. All your accounts.</h3>
     <p>Whether you play one account or several, you don't need a separate subscription for each account. Your subscription covers all of your Total Battle accounts. And because Auto-Crypter can be installed on up to 2 devices per subscription, you can use it where it suits you best — for example, on your main PC and your laptop.</p>
