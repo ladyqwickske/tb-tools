@@ -8,7 +8,7 @@
 <link rel="icon" href="tools-logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Spectral:ital,wght@0,500;0,600;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --void: #05060a;
@@ -269,6 +269,58 @@
     margin: 0 0 4px;
   }
   .benefit-desc { font-size: 0.82rem; color: var(--ink-dim); margin: 0; }
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 18px 0 4px;
+  }
+  .pricing-card {
+    background: var(--void);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    padding: 22px 18px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .pricing-card.featured {
+    border-color: var(--gold-dim);
+    background: rgba(212,175,55,0.05);
+  }
+  .pricing-badge {
+    display: inline-block;
+    font-family: var(--utility);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--void);
+    background: var(--gold);
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin: 0 auto 12px;
+  }
+  .pricing-name {
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 0 0 8px;
+  }
+  .pricing-price {
+    font-family: var(--display);
+    font-size: 1.7rem;
+    color: var(--gold-bright);
+    margin: 0 0 2px;
+  }
+  .pricing-permonth {
+    font-size: 0.78rem;
+    color: var(--emerald-bright);
+    margin: 0 0 10px;
+  }
+  .pricing-billed { font-size: 0.8rem; color: var(--ink-dim); margin: 0 0 18px; flex-grow: 1; }
   .trial-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -397,13 +449,13 @@
 
     <h3 class="tool-subheading">What does Auto-Crypter do?</h3>
     <ul>
-      <li><strong>Automatic crypt selection</strong> — automatically handles the crypts available to you.</li>
+      <li><strong>Automatic crypt selection</strong> — automatically handles the crypts based on your watchtower selection.</li>
       <li><strong>Crypt type selection</strong> — choose which types of crypts you want to run.</li>
-      <li><strong>Tartaros support</strong> — Tartaros crypts are handled automatically.</li>
-      <li><strong>Up to 3 commanders</strong> — automatically manage up to three commanders.</li>
-      <li><strong>Automatic commander management</strong> — waits for commanders to return before sending them again.</li>
-      <li><strong>Second-crypt support</strong> — send two commanders to a second crypt when necessary.</li>
       <li><strong>Crypt filters</strong> — exclude crypts you don't want to run.</li>
+      <li><strong>Tartaros support</strong> — Tartaros crypts are handled as well.</li>
+      <li><strong>Up to 3 commanders</strong> — automatically manage up to three commanders.</li>
+      <li><strong>Automatic crypt finding spot</strong> — if crypts appear off-center, the application will automatically try to find it and save the location for future reference.</li>
+      <li><strong>Second-crypt support</strong> — send two commanders to a second crypt when necessary.</li>
       <li><strong>Smart scrolling</strong> — if wheel scrolling is blocked by touchpad or mouse drivers, Auto-Crypter can drag the crypt list instead.</li>
       <li><strong>Multiple resolutions supported</strong> — with more resolutions added based on user requests.</li>
       <li><strong>Unlimited crypting</strong> — no limits on marches, crypts or hours of use.</li>
@@ -426,7 +478,42 @@
       </div>
       <div class="benefit-tile">
         <p class="benefit-title">One simple subscription</p>
-        <p class="benefit-desc">No complicated plans based on accounts, marches or usage.</p>
+      </div>
+    </div>
+
+    <h3 class="tool-subheading">Pricing</h3>
+    <p>One plan, four ways to pay for it — the longer you commit, the less it costs per month. Every plan includes everything above: all your accounts, 2 devices, unlimited use.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <p class="pricing-name">Monthly</p>
+        <p class="pricing-price">€9.99</p>
+        <p class="pricing-permonth">per month</p>
+        <p class="pricing-billed">Billed monthly</p>
+        <a class="cta secondary small" href="subscribe.html?plan=monthly">Subscribe →</a>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-badge">Save 17%</span>
+        <p class="pricing-name">3 Months</p>
+        <p class="pricing-price">€24.99</p>
+        <p class="pricing-permonth">≈ €8.33 / mo</p>
+        <p class="pricing-billed">Billed every 3 months</p>
+        <a class="cta secondary small" href="subscribe.html?plan=quarterly">Subscribe →</a>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-badge">Save 25%</span>
+        <p class="pricing-name">6 Months</p>
+        <p class="pricing-price">€44.99</p>
+        <p class="pricing-permonth">≈ €7.50 / mo</p>
+        <p class="pricing-billed">Billed every 6 months</p>
+        <a class="cta secondary small" href="subscribe.html?plan=semiannual">Subscribe →</a>
+      </div>
+      <div class="pricing-card featured">
+        <span class="pricing-badge">Save 33% • Best value</span>
+        <p class="pricing-name">Yearly</p>
+        <p class="pricing-price">€79.99</p>
+        <p class="pricing-permonth">≈ €6.67 / mo</p>
+        <p class="pricing-billed">Billed once per year</p>
+        <a class="cta secondary small" href="subscribe.html?plan=annual">Subscribe →</a>
       </div>
     </div>
 
@@ -451,6 +538,7 @@
       <p class="closing-tagline">Spend less time managing crypts.</p>
       <p class="closing-body">You already have enough things to do in Total Battle. Let Auto-Crypter handle the crypts.</p>
       <p class="closing-recap">One subscription. All your accounts. Two devices. Unlimited crypting.</p>
+      <p></p>
       <a class="cta primary" href="subscribe.html">Subscribe →</a>
       <a class="cta secondary" id="download-btn"
          href="https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.7/TBAutoCrypt_0.0.7.zip">Download v0.0.7</a>
