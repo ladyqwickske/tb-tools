@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manage Devices — Q's TB Tools</title>
+<meta name="description" content="Manage devices authorized for TB Auto-Crypt." />
+<link rel="icon" href="tools-logo.png" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #05060a;
+    --panel: #0c1020;
+    --panel-line: #1c2440;
+    --gold: #d4af37;
+    --gold-bright: #f2d68f;
+    --gold-dim: #8a742f;
+    --emerald: #3d6b42;
+    --emerald-bright: #6fa373;
+    --danger: #c25b5b;
+    --danger-bright: #e08585;
+    --ink: #e9e6da;
+    --ink-dim: #a8a692;
+    --display: 'Cinzel', serif;
+    --body: 'Spectral', serif;
+    --utility: 'Oswald', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at 12% 22%, rgba(212,175,55,0.3), transparent),
+      radial-gradient(1.5px 1.5px at 78% 15%, rgba(63,111,214,0.3), transparent),
+      radial-gradient(1px 1px at 55% 75%, rgba(111,163,115,0.28), transparent),
+      radial-gradient(1px 1px at 90% 55%, rgba(212,175,55,0.2), transparent);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+  }
+  header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px clamp(20px, 5vw, 56px);
+    border-bottom: 1px solid rgba(212,175,55,0.15);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .brand img {
+    height: 34px; width: 34px; object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(212,175,55,0.35));
+  }
+  .brand-word { font-family: var(--utility); letter-spacing: 0.14em; font-size: 0.8rem; color: var(--gold-bright); }
+  header nav a {
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-dim);
+    border-bottom: 1px solid transparent;
+    transition: color 0.25s ease, border-color 0.25s ease;
+  }
+  header nav a:hover { color: var(--gold-bright); border-color: var(--gold); }
+
+  main { position: relative; z-index: 1; display: flex; justify-content: center; padding: 70px 20px 120px; }
+  .eyebrow {
+    font-family: var(--utility);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    color: var(--emerald-bright);
+    margin: 0 0 14px;
+    text-align: center;
+  }
+  .eyebrow::before, .eyebrow::after { content: '✦'; color: var(--gold-dim); margin: 0 12px; font-size: 0.62rem; }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    background: linear-gradient(180deg, var(--panel) 0%, #080a15 100%);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    padding: 38px 36px;
+    position: relative;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 36px;
+    width: 40px; height: 3px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  h1 { font-family: var(--display); font-size: 1.5rem; letter-spacing: 0.03em; color: var(--gold-bright); margin: 0 0 8px; text-align: center; }
+  p.sub { color: var(--ink-dim); margin: 0 0 22px; font-size: 0.94rem; text-align: center; font-style: italic; }
+  p.sub.small { margin: -8px 0 14px; font-size: 0.84rem; }
+  #g_id_signin_container { display: flex; justify-content: center; margin: 6px 0 4px; }
+
+  .section-heading {
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--emerald-bright);
+    margin: 28px 0 4px;
+    padding-top: 22px;
+    border-top: 1px solid var(--panel-line);
+    text-align: center;
+  }
+  .subscription-panel {
+    background: var(--void);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    padding: 18px 20px;
+  }
+  .sub-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+  }
+  .sub-label {
+    font-family: var(--utility);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .sub-value { font-size: 0.94rem; color: var(--ink); text-align: right; }
+  .sub-value.status-active { color: var(--emerald-bright); }
+  .sub-value.status-past_due, .sub-value.status-cancelling { color: var(--gold-bright); }
+  .sub-value.status-cancelled, .sub-value.status-expired, .sub-value.status-none { color: var(--danger-bright); }
+  .sub-note {
+    font-size: 0.82rem;
+    color: var(--ink-dim);
+    font-style: italic;
+    margin-top: 8px;
+    text-align: center;
+  }
+  button.manage-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 11px;
+    font-family: var(--utility);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-bright);
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  button.manage-btn:hover:not(:disabled) { border-color: var(--gold); background: rgba(212,175,55,0.08); }
+  button.manage-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .manage-hint {
+    font-size: 0.76rem;
+    color: var(--ink-dim);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
+  }
+  .device-list { list-style: none; margin: 0; padding: 0; }
+  .device-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--panel-line);
+  }
+  .device-row:last-child { border-bottom: none; }
+  .device-name { font-family: var(--utility); font-weight: 500; font-size: 0.94rem; color: var(--ink); letter-spacing: 0.02em; }
+  .device-meta { color: var(--ink-dim); font-size: 0.8rem; margin-top: 3px; font-style: italic; }
+  button.remove {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger-bright);
+    border-radius: 2px;
+    padding: 7px 14px;
+    font-family: var(--utility);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  button.remove:hover:not(:disabled) { background: var(--danger); color: var(--void); }
+  button.remove:disabled { opacity: 0.5; cursor: not-allowed; }
+  .empty, .error {
+    color: var(--ink-dim);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 14px 0;
+    font-style: italic;
+  }
+  .error { color: var(--danger-bright); display: none; }
+  #account-section { display: none; margin-top: 20px; }
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(212,175,55,0.15);
+    padding: 36px 20px 46px;
+    text-align: center;
+  }
+  footer img { height: 40px; width: 40px; object-fit: contain; opacity: 0.85; margin-bottom: 10px; }
+  footer .foot-word {
+    font-family: var(--utility);
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<header>
+  <a class="brand" href="index.html">
+    <img src="tools-logo.png" alt="Q's TB Tools" />
+    <span class="brand-word">Q's TB Tools</span>
+  </a>
+  <nav>
+    <a href="index.html">← Back to TB Tools</a>
+  </nav>
+</header>
+
+<main>
+  <div>
+    <p class="eyebrow">Your Account</p>
+    <div class="card">
+      <h1>Your account</h1>
+      <p class="sub">Sign in to manage your subscription and your devices.</p>
+
+      <div id="g_id_signin_container"></div>
+      <div class="error" id="signin-error"></div>
+
+      <div id="account-section">
+        <div class="subscription-panel" id="subscription-panel"></div>
+
+        <h2 class="section-heading">Devices</h2>
+        <p class="sub small">TB Auto-Crypt allows 2 devices per account.</p>
+        <ul class="device-list" id="device-list"></ul>
+        <div class="empty" id="empty-msg" style="display:none;">No devices registered yet.</div>
+        <div class="error" id="devices-error"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <img src="tools-logo.png" alt="Total Battle Tools" />
+  <p class="foot-word">Q's Total Battle Tools</p>
+</footer>
+
+<script>
+  const GOOGLE_CLIENT_ID_WEB = "47674606892-0m90hd0cd01kijo69ssuqtn1j3igp32i.apps.googleusercontent.com";
+  const WORKER_BASE_URL = "https://auto-crypt.ccc-hq.com";
+
+  let currentIdToken = null;
+
+  // Must match the plan keys in worker.js's PLAN_PRICE_ENV_VARS / subscribe.html's PLANS+TRIALS.
+  const PLAN_LABELS = {
+    monthly: "Monthly",
+    quarterly: "3 Months",
+    semiannual: "6 Months",
+    annual: "Yearly",
+    trial_7: "7-Day Trial",
+    trial_14: "14-Day Trial",
+  };
+
+  function formatLastSeen(ms) {
+    if (!ms) return "never";
+    const diffMs = Date.now() - ms;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return "today";
+    if (diffDays === 1) return "yesterday";
+    return `${diffDays} days ago`;
+  }
+
+  function formatDate(unixSeconds) {
+    if (!unixSeconds) return "—";
+    return new Date(unixSeconds * 1000).toLocaleDateString(undefined, {
+      year: "numeric", month: "long", day: "numeric",
+    });
+  }
+
+  function renderSubscriptionPanel(sub) {
+    const panel = document.getElementById("subscription-panel");
+
+    if (!sub || sub.status === "unregistered" || !sub.status) {
+      panel.innerHTML = `
+        <div class="sub-row">
+          <span class="sub-label">Status</span>
+          <span class="sub-value status-none">No active subscription</span>
+        </div>
+        <a class="manage-hint" href="subscribe.html">Subscribe →</a>
+      `;
+      return;
+    }
+
+    const planLabel = PLAN_LABELS[sub.plan] || sub.plan || "—";
+    const isTrial = sub.plan === "trial_7" || sub.plan === "trial_14";
+
+    let statusClass = `status-${sub.status}`;
+    let statusLabel = {
+      active: "Active",
+      past_due: "Payment past due",
+      cancelled: "Cancelled",
+      expired: "Expired",
+    }[sub.status] || sub.status;
+
+    if (sub.status === "active" && sub.cancel_at_period_end) {
+      statusClass = "status-cancelling";
+      statusLabel = "Cancelling";
+    }
+
+    // Trials are a one-time payment -- never "renew", and there's no real
+    // Stripe Subscription for the Billing Portal to manage, so they get
+    // their own wording and a "Subscribe" nudge instead of a Manage button.
+    const dateLabel = isTrial
+      ? "Access ends"
+      : sub.status === "active" && sub.cancel_at_period_end
+        ? "Access ends"
+        : sub.status === "active"
+          ? "Renews"
+          : "Ended";
+
+    panel.innerHTML = `
+      <div class="sub-row">
+        <span class="sub-label">Plan</span>
+        <span class="sub-value">${escapeHtml(planLabel)}</span>
+      </div>
+      <div class="sub-row">
+        <span class="sub-label">Status</span>
+        <span class="sub-value ${statusClass}">${escapeHtml(statusLabel)}</span>
+      </div>
+      <div class="sub-row">
+        <span class="sub-label">${dateLabel}</span>
+        <span class="sub-value">${formatDate(sub.current_period_end)}</span>
+      </div>
+      ${isTrial
+        ? `<a class="manage-btn" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;" href="subscribe.html">Subscribe for uninterrupted access →</a>
+           <p class="sub-note">Trials are one-time and don't renew — subscribe any time to keep going after this one ends.</p>`
+        : `<button class="manage-btn" id="manage-btn">Manage subscription</button>
+           ${sub.status === "active" && sub.cancel_at_period_end
+             ? `<p class="sub-note">You'll keep access until ${formatDate(sub.current_period_end)}, then it won't renew.</p>`
+             : ""}`
+      }
+    `;
+
+    if (!isTrial) {
+      document.getElementById("manage-btn").addEventListener("click", openBillingPortal);
+    }
+  }
+
+  async function openBillingPortal() {
+    const btn = document.getElementById("manage-btn");
+    btn.disabled = true;
+    btn.textContent = "Opening...";
+    try {
+      const res = await fetch(`${WORKER_BASE_URL}/create-portal-session`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_token: currentIdToken }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.detail || body.error || `Could not open billing portal (${res.status})`);
+      }
+      const { url } = await res.json();
+      window.location.href = url;
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = "Manage subscription";
+      alert(err.message);
+    }
+  }
+
+  async function loadAccount() {
+    const listEl = document.getElementById("device-list");
+    const emptyEl = document.getElementById("empty-msg");
+    const errorEl = document.getElementById("devices-error");
+    listEl.innerHTML = "";
+    errorEl.style.display = "none";
+
+    try {
+      const res = await fetch(`${WORKER_BASE_URL}/devices/list`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_token: currentIdToken }),
+      });
+      if (!res.ok) throw new Error(`Could not load account (${res.status})`);
+      const { devices, subscription } = await res.json();
+
+      renderSubscriptionPanel(subscription);
+
+      if (!devices || devices.length === 0) {
+        emptyEl.style.display = "block";
+        return;
+      }
+      emptyEl.style.display = "none";
+
+      devices.forEach((d) => {
+        const li = document.createElement("li");
+        li.className = "device-row";
+        li.innerHTML = `
+          <div>
+            <div class="device-name">${escapeHtml(d.device_name || "Unnamed device")}</div>
+            <div class="device-meta">Last used ${formatLastSeen(d.last_seen)}</div>
+          </div>
+          <button class="remove" data-id="${escapeHtml(d.device_id)}">Remove</button>
+        `;
+        listEl.appendChild(li);
+      });
+
+      listEl.querySelectorAll("button.remove").forEach((btn) => {
+        btn.addEventListener("click", () => removeDevice(btn.dataset.id, btn));
+      });
+    } catch (err) {
+      errorEl.textContent = err.message;
+      errorEl.style.display = "block";
+    }
+  }
+
+  async function removeDevice(deviceId, btn) {
+    btn.disabled = true;
+    btn.textContent = "Removing...";
+    try {
+      const res = await fetch(`${WORKER_BASE_URL}/devices/remove`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_token: currentIdToken, device_id: deviceId }),
+      });
+      if (!res.ok) throw new Error(`Could not remove device (${res.status})`);
+      await loadAccount();
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = "Remove";
+      alert(err.message);
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function handleCredentialResponse(response) {
+    currentIdToken = response.credential;
+    document.getElementById("account-section").style.display = "block";
+    loadAccount();
+  }
+
+  window.onload = function () {
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID_WEB,
+      callback: handleCredentialResponse,
+    });
+    google.accounts.id.renderButton(
+      document.getElementById("g_id_signin_container"),
+      { theme: "filled_black", size: "large", width: 300 }
+    );
+  };
+</script>
+
+</body>
+</html>

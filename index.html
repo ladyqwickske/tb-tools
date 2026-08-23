@@ -21,14 +21,11 @@
     --emerald-bright: #6fa373;
     --ink: #e9e6da;
     --ink-dim: #a8a692;
-
     --display: 'Cinzel', serif;
     --body: 'Spectral', serif;
     --utility: 'Oswald', sans-serif;
   }
-
   * { box-sizing: border-box; }
-
   body {
     margin: 0;
     background: var(--void);
@@ -37,9 +34,7 @@
     line-height: 1.6;
     overflow-x: hidden;
   }
-
   a { color: inherit; }
-
   .stars {
     position: fixed;
     inset: 0;
@@ -53,7 +48,6 @@
     background-repeat: no-repeat;
     background-size: 100% 100%;
   }
-
   header {
     position: relative;
     z-index: 1;
@@ -63,28 +57,24 @@
     padding: 18px clamp(20px, 5vw, 56px);
     border-bottom: 1px solid rgba(212,175,55,0.15);
   }
-
   .brand {
     display: flex;
     align-items: center;
     gap: 12px;
     text-decoration: none;
   }
-
   .brand img {
     height: 34px;
     width: 34px;
     object-fit: contain;
     filter: drop-shadow(0 0 6px rgba(212,175,55,0.35));
   }
-
   .brand-word {
     font-family: var(--utility);
     letter-spacing: 0.14em;
     font-size: 0.8rem;
     color: var(--gold-bright);
   }
-
   header nav a {
     font-family: var(--utility);
     font-size: 0.78rem;
@@ -95,34 +85,28 @@
     border-bottom: 1px solid transparent;
     transition: color 0.25s ease, border-color 0.25s ease;
   }
-
   header nav a:hover { color: var(--gold-bright); border-color: var(--gold); }
-
   .hero {
     position: relative;
     z-index: 1;
     text-align: center;
     padding: 80px 20px 60px;
   }
-
   .hero-logo {
     width: clamp(220px, 34vw, 340px);
     margin: 0 auto 8px;
     display: block;
     filter: drop-shadow(0 0 34px rgba(212,175,55,0.25));
   }
-
   @media (prefers-reduced-motion: no-preference) {
     .hero-logo {
       animation: float 7s ease-in-out infinite;
     }
   }
-
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
   }
-
   .eyebrow {
     font-family: var(--utility);
     letter-spacing: 0.3em;
@@ -131,14 +115,12 @@
     color: var(--emerald-bright);
     margin: 0 0 18px;
   }
-
   .eyebrow::before, .eyebrow::after {
     content: '✦';
     color: var(--gold-dim);
     margin: 0 12px;
     font-size: 0.68rem;
   }
-
   .tagline {
     max-width: 46ch;
     margin: 26px auto 0;
@@ -146,7 +128,6 @@
     font-style: italic;
     color: var(--ink-dim);
   }
-
   .tools {
     position: relative;
     z-index: 1;
@@ -157,7 +138,6 @@
     flex-direction: column;
     gap: 26px;
   }
-
   .tool-card {
     background: linear-gradient(180deg, var(--panel) 0%, #080a15 100%);
     border: 1px solid var(--panel-line);
@@ -165,7 +145,6 @@
     padding: 34px 32px;
     position: relative;
   }
-
   .tool-card::before {
     content: '';
     position: absolute;
@@ -173,7 +152,6 @@
     width: 40px; height: 3px;
     background: linear-gradient(90deg, var(--gold), transparent);
   }
-
   .tool-status {
     display: inline-block;
     font-family: var(--utility);
@@ -186,13 +164,11 @@
     border-radius: 2px;
     margin-bottom: 16px;
   }
-
   .tool-status.soon {
     background: transparent;
     color: var(--emerald-bright);
     border: 1px solid var(--emerald);
   }
-
   .tool-card h2 {
     font-family: var(--display);
     font-size: 1.5rem;
@@ -200,29 +176,25 @@
     color: var(--gold-bright);
     margin: 0 0 12px;
   }
-
   .tool-card p {
     color: var(--ink-dim);
     margin: 0 0 8px;
     font-size: 1rem;
   }
-
   .tool-card ul {
     margin: 16px 0 0;
     padding-left: 20px;
     color: var(--ink-dim);
     font-size: 0.96rem;
   }
-
   .tool-card li { margin-bottom: 6px; }
-
   .tool-actions {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 14px;
     margin-top: 24px;
   }
-
   .cta {
     font-family: var(--utility);
     font-size: 0.78rem;
@@ -233,37 +205,126 @@
     border-radius: 2px;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
-
   .cta.primary {
     color: var(--void);
     background: linear-gradient(180deg, var(--gold-bright), var(--gold));
   }
-
   .cta.primary:hover,
   .cta.primary:focus-visible {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(212,175,55,0.25);
   }
-
   .cta.secondary {
     color: var(--gold-bright);
     background: transparent;
     border: 1px solid var(--gold-dim);
   }
-
   .cta.secondary:hover,
   .cta.secondary:focus-visible {
     border-color: var(--gold);
     color: var(--gold-bright);
     background: rgba(212,175,55,0.08);
   }
-
+  .release-notes {
+    width: 100%;
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+    font-style: italic;
+    display: none;
+  }
+  .tool-hook {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    color: var(--emerald-bright);
+    font-style: italic;
+    margin: -6px 0 16px;
+  }
+  .tool-subheading {
+    font-family: var(--display);
+    font-size: 1.12rem;
+    letter-spacing: 0.02em;
+    color: var(--gold-bright);
+    margin: 30px 0 12px;
+    padding-top: 24px;
+    border-top: 1px solid var(--panel-line);
+  }
+  .benefit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin: 16px 0 4px;
+  }
+  .benefit-tile {
+    background: var(--void);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    padding: 14px 16px;
+  }
+  .benefit-title {
+    font-family: var(--utility);
+    font-size: 0.82rem;
+    letter-spacing: 0.03em;
+    color: var(--gold-bright);
+    margin: 0 0 4px;
+  }
+  .benefit-desc { font-size: 0.82rem; color: var(--ink-dim); margin: 0; }
+  .trial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin: 18px 0 4px;
+  }
+  .trial-card {
+    background: var(--void);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    padding: 22px 20px;
+    text-align: center;
+  }
+  .trial-name {
+    font-family: var(--utility);
+    font-size: 0.76rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 0 0 8px;
+  }
+  .trial-price {
+    font-family: var(--display);
+    font-size: 1.7rem;
+    color: var(--gold-bright);
+    margin: 0 0 10px;
+  }
+  .trial-desc { font-size: 0.85rem; color: var(--ink-dim); margin: 0 0 16px; }
+  .cta.small { font-size: 0.72rem; padding: 9px 20px; }
+  .platform-note p { margin: 0 0 10px; }
+  .closing-block {
+    text-align: center;
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid var(--panel-line);
+  }
+  .closing-tagline {
+    font-family: var(--display);
+    font-size: 1.15rem;
+    color: var(--gold-bright);
+    margin: 0 0 8px;
+  }
+  .closing-body { color: var(--ink-dim); margin: 0 0 6px; }
+  .closing-recap {
+    font-family: var(--utility);
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--emerald-bright);
+    font-style: normal;
+    margin: 14px 0 22px;
+  }
   .tool-card.placeholder {
     text-align: center;
     color: var(--ink-dim);
     border-style: dashed;
   }
-
   .tool-card.placeholder h2 {
     color: var(--ink-dim);
     font-family: var(--utility);
@@ -271,7 +332,6 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
   }
-
   footer {
     position: relative;
     z-index: 1;
@@ -279,7 +339,6 @@
     padding: 36px 20px 46px;
     text-align: center;
   }
-
   footer img {
     height: 44px;
     width: 44px;
@@ -287,7 +346,6 @@
     opacity: 0.85;
     margin-bottom: 10px;
   }
-
   footer .foot-word {
     font-family: var(--utility);
     font-size: 0.7rem;
@@ -295,7 +353,6 @@
     text-transform: uppercase;
     color: var(--ink-dim);
   }
-
   :focus-visible {
     outline: 2px solid var(--gold-bright);
     outline-offset: 3px;
@@ -303,9 +360,7 @@
 </style>
 </head>
 <body>
-
 <div class="stars"></div>
-
 <header>
   <a class="brand" href="https://ccc-hq.com">
     <img src="crest.png" alt="cCc Family crest" />
@@ -315,41 +370,126 @@
     <a href="https://ccc-hq.com">← Back to ccc-hq.com</a>
   </nav>
 </header>
-
 <section class="hero">
   <p class="eyebrow">Q's TB Tools</p>
   <img class="hero-logo" src="tools-logo.png" alt="Total Battle Tools" />
   <p class="tagline">Tools built to make life in Total Battle a little easier — starting with Auto-Crypt, with more on the way.</p>
 </section>
-
 <section class="tools">
   <article class="tool-card">
     <span class="tool-status">Available</span>
-    <h2>TB Auto-Crypt</h2>
-    <p>An automated crypt-running assistant for Total Battle. It finds and opens available crypts on the map, sends your captains to explore them, and manages the whole cycle — march, explore, return — hands-free.</p>
+    <h2>Total Battle Auto-Crypter</h2>
+    <p class="tool-hook">Let your crypts take care of themselves.</p>
+    <p>Tired of constantly checking your crypts, selecting the right type, sending commanders and waiting for them to return? Auto-Crypter automates the crypting process for you.</p>
+    <p>Set your preferences, start the tool, and let it handle your crypts while you focus on playing the game.</p>
+
+    <h3 class="tool-subheading">What does Auto-Crypter do?</h3>
     <ul>
-      <li>Signs in with your Google account — no separate password to manage</li>
-      <li>Runs multiple captains per round, one after another</li>
-      <li>Optional speed-ups and crypt filtering</li>
-      <li>Subscription-based access; price will be announced soon</li>
-	  <li>For now limited for Windows systems, with a fixed resolution. More platforms and resolutions will become available soon.</li>
+      <li><strong>Automatic crypt selection</strong> — automatically handles the crypts available to you.</li>
+      <li><strong>Crypt type selection</strong> — choose which types of crypts you want to run.</li>
+      <li><strong>Tartaros support</strong> — Tartaros crypts are handled automatically.</li>
+      <li><strong>Up to 3 commanders</strong> — automatically manage up to three commanders.</li>
+      <li><strong>Automatic commander management</strong> — waits for commanders to return before sending them again.</li>
+      <li><strong>Second-crypt support</strong> — send two commanders to a second crypt when necessary.</li>
+      <li><strong>Crypt filters</strong> — exclude crypts you don't want to run.</li>
+      <li><strong>Smart scrolling</strong> — if wheel scrolling is blocked by touchpad or mouse drivers, Auto-Crypter can drag the crypt list instead.</li>
+      <li><strong>Multiple resolutions supported</strong> — with more resolutions added based on user requests.</li>
+      <li><strong>Unlimited crypting</strong> — no limits on marches, crypts or hours of use.</li>
     </ul>
+
+    <h3 class="tool-subheading">One subscription. All your accounts.</h3>
+    <p>Whether you play one account or several, you don't need a separate subscription for each account. Your subscription covers all of your Total Battle accounts. And because Auto-Crypter can be installed on up to 2 devices per subscription, you can use it where it suits you best — for example, on your main PC and your laptop.</p>
+    <div class="benefit-grid">
+      <div class="benefit-tile">
+        <p class="benefit-title">All your accounts</p>
+        <p class="benefit-desc">No additional charge for additional Total Battle accounts.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">2 devices</p>
+        <p class="benefit-desc">Install and use Auto-Crypter on up to two devices.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Unlimited usage</p>
+        <p class="benefit-desc">No march limits. No crypt limits. No hourly limits.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">One simple subscription</p>
+        <p class="benefit-desc">No complicated plans based on accounts, marches or usage.</p>
+      </div>
+    </div>
+
+    <h3 class="tool-subheading">Try it before you commit</h3>
+    <p>Not sure if Auto-Crypter is right for you? Try it with your own accounts, your own setup and your own crypting preferences.</p>
+    <div class="trial-grid">
+      <div class="trial-card">
+        <p class="trial-name">7-Day Trial</p>
+        <p class="trial-price">€2.99</p>
+        <p class="trial-desc">A full 7 days to test Auto-Crypter and see how it works for you.</p>
+        <a class="cta secondary small" href="subscribe.html?plan=trial_7">Start trial →</a>
+      </div>
+      <div class="trial-card">
+        <p class="trial-name">14-Day Trial</p>
+        <p class="trial-price">€4.99</p>
+        <p class="trial-desc">Need a little more time? Get 14 days to try everything and make sure Auto-Crypter fits your setup.</p>
+        <a class="cta secondary small" href="subscribe.html?plan=trial_14">Start trial →</a>
+      </div>
+    </div>
+
+    <h3 class="tool-subheading">Built for Total Battle players</h3>
+    <div class="platform-note">
+      <p>Auto-Crypter currently runs as a Windows desktop application using Google Chrome. Authentication is built into the application to ensure that only authorized users can access the software.</p>
+      <p>Windows + Chrome are supported today, with support for additional operating systems planned for the future. More screen resolutions and improvements will also be added based on user feedback.</p>
+    </div>
+
     <div class="tool-actions">
-      <a class="cta primary" href="#subscribe">Subscribe →</a>
-      <a class="cta secondary" href="https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.7/TBAutoCrypt_0.0.7.zip">Download v0.0.7</a>
+      <a class="cta primary" href="subscribe.html">Subscribe →</a>
+      <a class="cta secondary" id="download-btn"
+         href="https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.7/TBAutoCrypt_0.0.7.zip">Download v0.0.7</a>
+      <p class="release-notes" id="release-notes"></p>
+    </div>
+
+    <div class="closing-block">
+      <p class="closing-tagline">Spend less time managing crypts.</p>
+      <p class="closing-body">You already have enough things to do in Total Battle. Let Auto-Crypter handle the crypts.</p>
+      <p class="closing-recap">One subscription. All your accounts. Two devices. Unlimited crypting.</p>
+      <a class="cta primary" href="subscribe.html">Subscribe →</a>
     </div>
   </article>
-
   <article class="tool-card placeholder">
     <h2>More tools coming soon</h2>
     <p>We're building out the TB Tools lineup — check back for updates.</p>
   </article>
 </section>
-
 <footer>
   <img src="tools-logo.png" alt="Total Battle Tools" />
   <p class="foot-word">Q's Total Battle Tools</p>
 </footer>
+
+<script>
+  // Keeps the Download button's version/link in sync with version.json —
+  // the only file you need to edit when a new release goes out. The
+  // hardcoded href/text above stay as a fallback if this fetch fails
+  // (offline preview, version.json briefly unavailable, etc).
+  (function () {
+    fetch("version.json", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((info) => {
+        if (!info || !info.version || !info.download_url) return;
+        const btn = document.getElementById("download-btn");
+        btn.textContent = `Download v${info.version}`;
+        btn.href = info.download_url;
+
+        if (info.release_notes) {
+          const notesEl = document.getElementById("release-notes");
+          notesEl.textContent = info.release_notes;
+          notesEl.style.display = "block";
+        }
+      })
+      .catch(() => {
+        /* keep the fallback link above as-is */
+      });
+  })();
+</script>
 
 </body>
 </html>

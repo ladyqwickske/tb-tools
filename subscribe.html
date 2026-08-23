@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Subscribe — Q's TB Tools</title>
+<meta name="description" content="Subscribe to TB Auto-Crypt." />
+<link rel="icon" href="tools-logo.png" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #05060a;
+    --panel: #0c1020;
+    --panel-line: #1c2440;
+    --gold: #d4af37;
+    --gold-bright: #f2d68f;
+    --gold-dim: #8a742f;
+    --emerald: #3d6b42;
+    --emerald-bright: #6fa373;
+    --danger: #c25b5b;
+    --danger-bright: #e08585;
+    --ink: #e9e6da;
+    --ink-dim: #a8a692;
+    --display: 'Cinzel', serif;
+    --body: 'Spectral', serif;
+    --utility: 'Oswald', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at 12% 22%, rgba(212,175,55,0.3), transparent),
+      radial-gradient(1.5px 1.5px at 78% 15%, rgba(63,111,214,0.3), transparent),
+      radial-gradient(1px 1px at 55% 75%, rgba(111,163,115,0.28), transparent),
+      radial-gradient(1px 1px at 90% 55%, rgba(212,175,55,0.2), transparent);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+  }
+  header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px clamp(20px, 5vw, 56px);
+    border-bottom: 1px solid rgba(212,175,55,0.15);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .brand img {
+    height: 34px;
+    width: 34px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(212,175,55,0.35));
+  }
+  .brand-word {
+    font-family: var(--utility);
+    letter-spacing: 0.14em;
+    font-size: 0.8rem;
+    color: var(--gold-bright);
+  }
+  header nav a {
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-dim);
+    border-bottom: 1px solid transparent;
+    transition: color 0.25s ease, border-color 0.25s ease;
+  }
+  header nav a:hover { color: var(--gold-bright); border-color: var(--gold); }
+
+  main {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    padding: 70px 20px 120px;
+  }
+  .eyebrow {
+    font-family: var(--utility);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    color: var(--emerald-bright);
+    margin: 0 0 14px;
+    text-align: center;
+  }
+  .eyebrow::before, .eyebrow::after {
+    content: '✦';
+    color: var(--gold-dim);
+    margin: 0 12px;
+    font-size: 0.62rem;
+  }
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: linear-gradient(180deg, var(--panel) 0%, #080a15 100%);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    padding: 38px 36px;
+    position: relative;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 36px;
+    width: 40px; height: 3px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    letter-spacing: 0.03em;
+    color: var(--gold-bright);
+    margin: 0 0 8px;
+    text-align: center;
+  }
+  p.sub {
+    color: var(--ink-dim);
+    margin: 0 0 28px;
+    font-size: 0.94rem;
+    text-align: center;
+    font-style: italic;
+  }
+  .step { display: none; }
+  .step.active { display: block; }
+  label {
+    display: block;
+    font-family: var(--utility);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 18px 0 8px;
+    color: var(--ink-dim);
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--void);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 0.96rem;
+  }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--gold-dim);
+  }
+  .plan-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .plan-group-label {
+    font-family: var(--utility);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 6px 0 -2px;
+    text-align: center;
+  }
+  .plan-option { position: relative; }
+  .plan-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 1px; height: 1px;
+  }
+  .plan-option label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    padding: 13px 16px;
+    background: var(--void);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    text-transform: none;
+    letter-spacing: normal;
+    font-family: var(--body);
+  }
+  .plan-option label:hover { border-color: var(--gold-dim); }
+  .plan-option input[type="radio"]:checked + label {
+    border-color: var(--gold);
+    background: rgba(212,175,55,0.07);
+  }
+  .plan-name-row { display: flex; align-items: center; gap: 8px; }
+  .plan-name { font-family: var(--utility); font-size: 0.9rem; letter-spacing: 0.03em; color: var(--ink); }
+  .plan-badge {
+    font-family: var(--utility);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--void);
+    background: var(--gold);
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .plan-billed { font-size: 0.78rem; color: var(--ink-dim); font-style: italic; margin-top: 2px; }
+  .plan-price { font-family: var(--utility); font-size: 0.94rem; color: var(--gold-bright); white-space: nowrap; }
+  button.cta-primary {
+    width: 100%;
+    margin-top: 26px;
+    padding: 13px;
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--void);
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  button.cta-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(212,175,55,0.25);
+  }
+  button.cta-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  #g_id_signin_container { display: flex; justify-content: center; margin: 6px 0 4px; }
+  .signed-in-as {
+    font-family: var(--utility);
+    font-size: 0.76rem;
+    letter-spacing: 0.06em;
+    color: var(--emerald-bright);
+    margin-top: 18px;
+    text-align: center;
+  }
+  .error {
+    color: var(--danger-bright);
+    font-size: 0.84rem;
+    margin-top: 14px;
+    text-align: center;
+    display: none;
+  }
+  .footer-note {
+    color: var(--ink-dim);
+    font-size: 0.8rem;
+    margin-top: 26px;
+    text-align: center;
+    font-style: italic;
+  }
+  .footer-note a { color: var(--gold-bright); font-style: normal; }
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(212,175,55,0.15);
+    padding: 36px 20px 46px;
+    text-align: center;
+  }
+  footer img {
+    height: 40px;
+    width: 40px;
+    object-fit: contain;
+    opacity: 0.85;
+    margin-bottom: 10px;
+  }
+  footer .foot-word {
+    font-family: var(--utility);
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<header>
+  <a class="brand" href="index.html">
+    <img src="tools-logo.png" alt="Q's TB Tools" />
+    <span class="brand-word">Q's TB Tools</span>
+  </a>
+  <nav>
+    <a href="index.html">← Back to TB Tools</a>
+  </nav>
+</header>
+
+<main>
+  <div>
+    <p class="eyebrow">Subscribe</p>
+    <div class="card">
+      <h1>TB Auto-Crypt</h1>
+      <p class="sub">Sign in with Google, tell us who you are in-game, then head to checkout.</p>
+
+      <!-- Step 1: Google sign-in -->
+      <div class="step active" id="step-signin">
+        <div id="g_id_signin_container"></div>
+        <div class="error" id="signin-error"></div>
+      </div>
+
+      <!-- Step 2: plan + registration form (name + TB username) -->
+      <div class="step" id="step-register">
+        <div class="signed-in-as" id="signed-in-as"></div>
+
+        <label>Choose a plan</label>
+        <div class="plan-list" id="plan-list"></div>
+
+        <label for="display-name">Your name</label>
+        <input type="text" id="display-name" placeholder="e.g. Alex" autocomplete="name" />
+
+        <label for="tb-username">Total Battle Main Account Name</label>
+        <input type="text" id="tb-username" placeholder="Your in-game name" autocomplete="off" />
+
+        <div class="error" id="register-error"></div>
+
+        <button class="cta-primary" id="continue-btn">Continue to checkout</button>
+      </div>
+
+      <p class="footer-note">
+        Already subscribed? <a href="devices.html">Manage your devices</a>
+      </p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <img src="tools-logo.png" alt="Total Battle Tools" />
+  <p class="foot-word">Q's Total Battle Tools</p>
+</footer>
+
+<script>
+  // ── Fill in your Web application OAuth client ID (Google Cloud Console) ──
+  const GOOGLE_CLIENT_ID_WEB = "47674606892-0m90hd0cd01kijo69ssuqtn1j3igp32i.apps.googleusercontent.com";
+  const WORKER_BASE_URL = "https://auto-crypt.ccc-hq.com";
+
+  // ── Plans — key must match one of PLAN_PRICE_ENV_VARS in worker.js ──
+  // This is the one place to edit when a price changes or a new billing
+  // period is added (plus the matching secret in the Cloudflare dashboard).
+  // price/billed are display text only -- the actual amount charged always
+  // comes from the Stripe Price itself, this just needs to describe it
+  // accurately so nobody's surprised at checkout.
+  const PLANS = [
+    { key: "monthly", label: "Monthly", price: "$X.XX / mo", billed: "Billed monthly", badge: null, checked: true },
+    { key: "quarterly", label: "3 Months", price: "$X.XX / mo", billed: "Billed $XX.XX every 3 months", badge: "Save X%", checked: false },
+    { key: "semiannual", label: "6 Months", price: "$X.XX / mo", billed: "Billed $XX.XX every 6 months", badge: "Save X%", checked: false },
+    { key: "annual", label: "Yearly", price: "$X.XX / mo", billed: "Billed $XX.XX per year", badge: "Best value", checked: false },
+  ];
+
+  // Trials are a ONE-TIME payment (no auto-renewal) -- matches
+  // TRIAL_PLAN_DAYS in worker.js. Limited to one trial per account, ever;
+  // the Worker rejects a second attempt with "trial_already_used" and that
+  // message is shown in the error box below the picker.
+  const TRIALS = [
+    { key: "trial_7", label: "7-Day Trial", price: "€2.99", billed: "One-time payment, no auto-renewal", badge: "Trial", checked: false },
+    { key: "trial_14", label: "14-Day Trial", price: "€4.99", billed: "One-time payment, no auto-renewal", badge: "Trial", checked: false },
+  ];
+
+  // Deep-linked from index.html's trial buttons, e.g. subscribe.html?plan=trial_7
+  const preselected = new URLSearchParams(window.location.search).get("plan");
+  const ALL_PLANS = [...PLANS, ...TRIALS];
+  if (preselected && ALL_PLANS.some((p) => p.key === preselected)) {
+    ALL_PLANS.forEach((p) => { p.checked = p.key === preselected; });
+  }
+
+  function renderPlanGroup(plans) {
+    return plans.map((p) => `
+      <div class="plan-option">
+        <input type="radio" name="plan" id="plan-${p.key}" value="${p.key}" ${p.checked ? "checked" : ""} />
+        <label for="plan-${p.key}">
+          <span>
+            <span class="plan-name-row">
+              <span class="plan-name">${p.label}</span>
+              ${p.badge ? `<span class="plan-badge">${p.badge}</span>` : ""}
+            </span>
+            <div class="plan-billed">${p.billed}</div>
+          </span>
+          <span class="plan-price">${p.price}</span>
+        </label>
+      </div>
+    `).join("");
+  }
+
+  function renderPlans() {
+    const container = document.getElementById("plan-list");
+    container.innerHTML =
+      renderPlanGroup(PLANS) +
+      `<p class="plan-group-label">Or try it first (one-time, no renewal)</p>` +
+      renderPlanGroup(TRIALS);
+  }
+
+  function getSelectedPlan() {
+    const checked = document.querySelector('input[name="plan"]:checked');
+    return checked ? checked.value : PLANS[0].key;
+  }
+
+  let currentIdToken = null;
+  let currentEmail = null;
+
+  function showStep(id) {
+    document.querySelectorAll(".step").forEach((el) => el.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
+
+  function decodeJwtPayload(jwt) {
+    const b64 = jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(decodeURIComponent(escape(atob(b64))));
+  }
+
+  function handleCredentialResponse(response) {
+    currentIdToken = response.credential;
+    const payload = decodeJwtPayload(currentIdToken);
+    currentEmail = payload.email;
+
+    document.getElementById("signed-in-as").textContent = `Signed in as ${currentEmail}`;
+    showStep("step-register");
+  }
+
+  window.onload = function () {
+    renderPlans();
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID_WEB,
+      callback: handleCredentialResponse,
+    });
+    google.accounts.id.renderButton(
+      document.getElementById("g_id_signin_container"),
+      { theme: "filled_black", size: "large", width: 300 }
+    );
+  };
+
+  document.getElementById("continue-btn").addEventListener("click", async () => {
+    const errorEl = document.getElementById("register-error");
+    errorEl.style.display = "none";
+
+    const name = document.getElementById("display-name").value.trim();
+    const tbUsername = document.getElementById("tb-username").value.trim();
+
+    if (!name || !tbUsername) {
+      errorEl.textContent = "Please fill in both your name and your Total Battle username.";
+      errorEl.style.display = "block";
+      return;
+    }
+
+    const btn = document.getElementById("continue-btn");
+    btn.disabled = true;
+    btn.textContent = "Working...";
+
+    try {
+      // 1. Save registration details (name + TB username) against this Google account.
+      const registerRes = await fetch(`${WORKER_BASE_URL}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id_token: currentIdToken,
+          name,
+          tb_username: tbUsername,
+        }),
+      });
+      if (!registerRes.ok) {
+        const body = await registerRes.json().catch(() => ({}));
+        throw new Error(body.error || `Registration failed (${registerRes.status})`);
+      }
+
+      // 2. Create a Stripe Checkout Session for the selected plan and redirect to it.
+      const checkoutRes = await fetch(`${WORKER_BASE_URL}/create-checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_token: currentIdToken, plan: getSelectedPlan() }),
+      });
+      if (!checkoutRes.ok) {
+        const body = await checkoutRes.json().catch(() => ({}));
+        throw new Error(body.detail || body.error || `Checkout failed (${checkoutRes.status})`);
+      }
+      const { url } = await checkoutRes.json();
+      window.location.href = url;
+    } catch (err) {
+      errorEl.textContent = err.message || "Something went wrong. Please try again.";
+      errorEl.style.display = "block";
+      btn.disabled = false;
+      btn.textContent = "Continue to checkout";
+    }
+  });
+</script>
+
+</body>
+</html>
