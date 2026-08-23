@@ -353,6 +353,18 @@
     text-transform: uppercase;
     color: var(--ink-dim);
   }
+  footer .foot-links {
+    margin: 10px 0 0;
+    font-family: var(--utility);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  footer .foot-links a {
+    color: var(--ink-dim);
+    text-decoration: none;
+  }
+  footer .foot-links a:hover { color: var(--gold-bright); }
   :focus-visible {
     outline: 2px solid var(--gold-bright);
     outline-offset: 3px;
@@ -435,24 +447,13 @@
       </div>
     </div>
 
-    <h3 class="tool-subheading">Built for Total Battle players</h3>
-    <div class="platform-note">
-      <p>Auto-Crypter currently runs as a Windows desktop application using Google Chrome. Authentication is built into the application to ensure that only authorized users can access the software.</p>
-      <p>Windows + Chrome are supported today, with support for additional operating systems planned for the future. More screen resolutions and improvements will also be added based on user feedback.</p>
-    </div>
-
-    <div class="tool-actions">
-      <a class="cta primary" href="subscribe.html">Subscribe →</a>
-      <a class="cta secondary" id="download-btn"
-         href="https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.7/TBAutoCrypt_0.0.7.zip">Download v0.0.7</a>
-      <p class="release-notes" id="release-notes"></p>
-    </div>
-
     <div class="closing-block">
       <p class="closing-tagline">Spend less time managing crypts.</p>
       <p class="closing-body">You already have enough things to do in Total Battle. Let Auto-Crypter handle the crypts.</p>
       <p class="closing-recap">One subscription. All your accounts. Two devices. Unlimited crypting.</p>
       <a class="cta primary" href="subscribe.html">Subscribe →</a>
+      <a class="cta secondary" id="download-btn"
+         href="https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.7/TBAutoCrypt_0.0.7.zip">Download v0.0.7</a>
     </div>
   </article>
   <article class="tool-card placeholder">
@@ -463,6 +464,7 @@
 <footer>
   <img src="tools-logo.png" alt="Total Battle Tools" />
   <p class="foot-word">Q's Total Battle Tools</p>
+  <p class="foot-links"><a href="terms.html">Terms of Service</a></p>
 </footer>
 
 <script>

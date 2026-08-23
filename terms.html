@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Terms of Service — Q's TB Tools</title>
+<meta name="description" content="Terms of Service for TB Auto-Crypt." />
+<link rel="icon" href="tools-logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #05060a;
+    --panel: #0c1020;
+    --panel-line: #1c2440;
+    --gold: #d4af37;
+    --gold-bright: #f2d68f;
+    --gold-dim: #8a742f;
+    --emerald: #3d6b42;
+    --emerald-bright: #6fa373;
+    --danger: #c25b5b;
+    --danger-bright: #e08585;
+    --ink: #e9e6da;
+    --ink-dim: #a8a692;
+    --display: 'Cinzel', serif;
+    --body: 'Spectral', serif;
+    --utility: 'Oswald', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+  a { color: var(--gold-bright); }
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at 12% 22%, rgba(212,175,55,0.3), transparent),
+      radial-gradient(1.5px 1.5px at 78% 15%, rgba(63,111,214,0.3), transparent),
+      radial-gradient(1px 1px at 55% 75%, rgba(111,163,115,0.28), transparent),
+      radial-gradient(1px 1px at 90% 55%, rgba(212,175,55,0.2), transparent);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+  }
+  header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px clamp(20px, 5vw, 56px);
+    border-bottom: 1px solid rgba(212,175,55,0.15);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .brand img {
+    height: 34px;
+    width: 34px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(212,175,55,0.35));
+  }
+  .brand-word {
+    font-family: var(--utility);
+    letter-spacing: 0.14em;
+    font-size: 0.8rem;
+    color: var(--gold-bright);
+  }
+  header nav a {
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-dim);
+    border-bottom: 1px solid transparent;
+    transition: color 0.25s ease, border-color 0.25s ease;
+  }
+  header nav a:hover { color: var(--gold-bright); border-color: var(--gold); }
+
+  main {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    padding: 60px 20px 110px;
+  }
+  .doc {
+    width: 100%;
+    max-width: 760px;
+  }
+  .eyebrow {
+    font-family: var(--utility);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    color: var(--emerald-bright);
+    margin: 0 0 14px;
+    text-align: center;
+  }
+  .eyebrow::before, .eyebrow::after {
+    content: '✦';
+    color: var(--gold-dim);
+    margin: 0 12px;
+    font-size: 0.62rem;
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: 2rem;
+    letter-spacing: 0.02em;
+    color: var(--gold-bright);
+    margin: 0 0 8px;
+    text-align: center;
+  }
+  .updated {
+    text-align: center;
+    color: var(--ink-dim);
+    font-size: 0.86rem;
+    font-style: italic;
+    margin: 0 0 40px;
+  }
+  .disclaimer {
+    background: rgba(194,91,91,0.08);
+    border: 1px solid rgba(194,91,91,0.35);
+    border-radius: 4px;
+    padding: 18px 22px;
+    margin: 0 0 44px;
+    font-size: 0.86rem;
+    color: var(--ink-dim);
+  }
+  .disclaimer strong { color: var(--danger-bright); }
+  .panel {
+    background: linear-gradient(180deg, var(--panel) 0%, #080a15 100%);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    padding: 40px clamp(24px, 5vw, 52px);
+    position: relative;
+  }
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 40px;
+    width: 40px; height: 3px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  h2 {
+    font-family: var(--display);
+    font-size: 1.12rem;
+    letter-spacing: 0.02em;
+    color: var(--gold-bright);
+    margin: 40px 0 14px;
+  }
+  h2:first-child { margin-top: 0; }
+  p { margin: 0 0 14px; color: var(--ink); font-size: 0.98rem; }
+  ul, ol { margin: 0 0 14px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  .fill {
+    color: var(--gold-bright);
+    background: rgba(212,175,55,0.1);
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-style: normal;
+  }
+  .callout {
+    background: rgba(212,175,55,0.06);
+    border-left: 2px solid var(--gold-dim);
+    padding: 14px 18px;
+    margin: 0 0 14px;
+    font-size: 0.92rem;
+    color: var(--ink-dim);
+  }
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(212,175,55,0.15);
+    padding: 36px 20px 46px;
+    text-align: center;
+  }
+  footer img {
+    height: 40px;
+    width: 40px;
+    object-fit: contain;
+    opacity: 0.85;
+    margin-bottom: 10px;
+  }
+  footer .foot-word {
+    font-family: var(--utility);
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<header>
+  <a class="brand" href="index.html">
+    <img src="tools-logo.png" alt="Q's TB Tools" />
+    <span class="brand-word">Q's TB Tools</span>
+  </a>
+  <nav>
+    <a href="index.html">← Back to TB Tools</a>
+  </nav>
+</header>
+
+<main>
+  <div class="doc">
+    <p class="eyebrow">Legal</p>
+    <h1>Terms of Service</h1>
+    <p class="updated">TB Auto-Crypt — Version 2026-08-23 — Last updated August 23, 2026</p>
+
+    <!--div class="disclaimer">
+      <strong>Template notice, not legal advice.</strong> This page was
+      drafted as a starting point covering the points you asked for (no
+      refunds, no liability for Total Battle's own changes, and removal
+      without refund for cheating or bypass attempts) plus standard clauses
+      that typically accompany them. It has not been reviewed by a
+      lawyer. Before you rely on it — especially the refund/withdrawal
+      section, which touches EU consumer-protection law — have it checked
+      by someone qualified in Belgian/EU consumer and e-commerce law.
+      Anywhere you see text in <span class="fill">gold</span>, fill in
+      your real details before publishing.
+    </div-->
+
+    <div class="panel">
+
+      <h2>1. Who this agreement is with, and what it covers</h2>
+      <p>
+        These Terms of Service ("Terms") are an agreement between you and
+        Q's TB Tools ("we", "us", "our"),
+        governing your use of TB Auto-Crypt (the "Software") and the
+        related account, subscription, and website services at
+        tb-tools.ccc-hq.com (together, the
+        "Service"). By registering an account, starting a trial, or
+        purchasing a subscription, you agree to these Terms. If you don't
+        agree, don't use the Service.
+      </p>
+
+      <h2>2. What the Service is</h2>
+      <p>
+        TB Auto-Crypt is a desktop automation tool for the mobile/browser
+        game Total Battle. It is an independent, unofficial add-on and is
+        not made, endorsed, or supported by the makers of Total Battle.
+      </p>
+
+      <h2>3. Your account and registration information</h2>
+      <p>
+        You sign in with Google and register a display name and your main
+        Total Battle username. You're responsible for the accuracy of what
+        you submit and for keeping your Google account secure — activity
+        under your account is treated as authorized by you. The Service is
+        limited to 2 devices per account; using
+        more requires removing an existing device first.
+      </p>
+
+      <h2>4. Use at your own risk regarding Total Battle's own rules</h2>
+      <p>
+        Total Battle has its own terms of service, and automation tools —
+        including this one — can carry a risk of action being taken
+        against your in-game account by the game's operator (warnings,
+        restrictions, or bans), entirely independent of anything we do. We
+        don't control, and aren't responsible for, how Total Battle's
+        operator treats accounts that use third-party tools. Using TB
+        Auto-Crypt is your decision and at your own risk with respect to
+        your standing in the game itself.
+      </p>
+
+      <h2>5. Subscriptions, trials, and billing</h2>
+      <p>
+        Subscriptions renew automatically at the end of each billing
+        period until cancelled. You can upgrade, downgrade, or cancel at
+        any time from your account page; a cancellation takes effect at
+        the end of the period you've already paid for — you keep access
+        until then, and it simply doesn't renew after.
+      </p>
+      <p>
+        We also offer a one-time, non-renewing trial (7-day or 14-day).
+        Each account may use <strong>one trial, ever</strong> — either
+        length, not both, and not repeated after it expires. Once a trial
+        ends, continued access requires a paid subscription.
+      </p>
+      <p>
+        Payments are processed by Stripe. For subscription and trial
+        purchases, we use Stripe's Managed Payments service, under which
+        Stripe (via Link) acts as merchant of record for the transaction —
+        handling tax collection, receipts, and certain customer-support and
+        dispute functions directly. Your bank or card statement may show
+        the charge under Stripe/Link's name rather than ours.
+      </p>
+
+      <h2>6. No refunds</h2>
+      <p>
+        All payments — subscription charges, renewals, and trial purchases
+        — are <strong>final and non-refundable</strong>, except where
+        required by law or explicitly stated otherwise below. Cancelling a
+        subscription stops future renewals; it does not refund the current
+        period, which you keep access to until it ends.
+      </p>
+      <div class="callout">
+        <strong>If you are purchasing as a consumer within the European
+        Union</strong> (including Belgium), you would normally have a
+        14-day right to withdraw from an online purchase. Because this
+        Service provides digital content/a digital service that begins
+        immediately upon your purchase (immediate account access), by
+        completing checkout <strong>you expressly request immediate
+        performance and acknowledge that you lose your right of withdrawal
+        once the Service has begun</strong>, consistent with the digital
+        content exception in EU consumer protection law (Directive
+        2011/83/EU, Art. 16(m), as implemented in Belgium). This
+        acknowledgment is presented as a separate checkbox at checkout, in
+        addition to accepting these Terms generally.
+      </div>
+      <p>
+        Refunds initiated by Stripe or Link under their own policies (for
+        example, in response to a payment dispute or a support escalation
+        they handle directly per Section 5) are outside our control and
+        aren't affected by this no-refunds policy.
+      </p>
+
+      <h2>7. Fair use, cheating, and attempts to bypass the subscription system</h2>
+      <p>
+        The following are prohibited and treated as a material breach of
+        these Terms:
+      </p>
+      <ul>
+        <li>Attempting to bypass, circumvent, disable, or tamper with
+          subscription checks, device limits, licensing, or authentication;</li>
+        <li>Sharing a single account's access beyond the device limit,
+          or reselling/redistributing access;</li>
+        <li>Reverse-engineering, decompiling, or modifying the Software
+          except to the extent a mandatory law gives you that right;</li>
+        <li>Using the Service in a way that constitutes cheating, exploiting,
+          or abuse as reasonably determined by us, or in a way that
+          disrupts the Service for other users;</li>
+        <li>Any other fraudulent, abusive, or illegal use of the Service.</li>
+      </ul>
+      <p>
+        If we determine, acting reasonably, that you've done any of the
+        above, we may suspend or terminate your account and subscription
+        immediately, <strong>without refund</strong> for any remaining
+        period, and without prior notice where the circumstances warrant
+        it.
+      </p>
+
+      <h2>8. Changes Total Battle makes that affect the Software</h2>
+      <p>
+        Total Battle's operator can update their game at any time in ways
+        that break TB Auto-Crypt's compatibility, without warning and
+        entirely outside our control. We are <strong>not responsible or
+        liable</strong> for any period where the Software doesn't work
+        because of such a change — including for any resulting loss of
+        use during your subscription. That said, we intend to make a good
+        faith effort to update the Software to restore compatibility as
+        soon as reasonably possible when this happens; this is a
+        commitment to try, not a guarantee of a specific timeline or that
+        compatibility can always be restored.
+      </p>
+
+      <h2>9. Intellectual property</h2>
+      <p>
+        The Software and Service, excluding Total Battle's own game
+        content and trademarks (which belong to their respective owners),
+        are owned by Q's TB Tools. Subscribing
+        grants you a personal, non-exclusive, non-transferable license to
+        use the Software for as long as your subscription (or trial) is
+        active, subject to these Terms. No other rights are granted.
+      </p>
+
+      <h2>10. No warranty</h2>
+      <p>
+        The Service is provided "as is" and "as available," without
+        warranties of any kind, express or implied, including
+        merchantability, fitness for a particular purpose, and
+        non-infringement, to the fullest extent permitted by law. We don't
+        guarantee the Software will be uninterrupted, error-free, or
+        compatible with any particular version of Total Battle at any
+        given time.
+      </p>
+
+      <h2>11. Limitation of liability</h2>
+      <p>
+        To the fullest extent permitted by law, our total liability to you
+        arising out of or relating to the Service is limited to the amount
+        you paid us in the 3 months before the claim arose, and we are not
+        liable for indirect, incidental, special, or consequential
+        damages, including loss of your Total Battle account, in-game
+        progress, or items. Nothing in these Terms limits liability that
+        cannot legally be limited (for example, liability for death or
+        personal injury caused by negligence, or fraud).
+      </p>
+
+      <h2>12. Termination</h2>
+      <p>
+        You can stop using the Service and cancel your subscription at any
+        time from your account page. We may suspend or terminate your
+        access for breach of these Terms (see Section 7), for legal or
+        security reasons, or if we discontinue the Service — in the latter
+        case we'll aim to give reasonable notice where practical.
+      </p>
+
+      <h2>13. Changes to these Terms</h2>
+      <p>
+        We may update these Terms from time to time; the "Last updated"
+        date at the top will change accordingly. Continued use of the
+        Service after an update constitutes acceptance of the revised
+        Terms. For material changes, we'll make reasonable efforts to
+        flag it (for example, via the version-notification system inside
+        the Software).
+      </p>
+
+      <h2>14. Governing law</h2>
+      <p>
+        These Terms are governed by the laws of Belgium, without regard to
+        its conflict-of-law principles, and — subject to any mandatory
+        consumer-protection rules that apply in your country of residence
+        and can't be contracted around — disputes are subject to the
+        exclusive jurisdiction of the courts of Antwerp, Belgium.
+      </p>
+
+      <h2>15. Contact</h2>
+      <p>
+        Questions about these Terms, or about your subscription, can be
+        sent to <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a>.
+      </p>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <img src="tools-logo.png" alt="Total Battle Tools" />
+  <p class="foot-word">Q's Total Battle Tools</p>
+</footer>
+
+</body>
+</html>

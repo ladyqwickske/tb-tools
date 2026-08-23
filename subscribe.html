@@ -225,6 +225,31 @@
   }
   .plan-billed { font-size: 0.78rem; color: var(--ink-dim); font-style: italic; margin-top: 2px; }
   .plan-price { font-family: var(--utility); font-size: 0.94rem; color: var(--gold-bright); white-space: nowrap; }
+  .consent-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .consent-row input[type="checkbox"] {
+    flex-shrink: 0;
+    margin-top: 3px;
+    width: 15px;
+    height: 15px;
+    accent-color: var(--gold);
+    cursor: pointer;
+  }
+  .consent-label {
+    display: block;
+    margin: 0;
+    font-family: var(--body);
+    font-size: 0.82rem;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--ink-dim);
+    cursor: pointer;
+  }
+  .consent-label a { color: var(--gold-bright); }
   button.cta-primary {
     width: 100%;
     margin-top: 26px;
@@ -290,6 +315,18 @@
     text-transform: uppercase;
     color: var(--ink-dim);
   }
+  footer .foot-links {
+    margin: 10px 0 0;
+    font-family: var(--utility);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  footer .foot-links a {
+    color: var(--ink-dim);
+    text-decoration: none;
+  }
+  footer .foot-links a:hover { color: var(--gold-bright); }
   :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
 </style>
 </head>
@@ -328,12 +365,26 @@
         <label for="display-name">Your name</label>
         <input type="text" id="display-name" placeholder="e.g. Alex" autocomplete="name" />
 
-        <label for="tb-username">Total Battle Main Account Name</label>
+        <label for="tb-username">Main Total Battle username</label>
         <input type="text" id="tb-username" placeholder="Your in-game name" autocomplete="off" />
+
+        <div class="consent-row">
+          <input type="checkbox" id="agree-terms" />
+          <label for="agree-terms" class="consent-label">
+            I have read and agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Service</a>, including the no-refunds policy.
+          </label>
+        </div>
+
+        <div class="consent-row">
+          <input type="checkbox" id="agree-withdrawal" />
+          <label for="agree-withdrawal" class="consent-label">
+            I understand access begins immediately and I waive my right to withdraw from this purchase (EU customers — see Terms §6).
+          </label>
+        </div>
 
         <div class="error" id="register-error"></div>
 
-        <button class="cta-primary" id="continue-btn">Continue to checkout</button>
+        <button class="cta-primary" id="continue-btn" disabled>Continue to checkout</button>
       </div>
 
       <p class="footer-note">
@@ -346,11 +397,12 @@
 <footer>
   <img src="tools-logo.png" alt="Total Battle Tools" />
   <p class="foot-word">Q's Total Battle Tools</p>
+  <p class="foot-links"><a href="terms.html">Terms of Service</a></p>
 </footer>
 
 <script>
   // ── Fill in your Web application OAuth client ID (Google Cloud Console) ──
-  const GOOGLE_CLIENT_ID_WEB = "47674606892-0m90hd0cd01kijo69ssuqtn1j3igp32i.apps.googleusercontent.com";
+  const GOOGLE_CLIENT_ID_WEB = "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com";
   const WORKER_BASE_URL = "https://auto-crypt.ccc-hq.com";
 
   // ── Plans — key must match one of PLAN_PRICE_ENV_VARS in worker.js ──
@@ -360,10 +412,10 @@
   // comes from the Stripe Price itself, this just needs to describe it
   // accurately so nobody's surprised at checkout.
   const PLANS = [
-    { key: "monthly", label: "Monthly", price: "$X.XX / mo", billed: "Billed monthly", badge: null, checked: true },
-    { key: "quarterly", label: "3 Months", price: "$X.XX / mo", billed: "Billed $XX.XX every 3 months", badge: "Save X%", checked: false },
-    { key: "semiannual", label: "6 Months", price: "$X.XX / mo", billed: "Billed $XX.XX every 6 months", badge: "Save X%", checked: false },
-    { key: "annual", label: "Yearly", price: "$X.XX / mo", billed: "Billed $XX.XX per year", badge: "Best value", checked: false },
+    { key: "monthly", label: "Monthly", price: "€9.99 / mo", billed: "Billed monthly", badge: null, checked: true },
+    { key: "quarterly", label: "3 Months", price: "€24.99 / 3 mo", billed: "Billed every 3 months", badge: "Save 17%", checked: false },
+    { key: "semiannual", label: "6 Months", price: "€44.99 / 6 mo", billed: "Billed every 6 months", badge: "Save 25%", checked: false },
+    { key: "annual", label: "Yearly", price: "€79.99 / yr", billed: "Billed per year", badge: "Save 33% • Best value", checked: false },
   ];
 
   // Trials are a ONE-TIME payment (no auto-renewal) -- matches
@@ -435,8 +487,16 @@
     showStep("step-register");
   }
 
+  function updateContinueEnabled() {
+    const agreedTerms = document.getElementById("agree-terms").checked;
+    const agreedWithdrawal = document.getElementById("agree-withdrawal").checked;
+    document.getElementById("continue-btn").disabled = !(agreedTerms && agreedWithdrawal);
+  }
+
   window.onload = function () {
     renderPlans();
+    document.getElementById("agree-terms").addEventListener("change", updateContinueEnabled);
+    document.getElementById("agree-withdrawal").addEventListener("change", updateContinueEnabled);
     google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID_WEB,
       callback: handleCredentialResponse,
@@ -453,9 +513,18 @@
 
     const name = document.getElementById("display-name").value.trim();
     const tbUsername = document.getElementById("tb-username").value.trim();
+    const agreedTerms = document.getElementById("agree-terms").checked;
+    const agreedWithdrawal = document.getElementById("agree-withdrawal").checked;
 
     if (!name || !tbUsername) {
       errorEl.textContent = "Please fill in both your name and your Total Battle username.";
+      errorEl.style.display = "block";
+      return;
+    }
+    // Belt and suspenders -- the button is already disabled until both boxes
+    // are checked, but don't rely on that alone.
+    if (!agreedTerms || !agreedWithdrawal) {
+      errorEl.textContent = "Please check both boxes to confirm you've read the Terms of Service.";
       errorEl.style.display = "block";
       return;
     }
@@ -473,11 +542,13 @@
           id_token: currentIdToken,
           name,
           tb_username: tbUsername,
+          terms_accepted: agreedTerms,
+          withdrawal_waived: agreedWithdrawal,
         }),
       });
       if (!registerRes.ok) {
         const body = await registerRes.json().catch(() => ({}));
-        throw new Error(body.error || `Registration failed (${registerRes.status})`);
+        throw new Error(body.detail || body.error || `Registration failed (${registerRes.status})`);
       }
 
       // 2. Create a Stripe Checkout Session for the selected plan and redirect to it.

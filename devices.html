@@ -227,6 +227,18 @@
     text-transform: uppercase;
     color: var(--ink-dim);
   }
+  footer .foot-links {
+    margin: 10px 0 0;
+    font-family: var(--utility);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  footer .foot-links a {
+    color: var(--ink-dim);
+    text-decoration: none;
+  }
+  footer .foot-links a:hover { color: var(--gold-bright); }
   :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
 </style>
 </head>
@@ -268,10 +280,11 @@
 <footer>
   <img src="tools-logo.png" alt="Total Battle Tools" />
   <p class="foot-word">Q's Total Battle Tools</p>
+  <p class="foot-links"><a href="terms.html">Terms of Service</a></p>
 </footer>
 
 <script>
-  const GOOGLE_CLIENT_ID_WEB = "47674606892-0m90hd0cd01kijo69ssuqtn1j3igp32i.apps.googleusercontent.com";
+  const GOOGLE_CLIENT_ID_WEB = "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com";
   const WORKER_BASE_URL = "https://auto-crypt.ccc-hq.com";
 
   let currentIdToken = null;
