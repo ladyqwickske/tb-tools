@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Installing Auto-Crypter — Q's TB Tools</title>
+<meta name="description" content="Step-by-step installation and setup guide for TB Auto-Crypter." />
+<link rel="icon" href="tools-logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Spectral:ital,wght@0,500;0,600;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #05060a;
+    --panel: #0c1020;
+    --panel-line: #1c2440;
+    --gold: #d4af37;
+    --gold-bright: #f2d68f;
+    --gold-dim: #8a742f;
+    --emerald: #3d6b42;
+    --emerald-bright: #6fa373;
+    --rust: #a85c32;
+    --rust-bright: #dd9a63;
+    --ink: #e9e6da;
+    --ink-dim: #a8a692;
+    --display: 'Cinzel', serif;
+    --body: 'Spectral', serif;
+    --utility: 'Oswald', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at 12% 22%, rgba(212,175,55,0.3), transparent),
+      radial-gradient(1.5px 1.5px at 78% 15%, rgba(63,111,214,0.3), transparent),
+      radial-gradient(1px 1px at 55% 75%, rgba(111,163,115,0.28), transparent),
+      radial-gradient(1px 1px at 90% 55%, rgba(212,175,55,0.2), transparent);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+  }
+  header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px clamp(20px, 5vw, 56px);
+    border-bottom: 1px solid rgba(212,175,55,0.15);
+  }
+  header nav a {
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-dim);
+    border-bottom: 1px solid transparent;
+    transition: color 0.25s ease, border-color 0.25s ease;
+  }
+  header nav a:hover { color: var(--gold-bright); border-color: var(--gold); }
+  .hero {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 64px 20px 36px;
+  }
+  .eyebrow {
+    font-family: var(--utility);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-size: 0.76rem;
+    color: var(--emerald-bright);
+    margin: 0 0 18px;
+  }
+  .eyebrow::before, .eyebrow::after {
+    content: '✦';
+    color: var(--gold-dim);
+    margin: 0 12px;
+    font-size: 0.68rem;
+  }
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    color: var(--gold-bright);
+    margin: 0 0 12px;
+    letter-spacing: 0.02em;
+  }
+  .tagline {
+    max-width: 52ch;
+    margin: 0 auto;
+    font-size: clamp(1rem, 1.6vw, 1.1rem);
+    font-style: italic;
+    color: var(--ink-dim);
+  }
+  .toc {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 30px auto 0;
+    padding: 0 clamp(20px, 6vw, 56px);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .toc a {
+    font-family: var(--utility);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-dim);
+    border: 1px solid var(--panel-line);
+    border-radius: 20px;
+    padding: 7px 16px;
+    transition: color 0.25s ease, border-color 0.25s ease;
+  }
+  .toc a:hover, .toc a:focus-visible {
+    color: var(--gold-bright);
+    border-color: var(--gold-dim);
+  }
+  .guide {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px clamp(20px, 6vw, 56px) 100px;
+  }
+  .step-card {
+    background: linear-gradient(180deg, var(--panel) 0%, #080a15 100%);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    padding: 30px 32px;
+    margin-bottom: 22px;
+    position: relative;
+    scroll-margin-top: 24px;
+  }
+  .step-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 32px;
+    width: 40px; height: 3px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  .step-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 14px;
+  }
+  .step-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gold-dim);
+    color: var(--gold-bright);
+    font-family: var(--utility);
+    font-size: 0.95rem;
+  }
+  .step-head h2 {
+    font-family: var(--display);
+    font-size: 1.25rem;
+    letter-spacing: 0.02em;
+    color: var(--gold-bright);
+    margin: 0;
+  }
+  .step-card p { color: var(--ink-dim); margin: 0 0 10px; font-size: 0.98rem; }
+  .step-card ul, .step-card ol { margin: 8px 0 10px; padding-left: 22px; color: var(--ink-dim); font-size: 0.96rem; }
+  .step-card li { margin-bottom: 6px; }
+  .step-card strong { color: var(--ink); }
+  .req-list { list-style: none; padding-left: 0; margin: 14px 0 4px; }
+  .req-list li {
+    position: relative;
+    padding-left: 26px;
+    margin-bottom: 10px;
+  }
+  .req-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--emerald-bright);
+    font-weight: 700;
+  }
+  .setting-block {
+    border-top: 1px solid var(--panel-line);
+    padding-top: 16px;
+    margin-top: 16px;
+  }
+  .setting-block:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+  .setting-block .setting-title {
+    font-family: var(--utility);
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold-bright);
+    margin: 0 0 6px;
+  }
+  .setting-value {
+    color: var(--emerald-bright);
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+  .note-box, .warn-box {
+    border-radius: 2px;
+    padding: 13px 18px;
+    margin: 14px 0 4px;
+    font-size: 0.9rem;
+  }
+  .note-box {
+    background: rgba(111,163,115,0.08);
+    border-left: 3px solid var(--emerald);
+    color: var(--ink-dim);
+  }
+  .note-box strong { color: var(--emerald-bright); }
+  .warn-box {
+    background: rgba(212,175,55,0.07);
+    border-left: 3px solid var(--rust);
+    color: var(--ink-dim);
+  }
+  .warn-box strong { color: var(--rust-bright); }
+  code {
+    background: #0c1020;
+    border: 1px solid var(--panel-line);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 0.86em;
+    color: var(--gold-bright);
+  }
+  .cta {
+    display: inline-block;
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 26px;
+    border-radius: 2px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .cta.primary {
+    color: var(--void);
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  }
+  .cta.primary:hover, .cta.primary:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(212,175,55,0.25);
+  }
+  .cta.secondary {
+    color: var(--gold-bright);
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+  }
+  .cta.secondary:hover, .cta.secondary:focus-visible {
+    border-color: var(--gold);
+    color: var(--gold-bright);
+    background: rgba(212,175,55,0.08);
+  }
+  .download-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-top: 6px;
+  }
+  .help-card {
+    text-align: center;
+    border-style: dashed;
+  }
+  .help-card p { color: var(--ink-dim); }
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(212,175,55,0.15);
+    padding: 36px 20px 46px;
+    text-align: center;
+  }
+  footer img {
+    height: 44px;
+    width: 44px;
+    object-fit: contain;
+    opacity: 0.85;
+    margin-bottom: 10px;
+  }
+  footer .foot-word {
+    font-family: var(--utility);
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  footer .foot-links {
+    margin: 10px 0 0;
+    font-family: var(--utility);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  footer .foot-links a { color: var(--ink-dim); text-decoration: none; }
+  footer .foot-links a:hover { color: var(--gold-bright); }
+  :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<header>
+  <nav>
+    <a href="index.html">← Back to Auto-Crypter</a>
+  </nav>
+  <nav>
+    <a href="devices.html">My Account</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <p class="eyebrow">Installation Guide</p>
+  <h1>Getting Auto-Crypter up and running</h1>
+  <p class="tagline">Everything you need to install TB Auto-Crypter and get your display set up correctly, from download to your first automated run.</p>
+</section>
+
+<nav class="toc" aria-label="Guide sections">
+  <a href="#requirements">What you'll need</a>
+  <a href="#download">1. Download</a>
+  <a href="#copy">2. Install the folder</a>
+  <a href="#launch">3. First launch</a>
+  <a href="#display">4. Set your display &amp; zoom</a>
+  <a href="#configure">5. Configure the app</a>
+  <a href="#run">6. Run it</a>
+  <a href="#help">Need help?</a>
+</nav>
+
+<main class="guide">
+
+  <article class="step-card" id="requirements">
+    <div class="step-head"><h2>What you'll need</h2></div>
+    <ul class="req-list">
+      <li>Windows 10 or Windows 11.</li>
+      <li>Google Chrome installed, with you logged into the Total Battle account you want to automate.</li>
+      <li>A screen resolution of 1024×768, 1366×768, 1680×1050, 1760×990, or 1920×1080. Need something else? Email <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a>.</li>
+      <li>About 10 minutes, before your next crypting session.</li>
+    </ul>
+    <div class="note-box">
+      <strong>Why the display settings matter:</strong> Auto-Crypter finds buttons and crypts by their exact position on screen. Step 4 below walks through the handful of settings that need to stay fixed so it always clicks in the right place.
+    </div>
+  </article>
+
+  <article class="step-card" id="download">
+    <div class="step-head"><span class="step-num">1</span><h2>Download Auto-Crypter</h2></div>
+    <p>Grab the latest version below. It comes as a single .zip file.</p>
+    <div class="download-row">
+      <a class="cta primary" id="download-btn"
+         href="https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.7/TBAutoCrypt_0.0.7.zip">Download v0.0.7</a>
+    </div>
+  </article>
+
+  <article class="step-card" id="copy">
+    <div class="step-head"><span class="step-num">2</span><h2>Unzip and install the folder</h2></div>
+    <p>Auto-Crypter is distributed as a folder, not a single file — the .exe depends on other files that ship alongside it.</p>
+    <ol>
+      <li>Unzip the download.</li>
+      <li>Copy the <strong>entire</strong> TBAutoCrypt folder to where you want to run it from — your Desktop or a dedicated Programs folder both work well.</li>
+      <li>Don't move or copy just <code>TBAutoCrypt.exe</code> on its own — it won't launch without the rest of the folder.</li>
+    </ol>
+  </article>
+
+  <article class="step-card" id="launch">
+    <div class="step-head"><span class="step-num">3</span><h2>First launch</h2></div>
+    <ol>
+      <li>Open the TBAutoCrypt folder and double-click <code>TBAutoCrypt.exe</code>.</li>
+      <li>Sign in with the Google account tied to your Total Battle play, and accept the access prompt Auto-Crypter shows you.</li>
+      <li>Once that's done, the main Auto-Crypter window opens and you're ready for setup.</li>
+    </ol>
+  </article>
+
+  <article class="step-card" id="display">
+    <div class="step-head"><span class="step-num">4</span><h2>Set your display &amp; zoom</h2></div>
+    <p>Five settings need to match exactly, every time you run Auto-Crypter — not just today. Go through each one now:</p>
+
+    <div class="setting-block">
+      <p class="setting-title">Screen resolution <span class="setting-value">— one of the supported sizes</span></p>
+      <p>Right-click your desktop → <em>Display settings</em> → set <em>Display resolution</em> to 1024×768, 1366×768, 1680×1050, 1760×990, or 1920×1080.</p>
+    </div>
+
+    <div class="setting-block">
+      <p class="setting-title">Windows display scale <span class="setting-value">— 100%</span></p>
+      <p>Same Display settings page, under <em>Scale &amp; layout</em> → set <em>Scale</em> to 100%. This is often set higher by default on laptop screens, so check it even if you never touched it.</p>
+    </div>
+
+    <div class="setting-block">
+      <p class="setting-title">Chrome browser zoom <span class="setting-value">— 100%</span></p>
+      <p>In Chrome, press <code>Ctrl+0</code> to reset zoom to 100% on the Total Battle tab. Chrome remembers zoom per site, so if you'd zoomed in before, reset it now.</p>
+    </div>
+
+    <div class="setting-block">
+      <p class="setting-title">Chrome's toolbar &amp; bookmarks bar <span class="setting-value">— hidden</span></p>
+      <p>Only the tab title and address bar should be visible above the page. Press <code>Ctrl+Shift+B</code> to hide the bookmarks bar, and clear any other toolbars from Chrome's toolbar area.</p>
+    </div>
+
+    <div class="setting-block">
+      <p class="setting-title">Total Battle's in-game map zoom <span class="setting-value">— 125%</span></p>
+      <p>This one's inside the game, not Chrome or Windows. On the world map, use Total Battle's own zoom control to set it to 125%, and leave it there.</p>
+    </div>
+
+    <div class="warn-box">
+      <strong>Don't mix these up:</strong> Chrome's browser zoom (100%) and Total Battle's in-game map zoom (125%) are two different settings. Auto-Crypter needs both set correctly at the same time.
+    </div>
+  </article>
+
+  <article class="step-card" id="configure">
+    <div class="step-head"><span class="step-num">5</span><h2>Configure Auto-Crypter</h2></div>
+    <p>Back in the app, a few quick choices before your first run:</p>
+    <ul>
+      <li><strong>Select your Total Battle window</strong> — so Auto-Crypter knows which browser window to watch.</li>
+      <li><strong>Choose your captains</strong> — up to three per run.</li>
+      <li><strong>Set your crypt filters</strong> — exclude any crypt types you don't want it to run (this will slow things down a little, so only exclude what you need to).</li>
+      <li><strong>Optional: set a run limit</strong> — cap it by time or by number of marches, or leave it unlimited.</li>
+    </ul>
+  </article>
+
+  <article class="step-card" id="run">
+    <div class="step-head"><span class="step-num">6</span><h2>Run it</h2></div>
+    <p>Open Total Battle to the watchtower or crypt list, then:</p>
+    <ul>
+      <li>Click <strong>Start</strong> in the app, or press <code>F9</code>, to begin.</li>
+      <li>Press <code>Ctrl+Q</code> any time to stop immediately.</li>
+      <li>Keep an eye on it while it runs, and check the <strong>Logs</strong> area in the app if anything looks off.</li>
+    </ul>
+  </article>
+
+  <article class="step-card help-card" id="help">
+    <h2 style="font-family: var(--display); color: var(--gold-bright); margin: 0 0 8px;">Need a hand?</h2>
+    <p>Stuck on a step, or running a resolution that isn't listed above? Email <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a> and we'll help you sort it out.</p>
+    <a class="cta secondary" href="index.html">← Back to Auto-Crypter</a>
+  </article>
+
+</main>
+
+<footer>
+  <img src="tools-logo.png" alt="Total Battle Tools" />
+  <p class="foot-word">Q's Total Battle Tools</p>
+  <p class="foot-links"><a href="index.html">Auto-Crypter</a> &nbsp;·&nbsp; <a href="devices.html">Manage Subscription</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></p>
+</footer>
+
+<script>
+  // Keeps the Download button's version/link in sync with version.json,
+  // same as the main page — the hardcoded href/text above are just the
+  // fallback if this fetch fails.
+  (function () {
+    fetch("version.json", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((info) => {
+        if (!info || !info.version || !info.download_url) return;
+        const btn = document.getElementById("download-btn");
+        btn.textContent = `Download v${info.version}`;
+        btn.href = info.download_url;
+      })
+      .catch(() => {
+        /* keep the fallback link above as-is */
+      });
+  })();
+</script>
+
+</body>
+</html>

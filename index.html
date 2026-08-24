@@ -385,6 +385,16 @@
     font-style: normal;
     margin: 14px 0 22px;
   }
+  .closing-link {
+    display: block;
+    margin-top: 16px;
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    text-decoration: none;
+  }
+  .closing-link:hover, .closing-link:focus-visible { color: var(--gold-bright); }
   .tool-card.placeholder {
     text-align: center;
     color: var(--ink-dim);
@@ -443,7 +453,7 @@
     <a href="https://ccc-hq.com">← Back to ccc-hq.com</a>
   </nav>
   <nav>
-    <a href="devices.html">My Account</a>
+    <a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="devices.html">My Account</a>
   </nav>
 </header>
 <section class="hero">
@@ -484,7 +494,7 @@
       <li><strong>It finds the crypts for you.</strong> Auto-Crypter reads your watchtower list and works through it on its own and navigates to the crypt. It will find it even if a crypt shows up off-center on screen.</li>
       <li><strong>It doesn't stop until you want it to.</strong> No caps on marches, crypts, or hours — run it for a quick top-up or let it carry a full session.</li>
     </ul>
-    <p style="font-size:0.85rem; color:var(--ink-dim);">Works at 1024×768, 1366×768, 1680×1050, 1760×990, and 1920×1080. Need another resolution? Email support@ccc-hq.com. Full setup details are in the user manual.</p>
+    <p style="font-size:0.85rem; color:var(--ink-dim);">Works at 1024×768, 1366×768, 1680×1050, 1760×990, and 1920×1080. Need another resolution? Email support@ccc-hq.com. Full setup details are in the <a href="install.html" style="color:var(--gold-bright);">installation guide</a>.</p>
 
     <h3 class="tool-subheading">One subscription. All your accounts.</h3>
     <p>Whether you play one account or several, you don't need a separate subscription for each account. Your subscription covers all of your Total Battle accounts. And because Auto-Crypter can be installed on up to 2 devices per subscription, you can use it where it suits you best — for example, on your main PC and your laptop.</p>
@@ -564,6 +574,7 @@
       <a class="cta primary" href="subscribe.html">Subscribe →</a>
       <a class="cta secondary" id="download-btn"
          href="https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.7/TBAutoCrypt_0.0.7.zip">Download v0.0.7</a>
+      <a class="closing-link" href="install.html">New here? Follow the step-by-step installation guide →</a>
     </div>
   </article>
   <article class="tool-card placeholder">
@@ -574,7 +585,7 @@
 <footer>
   <img src="tools-logo.png" alt="Total Battle Tools" />
   <p class="foot-word">Q's Total Battle Tools</p>
-  <p class="foot-links"><a href="devices.html">Manage Subscription</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></p>
+  <p class="foot-links"><a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="devices.html">Manage Subscription</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></p>
 </footer>
 
 <script>
