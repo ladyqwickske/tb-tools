@@ -1,7 +1,7 @@
 {
-  "version": "0.0.7",
-  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.7/TBAutoCrypt_0.0.7.zip",
+  "version": "0.0.8",
+  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.8/TBAutoCrypt_0.0.8.zip",
   "release_notes": "",
-  "published_at": "2026-08-23",
-  "required": false
+  "published_at": "2026-08-24",
+  "required": true
 }
