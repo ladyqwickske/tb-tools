@@ -270,6 +270,43 @@
     box-shadow: 0 8px 20px rgba(212,175,55,0.25);
   }
   button.cta-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .or-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0 2px;
+    font-family: var(--utility);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .or-divider::before, .or-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--panel-line);
+  }
+  button.cta-secondary {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    font-family: var(--utility);
+    font-size: 0.76rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: border-color 0.25s ease, color 0.25s ease;
+  }
+  button.cta-secondary:hover:not(:disabled) {
+    border-color: var(--gold-dim);
+    color: var(--gold-bright);
+  }
+  button.cta-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
   #g_id_signin_container { display: flex; justify-content: center; margin: 6px 0 4px; }
   .signed-in-as {
     font-family: var(--utility);
@@ -355,9 +392,12 @@
         <div class="error" id="signin-error"></div>
       </div>
 
-      <!-- Step 2: plan + registration form (name + TB username) -->
+      <!-- Step 2: tier + plan + registration form (name + TB username) -->
       <div class="step" id="step-register">
         <div class="signed-in-as" id="signed-in-as"></div>
+
+        <label>Choose a tool package</label>
+        <div class="plan-list" id="tier-list"></div>
 
         <label>Choose a plan</label>
         <div class="plan-list" id="plan-list"></div>
@@ -385,6 +425,8 @@
         <div class="error" id="register-error"></div>
 
         <button class="cta-primary" id="continue-btn" disabled>Continue to checkout</button>
+        <div class="or-divider">or</div>
+        <button class="cta-secondary" id="continue-btn-paypal" disabled>Pay with PayPal</button>
       </div>
 
       <p class="footer-note">
@@ -405,33 +447,71 @@
   const GOOGLE_CLIENT_ID_WEB = "47674606892-0m90hd0cd01kijo69ssuqtn1j3igp32i.apps.googleusercontent.com";
   const WORKER_BASE_URL = "https://auto-crypt.ccc-hq.com";
 
-  // ── Plans — key must match one of PLAN_PRICE_ENV_VARS in worker.js ──
-  // This is the one place to edit when a price changes or a new billing
-  // period is added (plus the matching secret in the Cloudflare dashboard).
-  // price/billed are display text only -- the actual amount charged always
-  // comes from the Stripe Price itself, this just needs to describe it
-  // accurately so nobody's surprised at checkout.
-  //{ key: "annual", label: "Yearly", price: "€79.99 / yr", billed: "Billed per year", badge: "Save 33% • Best value", checked: false },
-  const PLANS = [
-    { key: "monthly", label: "Monthly", price: "€9.99 / mo", billed: "Billed monthly", badge: null, checked: true },
-    { key: "quarterly", label: "3 Months", price: "€24.99 / 3 mo", billed: "Billed every 3 months", badge: "Save 17%", checked: false },
-    { key: "semiannual", label: "6 Months", price: "€44.99 / 6 mo", billed: "Billed every 6 months", badge: "Save 25%", checked: false },
+  // ── Tiers — key must match one of TIER_PLAN_PRICE_ENV_VARS in worker.js ──
+  // Which tool(s) a subscription unlocks. Add a new tier here (and give it
+  // its own PLANS_BY_TIER / TRIALS_BY_TIER entry below) any time a new
+  // standalone tool or bundle ships.
+  const TIERS = [
+    { key: "all_in", label: "All-In", desc: "Everything: Auto-Crypt + Battle Calculator", badge: "Best value", checked: true },
+    { key: "autocrypt", label: "Auto-Crypt", desc: "Just the crypt-running automation", badge: null, checked: false },
+    { key: "battlecalc", label: "Battle Calculator", desc: "Just the troop stack calculator", badge: null, checked: false },
   ];
+
+  // ── Plans — per tier, key must match one of TIER_PLAN_PRICE_ENV_VARS[tier]
+  // in worker.js. This is the one place to edit when a price changes or a
+  // new billing period is added (plus the matching secret in the
+  // Cloudflare dashboard). price/billed are display text only -- the
+  // actual amount charged always comes from the Stripe Price itself, this
+  // just needs to describe it accurately so nobody's surprised at checkout.
+  //{ key: "annual", label: "Yearly", price: "€79.99 / yr", billed: "Billed per year", badge: "Save 33% • Best value", checked: false },
+  const PLANS_BY_TIER = {
+    all_in: [
+      { key: "monthly", label: "Monthly", price: "€9.99 / mo", billed: "Billed monthly", badge: null, checked: true },
+      { key: "quarterly", label: "3 Months", price: "€24.99 / 3 mo", billed: "Billed every 3 months", badge: "Save 17%", checked: false },
+      { key: "semiannual", label: "6 Months", price: "€44.99 / 6 mo", billed: "Billed every 6 months", badge: "Save 25%", checked: false },
+    ],
+    // TODO: real prices once Stripe Products/Prices exist for this tier
+    // (STRIPE_PRICE_AUTOCRYPT_MONTHLY etc. on the Worker) -- placeholders below.
+    autocrypt: [
+      { key: "monthly", label: "Monthly", price: "€X.XX / mo", billed: "Billed monthly", badge: null, checked: true },
+      { key: "quarterly", label: "3 Months", price: "€X.XX / 3 mo", billed: "Billed every 3 months", badge: null, checked: false },
+      { key: "semiannual", label: "6 Months", price: "€X.XX / 6 mo", billed: "Billed every 6 months", badge: null, checked: false },
+    ],
+    // TODO: real prices once Stripe Products/Prices exist for this tier
+    // (STRIPE_PRICE_BATTLECALC_MONTHLY etc. on the Worker) -- placeholders below.
+    battlecalc: [
+      { key: "monthly", label: "Monthly", price: "€X.XX / mo", billed: "Billed monthly", badge: null, checked: true },
+      { key: "quarterly", label: "3 Months", price: "€X.XX / 3 mo", billed: "Billed every 3 months", badge: null, checked: false },
+      { key: "semiannual", label: "6 Months", price: "€X.XX / 6 mo", billed: "Billed every 6 months", badge: null, checked: false },
+    ],
+  };
 
   // Trials are a ONE-TIME payment (no auto-renewal) -- matches
-  // TRIAL_PLAN_DAYS in worker.js. Limited to one trial per account, ever;
-  // the Worker rejects a second attempt with "trial_already_used" and that
-  // message is shown in the error box below the picker.
-  const TRIALS = [
-    { key: "trial_7", label: "7-Day Trial", price: "€2.99", billed: "One-time payment, no auto-renewal", badge: "Trial", checked: false },
-    { key: "trial_14", label: "14-Day Trial", price: "€4.99", billed: "One-time payment, no auto-renewal", badge: "Trial", checked: false },
-  ];
+  // TRIAL_PLAN_DAYS in worker.js. Limited to one trial per account, ever,
+  // across ALL tiers (buying an Auto-Crypt trial uses up your one trial
+  // for Battle Calculator too); the Worker rejects a second attempt with
+  // "trial_already_used" and that message is shown in the error box below
+  // the picker. Only tiers with real trial Prices configured on the Worker
+  // are listed here -- an empty array just means no trial group renders
+  // for that tier (nothing to click that would 500 at checkout).
+  const TRIALS_BY_TIER = {
+    all_in: [
+      { key: "trial_7", label: "7-Day Trial", price: "€2.99", billed: "One-time payment, no auto-renewal", badge: "Trial", checked: false },
+      { key: "trial_14", label: "14-Day Trial", price: "€4.99", billed: "One-time payment, no auto-renewal", badge: "Trial", checked: false },
+    ],
+    autocrypt: [],
+    battlecalc: [],
+  };
 
-  // Deep-linked from index.html's trial buttons, e.g. subscribe.html?plan=trial_7
-  const preselected = new URLSearchParams(window.location.search).get("plan");
-  const ALL_PLANS = [...PLANS, ...TRIALS];
-  if (preselected && ALL_PLANS.some((p) => p.key === preselected)) {
-    ALL_PLANS.forEach((p) => { p.checked = p.key === preselected; });
+  // Deep-linked from index.html's buttons, e.g.
+  // subscribe.html?plan=trial_7 (tier omitted -> defaults to all_in, same
+  // as the pre-tier behavior these existing links already rely on) or
+  // subscribe.html?tier=battlecalc&plan=monthly.
+  const params = new URLSearchParams(window.location.search);
+  const preselectedTier = params.get("tier");
+  const preselectedPlan = params.get("plan");
+  if (preselectedTier && TIERS.some((t) => t.key === preselectedTier)) {
+    TIERS.forEach((t) => { t.checked = t.key === preselectedTier; });
   }
 
   function renderPlanGroup(plans) {
@@ -452,17 +532,61 @@
     `).join("");
   }
 
+  function renderTiers() {
+    const container = document.getElementById("tier-list");
+    container.innerHTML = TIERS.map((t) => `
+      <div class="plan-option">
+        <input type="radio" name="tier" id="tier-${t.key}" value="${t.key}" ${t.checked ? "checked" : ""} />
+        <label for="tier-${t.key}">
+          <span>
+            <span class="plan-name-row">
+              <span class="plan-name">${t.label}</span>
+              ${t.badge ? `<span class="plan-badge">${t.badge}</span>` : ""}
+            </span>
+            <div class="plan-billed">${t.desc}</div>
+          </span>
+        </label>
+      </div>
+    `).join("");
+    document.querySelectorAll('input[name="tier"]').forEach((el) => {
+      el.addEventListener("change", renderPlans);
+    });
+  }
+
+  function getSelectedTier() {
+    const checked = document.querySelector('input[name="tier"]:checked');
+    return checked ? checked.value : TIERS[0].key;
+  }
+
   function renderPlans() {
+    const tier = getSelectedTier();
+    const plans = PLANS_BY_TIER[tier] || [];
+    const trials = TRIALS_BY_TIER[tier] || [];
+
+    // A deep link's plan preselection only applies to plans/trials that
+    // actually belong to the (possibly also deep-linked) selected tier --
+    // otherwise fall back to each list's own default `checked` entry.
+    if (preselectedPlan) {
+      const matches = [...plans, ...trials].some((p) => p.key === preselectedPlan);
+      if (matches) {
+        [...plans, ...trials].forEach((p) => { p.checked = p.key === preselectedPlan; });
+      }
+    }
+
     const container = document.getElementById("plan-list");
     container.innerHTML =
-      renderPlanGroup(PLANS) +
-      `<p class="plan-group-label">Or try it first (one-time, no renewal)</p>` +
-      renderPlanGroup(TRIALS);
+      renderPlanGroup(plans) +
+      (trials.length
+        ? `<p class="plan-group-label">Or try it first (one-time, no renewal)</p>` + renderPlanGroup(trials)
+        : "");
   }
 
   function getSelectedPlan() {
     const checked = document.querySelector('input[name="plan"]:checked');
-    return checked ? checked.value : PLANS[0].key;
+    if (checked) return checked.value;
+    const tier = getSelectedTier();
+    const fallback = (PLANS_BY_TIER[tier] || [])[0];
+    return fallback ? fallback.key : "monthly";
   }
 
   let currentIdToken = null;
@@ -490,10 +614,13 @@
   function updateContinueEnabled() {
     const agreedTerms = document.getElementById("agree-terms").checked;
     const agreedWithdrawal = document.getElementById("agree-withdrawal").checked;
-    document.getElementById("continue-btn").disabled = !(agreedTerms && agreedWithdrawal);
+    const ready = agreedTerms && agreedWithdrawal;
+    document.getElementById("continue-btn").disabled = !ready;
+    document.getElementById("continue-btn-paypal").disabled = !ready;
   }
 
   window.onload = function () {
+    renderTiers();
     renderPlans();
     document.getElementById("agree-terms").addEventListener("change", updateContinueEnabled);
     document.getElementById("agree-withdrawal").addEventListener("change", updateContinueEnabled);
@@ -507,7 +634,12 @@
     );
   };
 
-  document.getElementById("continue-btn").addEventListener("click", async () => {
+  // Shared by both checkout buttons -- paymentMethod is omitted for the
+  // regular Managed Payments flow (card/Link/Apple Pay/Google Pay/local
+  // methods) or "paypal" for the separate PayPal path (see worker.js's
+  // handleCreateCheckout -- payment_method: "paypal" skips managed_payments
+  // entirely since PayPal isn't on Managed Payments' supported list).
+  async function startCheckout(paymentMethod, btn, otherBtn, busyLabel, defaultLabel) {
     const errorEl = document.getElementById("register-error");
     errorEl.style.display = "none";
 
@@ -521,17 +653,17 @@
       errorEl.style.display = "block";
       return;
     }
-    // Belt and suspenders -- the button is already disabled until both boxes
-    // are checked, but don't rely on that alone.
+    // Belt and suspenders -- the buttons are already disabled until both
+    // boxes are checked, but don't rely on that alone.
     if (!agreedTerms || !agreedWithdrawal) {
       errorEl.textContent = "Please check both boxes to confirm you've read the Terms of Service.";
       errorEl.style.display = "block";
       return;
     }
 
-    const btn = document.getElementById("continue-btn");
     btn.disabled = true;
-    btn.textContent = "Working...";
+    otherBtn.disabled = true;
+    btn.textContent = busyLabel;
 
     try {
       // 1. Save registration details (name + TB username) against this Google account.
@@ -552,10 +684,12 @@
       }
 
       // 2. Create a Stripe Checkout Session for the selected plan and redirect to it.
+      const checkoutBody = { id_token: currentIdToken, tier: getSelectedTier(), plan: getSelectedPlan() };
+      if (paymentMethod) checkoutBody.payment_method = paymentMethod;
       const checkoutRes = await fetch(`${WORKER_BASE_URL}/create-checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_token: currentIdToken, plan: getSelectedPlan() }),
+        body: JSON.stringify(checkoutBody),
       });
       if (!checkoutRes.ok) {
         const body = await checkoutRes.json().catch(() => ({}));
@@ -566,9 +700,21 @@
     } catch (err) {
       errorEl.textContent = err.message || "Something went wrong. Please try again.";
       errorEl.style.display = "block";
-      btn.disabled = false;
-      btn.textContent = "Continue to checkout";
+      btn.textContent = defaultLabel;
+      updateContinueEnabled(); // re-enable both buttons per current checkbox state
     }
+  }
+
+  document.getElementById("continue-btn").addEventListener("click", () => {
+    const btn = document.getElementById("continue-btn");
+    const paypalBtn = document.getElementById("continue-btn-paypal");
+    startCheckout(undefined, btn, paypalBtn, "Working...", "Continue to checkout");
+  });
+
+  document.getElementById("continue-btn-paypal").addEventListener("click", () => {
+    const btn = document.getElementById("continue-btn-paypal");
+    const primaryBtn = document.getElementById("continue-btn");
+    startCheckout("paypal", btn, primaryBtn, "Working...", "Pay with PayPal");
   });
 </script>
 
