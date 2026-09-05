@@ -396,8 +396,8 @@
       <div class="step" id="step-register">
         <div class="signed-in-as" id="signed-in-as"></div>
 
-        <!--label>Choose a tool package</label>
-        <div class="plan-list" id="tier-list"></div-->
+        <label>Choose a tool package</label>
+        <div class="plan-list" id="tier-list"></div>
 
         <label>Choose a plan</label>
         <div class="plan-list" id="plan-list"></div>
@@ -452,9 +452,9 @@
   // its own PLANS_BY_TIER / TRIALS_BY_TIER entry below) any time a new
   // standalone tool or bundle ships.
   const TIERS = [
-    { key: "all_in", label: "All-In", desc: "Everything: Auto-Crypt + Battle Calculator", badge: "Best value", checked: true },
+    // { key: "all_in", label: "All-In", desc: "Everything: Auto-Crypt + Battle Calculator", badge: "Best value", checked: true },
     { key: "autocrypt", label: "Auto-Crypt", desc: "Just the crypt-running automation", badge: null, checked: false },
-    { key: "battlecalc", label: "Battle Calculator", desc: "Just the troop stack calculator", badge: null, checked: false },
+    // { key: "battlecalc", label: "Battle Calculator", desc: "Just the troop stack calculator", badge: null, checked: false },
   ];
 
   // ── Plans — per tier, key must match one of TIER_PLAN_PRICE_ENV_VARS[tier]
