@@ -7,6 +7,7 @@
 <title>cCc Members — Q's TB Tools Admin</title>
 <link rel="icon" href="tools-logo.png" />
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="session.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
@@ -214,16 +215,18 @@
   });
 
   window.onload = function () {
-    google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID_WEB,
-      callback: (resp) => {
-        idToken = resp.credential;
+    TBSession.start({
+      clientId: GOOGLE_CLIENT_ID_WEB,
+      container: $("g_id_signin_container"),
+      buttonWidth: 280,
+      onSignIn: (token, email, info) => {
+        idToken = token;
+        if (info && info.refresh) return;
         $("g_id_signin_container").classList.add("hidden");
         status("Loading…");
         load();
       },
     });
-    google.accounts.id.renderButton($("g_id_signin_container"), { theme: "filled_black", size: "large", width: 280 });
   };
 </script>
 </body>

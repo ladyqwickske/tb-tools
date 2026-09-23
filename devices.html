@@ -7,6 +7,7 @@
 <meta name="description" content="Manage devices authorized for TB Auto-Crypt." />
 <link rel="icon" href="tools-logo.png" />
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="session.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
@@ -531,21 +532,20 @@
     return div.innerHTML;
   }
 
-  function handleCredentialResponse(response) {
-    currentIdToken = response.credential;
+  function handleCredentialResponse(token, email, info) {
+    currentIdToken = token;
+    if (info && info.refresh) return;
     document.getElementById("account-section").style.display = "block";
     loadAccount();
   }
 
   window.onload = function () {
-    google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID_WEB,
-      callback: handleCredentialResponse,
+    TBSession.start({
+      clientId: GOOGLE_CLIENT_ID_WEB,
+      container: document.getElementById("g_id_signin_container"),
+      buttonWidth: 300,
+      onSignIn: handleCredentialResponse,
     });
-    google.accounts.id.renderButton(
-      document.getElementById("g_id_signin_container"),
-      { theme: "filled_black", size: "large", width: 300 }
-    );
   };
 </script>
 
