@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Subscribe — Q's TB Tools</title>
-<meta name="description" content="Subscribe to TB Auto-Crypt." />
+<meta name="description" content="Subscribe to TB Auto-Crypt and the Battle Calculator." />
 <link rel="icon" href="tools-logo.png" />
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -223,8 +223,22 @@
     padding: 2px 8px;
     border-radius: 2px;
   }
+  .plan-name, .plan-badge { white-space: nowrap; }
   .plan-billed { font-size: 0.78rem; color: var(--ink-dim); font-style: italic; margin-top: 2px; }
   .plan-price { font-family: var(--utility); font-size: 0.94rem; color: var(--gold-bright); white-space: nowrap; }
+  .ccc-box {
+    margin: 18px 0 4px;
+    padding: 14px 16px;
+    border: 1px solid var(--gold-dim);
+    background: rgba(212,175,55,0.06);
+    border-radius: 2px;
+    font-size: 0.9rem;
+  }
+  .ccc-box strong { color: var(--gold-bright); font-family: var(--utility); letter-spacing: 0.04em; font-weight: 500; }
+  .ccc-box .ccc-hint { color: var(--ink-dim); font-size: 0.82rem; font-style: italic; margin: 6px 0 0 25px; }
+  .ccc-box .consent-row { margin-top: 0; }
+  .ccc-note { font-size: 0.82rem; color: var(--gold-bright); font-style: italic; text-align: center; margin: 10px 0 0; }
+  .ccc-done { margin-top: 18px; padding: 16px; border: 1px solid var(--emerald-bright, #6fa373); border-radius: 2px; text-align: center; font-size: 0.94rem; }
   .consent-row {
     display: flex;
     align-items: flex-start;
@@ -383,7 +397,7 @@
   <div>
     <p class="eyebrow">Subscribe</p>
     <div class="card">
-      <h1>TB Auto-Crypt</h1>
+      <h1>TB-Tools</h1>
       <p class="sub">Sign in with Google, tell us who you are in-game, then head to checkout.</p>
 
       <!-- Step 1: Google sign-in -->
@@ -396,11 +410,17 @@
       <div class="step" id="step-register">
         <div class="signed-in-as" id="signed-in-as"></div>
 
-        <label>Choose a tool package</label>
-        <div class="plan-list" id="tier-list"></div>
+        <!-- 2026-09-23: cCc clan members -- free Battle Calculator, 50% off Auto-Crypt. -->
+        <div id="ccc-box" class="ccc-box" style="display:none;"></div>
 
-        <label>Choose a plan</label>
-        <div class="plan-list" id="plan-list"></div>
+        <div id="purchase-fields">
+          <label>Choose a tool package</label>
+          <div class="plan-list" id="tier-list"></div>
+
+          <label>Choose a plan</label>
+          <div class="plan-list" id="plan-list"></div>
+          <p class="ccc-note" id="ccc-discount-note" style="display:none;">Your 50% cCc discount is applied automatically at checkout.</p>
+        </div>
 
         <label for="display-name">Your name</label>
         <input type="text" id="display-name" placeholder="e.g. Alex" autocomplete="name" />
@@ -415,18 +435,19 @@
           </label>
         </div>
 
-        <div class="consent-row">
+        <div class="consent-row" id="withdrawal-row">
           <input type="checkbox" id="agree-withdrawal" />
           <label for="agree-withdrawal" class="consent-label">
-            I understand access begins immediately and I waive my right to withdraw from this purchase (EU customers — see Terms §6).
+            I understand access begins immediately and I waive my right to withdraw from this purchase (EU customers — see Terms §8).
           </label>
         </div>
 
         <div class="error" id="register-error"></div>
 
         <button class="cta-primary" id="continue-btn" disabled>Continue to checkout</button>
-        <div class="or-divider">or</div>
+        <div class="or-divider" id="or-divider">or</div>
         <button class="cta-secondary" id="continue-btn-paypal" disabled>Pay with PayPal</button>
+        <div class="ccc-done" id="ccc-done" style="display:none;"></div>
       </div>
 
       <p class="footer-note">
@@ -452,9 +473,9 @@
   // its own PLANS_BY_TIER / TRIALS_BY_TIER entry below) any time a new
   // standalone tool or bundle ships.
   const TIERS = [
-    // { key: "all_in", label: "All-In", desc: "Everything: Auto-Crypt + Battle Calculator", badge: "Best value", checked: true },
+    { key: "all_in", label: "All-In", desc: "Everything: Auto-Crypt + Battle Calculator", badge: "Best value", checked: true },
     { key: "autocrypt", label: "Auto-Crypt", desc: "Just the crypt-running automation", badge: null, checked: false },
-    // { key: "battlecalc", label: "Battle Calculator", desc: "Just the troop stack calculator", badge: null, checked: false },
+    { key: "battlecalc", label: "Battle Calculator", desc: "Just the troop stack calculator", badge: null, checked: false },
   ];
 
   // ── Plans — per tier, key must match one of TIER_PLAN_PRICE_ENV_VARS[tier]
@@ -466,23 +487,21 @@
   //{ key: "annual", label: "Yearly", price: "€79.99 / yr", billed: "Billed per year", badge: "Save 33% • Best value", checked: false },
   const PLANS_BY_TIER = {
     all_in: [
+      { key: "monthly", label: "Monthly", price: "€12.99 / mo", billed: "Billed monthly", badge: null, checked: true },
+      { key: "quarterly", label: "3 Months", price: "€32.49 / 3 mo", billed: "Billed every 3 months", badge: "Save 17%", checked: false },
+      { key: "semiannual", label: "6 Months", price: "€58.49 / 6 mo", billed: "Billed every 6 months", badge: "Save 25%", checked: false },
+    ],
+    // Prices set 2026-09-23 (Stripe Prices: STRIPE_PRICE_AUTOCRYPT_* on the Worker).
+    autocrypt: [
       { key: "monthly", label: "Monthly", price: "€9.99 / mo", billed: "Billed monthly", badge: null, checked: true },
       { key: "quarterly", label: "3 Months", price: "€24.99 / 3 mo", billed: "Billed every 3 months", badge: "Save 17%", checked: false },
       { key: "semiannual", label: "6 Months", price: "€44.99 / 6 mo", billed: "Billed every 6 months", badge: "Save 25%", checked: false },
     ],
-    // TODO: real prices once Stripe Products/Prices exist for this tier
-    // (STRIPE_PRICE_AUTOCRYPT_MONTHLY etc. on the Worker) -- placeholders below.
-    autocrypt: [
-      { key: "monthly", label: "Monthly", price: "€9.99 / mo", billed: "Billed monthly", badge: null, checked: true },
-      { key: "quarterly", label: "3 Months", price: "€24.99 / 3 mo", billed: "Billed every 3 months", badge: null, checked: false },
-      { key: "semiannual", label: "6 Months", price: "€44.99 / 6 mo", billed: "Billed every 6 months", badge: null, checked: false },
-    ],
-    // TODO: real prices once Stripe Products/Prices exist for this tier
-    // (STRIPE_PRICE_BATTLECALC_MONTHLY etc. on the Worker) -- placeholders below.
+    // Prices set 2026-09-23 (Stripe Prices: STRIPE_PRICE_BATTLECALC_* on the Worker).
     battlecalc: [
-      { key: "monthly", label: "Monthly", price: "€X.XX / mo", billed: "Billed monthly", badge: null, checked: true },
-      { key: "quarterly", label: "3 Months", price: "€X.XX / 3 mo", billed: "Billed every 3 months", badge: null, checked: false },
-      { key: "semiannual", label: "6 Months", price: "€X.XX / 6 mo", billed: "Billed every 6 months", badge: null, checked: false },
+      { key: "monthly", label: "Monthly", price: "€4.99 / mo", billed: "Billed monthly", badge: null, checked: true },
+      { key: "quarterly", label: "3 Months", price: "€12.49 / 3 mo", billed: "Billed every 3 months", badge: "Save 17%", checked: false },
+      { key: "semiannual", label: "6 Months", price: "€22.49 / 6 mo", billed: "Billed every 6 months", badge: "Save 25%", checked: false },
     ],
   };
 
@@ -609,12 +628,140 @@
 
     document.getElementById("signed-in-as").textContent = `Signed in as ${currentEmail}`;
     showStep("step-register");
+    loadAccountStatus();
+  }
+
+  // ── cCc clan members (2026-09-23) ─────────────────────────────────────
+  // approved -> only the Auto-Crypt package is offered (calculator is
+  //             already free) and the Worker applies the 50% coupon itself;
+  // pending  -> informational banner, buying at full price is still possible
+  //             (approval later adds the discount to the live subscription);
+  // else     -> "I'm a cCc member" checkbox that turns this form into a
+  //             free membership request (no checkout at all).
+  let cccMode = false;   // true while the "request membership" checkbox is ticked
+  let cccTrialMode = false; // approved member with the free Auto-Crypt trial still available
+  let cccStatus = null;
+
+  async function loadAccountStatus() {
+    try {
+      const res = await fetch(`${WORKER_BASE_URL}/account/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_token: currentIdToken }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const st = await res.json();
+      cccStatus = st.ccc;
+      if (st.display_name && !document.getElementById("display-name").value) {
+        document.getElementById("display-name").value = st.display_name;
+      }
+      if (st.tb_username && !document.getElementById("tb-username").value) {
+        document.getElementById("tb-username").value = st.tb_username;
+      }
+      renderCccBox(st);
+    } catch (err) {
+      // Older Worker without /account/status: page keeps working as before.
+      console.warn("account status unavailable:", err);
+    }
+  }
+
+  function renderCccBox(st) {
+    const box = document.getElementById("ccc-box");
+    if (st.ccc === "approved") {
+      const trialDays = st.ccc_free_trial_days || 7;
+      const trialEnd = new Date(Date.now() + trialDays * 86400000).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+      box.innerHTML = `<strong>cCc member ✓</strong><br>The Battle Calculator is free for you — just sign in to TB-Tools with this Google account.` +
+        (st.trial_available
+          ? `<br><br><strong>Auto-Crypt: ${trialDays} days free, then 50% off.</strong> No card needed to start. ` +
+            `If you start today, your free trial ends on <strong>${trialEnd}</strong>. ` +
+            `To keep going after that, add a payment method on <a href="devices.html">your account page</a> before then — ` +
+            `if you don't, Auto-Crypt simply stops at the end of the trial and nothing is charged.`
+          : (st.ccc_discount_available ? ` Auto-Crypt is 50% off below.` : ``));
+      cccTrialMode = !!st.trial_available;
+      TIERS.forEach((t) => { t.checked = t.key === "autocrypt"; });
+      TIERS.splice(0, TIERS.length, ...TIERS.filter((t) => t.key === "autocrypt"));
+      renderTiers();
+      renderPlans();
+      document.getElementById("ccc-discount-note").style.display = st.ccc_discount_available ? "block" : "none";
+      if (st.trial_available) {
+        document.getElementById("ccc-discount-note").textContent =
+          `First ${trialDays} days free, then your 50% cCc discount applies to the plan you pick.`;
+        document.getElementById("continue-btn").textContent = "Start free trial";
+        document.getElementById("continue-btn-paypal").textContent = "Start free trial with PayPal";
+      }
+    } else if (st.ccc === "pending") {
+      box.innerHTML = `<strong>cCc request pending</strong><br>You'll get free Battle Calculator access once it's approved. ` +
+        `If you subscribe to Auto-Crypt now, your 50% discount is added to your subscription when you're approved.`;
+    } else {
+      box.innerHTML = `
+        <div class="consent-row">
+          <input type="checkbox" id="ccc-request" />
+          <label for="ccc-request" class="consent-label"><strong>I'm a member of the cCc clan</strong></label>
+        </div>
+        <p class="ccc-hint">cCc members get the Battle Calculator for free and 50% off Auto-Crypt, after approval. Tick this to send a request — no payment needed.</p>`;
+      const cb = document.getElementById("ccc-request");
+      cb.addEventListener("change", () => setCccMode(cb.checked));
+      if (location.hash === "#ccc") { cb.checked = true; setCccMode(true); }
+    }
+    box.style.display = "block";
+  }
+
+  function setCccMode(on) {
+    cccMode = on;
+    document.getElementById("purchase-fields").style.display = on ? "none" : "block";
+    document.getElementById("withdrawal-row").style.display = on ? "none" : "flex";
+    document.getElementById("or-divider").style.display = on ? "none" : "";
+    document.getElementById("continue-btn-paypal").style.display = on ? "none" : "";
+    document.getElementById("continue-btn").textContent = on ? "Send cCc request" : (cccTrialMode ? "Start free trial" : "Continue to checkout");
+    updateContinueEnabled();
+  }
+
+  async function sendCccRequest() {
+    const errorEl = document.getElementById("register-error");
+    errorEl.style.display = "none";
+    const name = document.getElementById("display-name").value.trim();
+    const tbUsername = document.getElementById("tb-username").value.trim();
+    if (!name || !tbUsername) {
+      errorEl.textContent = "Please fill in both your name and your Total Battle username, so we can find you in the clan.";
+      errorEl.style.display = "block";
+      return;
+    }
+    const btn = document.getElementById("continue-btn");
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+    try {
+      const res = await fetch(`${WORKER_BASE_URL}/ccc/request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id_token: currentIdToken,
+          name,
+          tb_username: tbUsername,
+          terms_accepted: document.getElementById("agree-terms").checked,
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.detail || body.error || `Request failed (${res.status})`);
+      const done = document.getElementById("ccc-done");
+      done.innerHTML = body.ccc === "approved"
+        ? `You're already an approved cCc member. <a href="devices.html">Go to your account →</a>`
+        : `<strong>Request sent!</strong><br>Once it's approved you can sign in to TB-Tools with this Google account and use the Battle Calculator. ` +
+          `Check your status any time on <a href="devices.html">your account page</a>.`;
+      done.style.display = "block";
+      btn.style.display = "none";
+      document.getElementById("ccc-box").style.display = "none";
+    } catch (err) {
+      errorEl.textContent = err.message || "Something went wrong. Please try again.";
+      errorEl.style.display = "block";
+      btn.textContent = "Send cCc request";
+      updateContinueEnabled();
+    }
   }
 
   function updateContinueEnabled() {
     const agreedTerms = document.getElementById("agree-terms").checked;
     const agreedWithdrawal = document.getElementById("agree-withdrawal").checked;
-    const ready = agreedTerms && agreedWithdrawal;
+    const ready = cccMode ? agreedTerms : (agreedTerms && agreedWithdrawal);
     document.getElementById("continue-btn").disabled = !ready;
     document.getElementById("continue-btn-paypal").disabled = !ready;
   }
@@ -706,15 +853,16 @@
   }
 
   document.getElementById("continue-btn").addEventListener("click", () => {
+    if (cccMode) { sendCccRequest(); return; }
     const btn = document.getElementById("continue-btn");
     const paypalBtn = document.getElementById("continue-btn-paypal");
-    startCheckout(undefined, btn, paypalBtn, "Working...", "Continue to checkout");
+    startCheckout(undefined, btn, paypalBtn, "Working...", cccTrialMode ? "Start free trial" : "Continue to checkout");
   });
 
   document.getElementById("continue-btn-paypal").addEventListener("click", () => {
     const btn = document.getElementById("continue-btn-paypal");
     const primaryBtn = document.getElementById("continue-btn");
-    startCheckout("paypal", btn, primaryBtn, "Working...", "Pay with PayPal");
+    startCheckout("paypal", btn, primaryBtn, "Working...", cccTrialMode ? "Start free trial with PayPal" : "Pay with PayPal");
   });
 </script>
 

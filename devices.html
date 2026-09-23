@@ -266,6 +266,7 @@
 
       <div id="account-section">
         <div class="subscription-panel" id="subscription-panel"></div>
+        <div class="subscription-panel" id="extras-panel" style="margin-top:12px; display:none;"></div>
 
         <h2 class="section-heading">Devices</h2>
         <p class="sub small">TB Auto-Crypt allows 2 devices per account.</p>
@@ -356,6 +357,28 @@
           ? "Renews"
           : "Ended";
 
+    // cCc free trial (2026-09-23): no card was taken, so make the end date
+    // and what happens next impossible to miss.
+    if (sub.trial_ends_at) {
+      const ends = new Date(sub.trial_ends_at * 1000).toLocaleString(undefined, {
+        weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
+      });
+      panel.innerHTML = `
+        <div class="sub-row">
+          <span class="sub-label">Plan</span>
+          <span class="sub-value">${escapeHtml(planLabel)} · free trial</span>
+        </div>
+        <div class="sub-row">
+          <span class="sub-label">Free trial ends</span>
+          <span class="sub-value status-past_due">${escapeHtml(ends)}</span>
+        </div>
+        <button class="manage-btn" id="manage-btn">Add payment method</button>
+        <p class="sub-note">After the trial your plan continues at 50% off — but only if a payment method is added before then. If not, Auto-Crypt stops at the end of the trial and nothing is charged.</p>
+      `;
+      document.getElementById("manage-btn").addEventListener("click", openBillingPortal);
+      return;
+    }
+
     panel.innerHTML = `
       <div class="sub-row">
         <span class="sub-label">Plan</span>
@@ -382,6 +405,36 @@
     if (!isTrial) {
       document.getElementById("manage-btn").addEventListener("click", openBillingPortal);
     }
+  }
+
+  // 2026-09-23: cCc membership status + link to the online list viewer.
+  function renderExtrasPanel(entitlements, ccc) {
+    const panel = document.getElementById("extras-panel");
+    const cccLabel = {
+      approved: ["cCc member", "status-active"],
+      pending: ["Request pending approval", "status-past_due"],
+      denied: ["Request not approved", "status-none"],
+      revoked: ["Membership ended", "status-none"],
+    }[ccc];
+    const hasCalc = entitlements.includes("battlecalc");
+    let html = "";
+    if (cccLabel) {
+      html += `
+        <div class="sub-row">
+          <span class="sub-label">cCc clan</span>
+          <span class="sub-value ${cccLabel[1]}">${cccLabel[0]}</span>
+        </div>`;
+      if (ccc === "approved") {
+        html += `<p class="sub-note">Battle Calculator free · Auto-Crypt 50% off</p>`;
+      }
+    } else {
+      html += `<p class="sub-note">In the cCc clan? <a href="subscribe.html#ccc">Request free Battle Calculator access</a></p>`;
+    }
+    if (hasCalc) {
+      html += `<a class="manage-btn" style="display:block;text-align:center;text-decoration:none;" href="lists.html">View my battle lists →</a>`;
+    }
+    panel.innerHTML = html;
+    panel.style.display = "block";
   }
 
   async function openBillingPortal() {
@@ -421,9 +474,10 @@
         body: JSON.stringify({ id_token: currentIdToken }),
       });
       if (!res.ok) throw new Error(`Could not load account (${res.status})`);
-      const { devices, subscription } = await res.json();
+      const { devices, subscription, entitlements, ccc } = await res.json();
 
       renderSubscriptionPanel(subscription);
+      renderExtrasPanel(entitlements || [], ccc || null);
 
       if (!devices || devices.length === 0) {
         emptyEl.style.display = "block";

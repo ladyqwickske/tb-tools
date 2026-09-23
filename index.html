@@ -453,13 +453,13 @@
     <a href="https://ccc-hq.com">← Back to ccc-hq.com</a>
   </nav>
   <nav>
-    <a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="devices.html">My Account</a>
+    <a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="lists.html">My Battle Lists</a> &nbsp;·&nbsp; <a href="devices.html">My Account</a>
   </nav>
 </header>
 <section class="hero">
   <p class="eyebrow">Q's TB Tools</p>
   <img class="hero-logo" src="tools-logo.png" alt="Total Battle Tools" />
-  <p class="tagline">Tools built to make life in Total Battle a little easier — starting with Auto-Crypt, with more on the way.</p>
+  <p class="tagline">Tools built to make life in Total Battle a little easier — Auto-Crypt and the Battle Calculator, with more on the way.</p>
 </section>
 <section class="tools">
   <article class="tool-card">
@@ -521,7 +521,7 @@
         <p class="pricing-price">€9.99</p>
         <p class="pricing-permonth">per month</p>
         <p class="pricing-billed">Billed monthly</p>
-        <a class="cta secondary small" href="subscribe.html?plan=monthly">Subscribe →</a>
+        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=monthly">Subscribe →</a>
       </div>
       <div class="pricing-card">
         <span class="pricing-badge">Save 17%</span>
@@ -529,7 +529,7 @@
         <p class="pricing-price">€24.99</p>
         <p class="pricing-permonth">≈ €8.33 / mo</p>
         <p class="pricing-billed">Billed every 3 months</p>
-        <a class="cta secondary small" href="subscribe.html?plan=quarterly">Subscribe →</a>
+        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=quarterly">Subscribe →</a>
       </div>
       <div class="pricing-card">
         <span class="pricing-badge">Save 25%</span>
@@ -537,7 +537,7 @@
         <p class="pricing-price">€44.99</p>
         <p class="pricing-permonth">≈ €7.50 / mo</p>
         <p class="pricing-billed">Billed every 6 months</p>
-        <a class="cta secondary small" href="subscribe.html?plan=semiannual">Subscribe →</a>
+        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=semiannual">Subscribe →</a>
       </div>
       <!--div class="pricing-card featured">
         <span class="pricing-badge">Save 33% • Best value</span>
@@ -545,7 +545,7 @@
         <p class="pricing-price">€79.99</p>
         <p class="pricing-permonth">≈ €6.67 / mo</p>
         <p class="pricing-billed">Billed once per year</p>
-        <a class="cta secondary small" href="subscribe.html?plan=annual">Subscribe →</a>
+        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=annual">Subscribe →</a>
       </div-->
     </div>
 
@@ -555,14 +555,14 @@
       <div class="trial-card">
         <p class="trial-name">7-Day Trial</p>
         <p class="trial-price">€2.99</p>
-        <p class="trial-desc">A full 7 days to test Auto-Crypter and see how it works for you.</p>
-        <a class="cta secondary small" href="subscribe.html?plan=trial_7">Start trial →</a>
+        <p class="trial-desc">A full 7 days to test Auto-Crypter — and the Battle Calculator — and see how they work for you.</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=trial_7">Start trial →</a>
       </div>
       <div class="trial-card">
         <p class="trial-name">14-Day Trial</p>
         <p class="trial-price">€4.99</p>
-        <p class="trial-desc">Need a little more time? Get 14 days to try everything and make sure Auto-Crypter fits your setup.</p>
-        <a class="cta secondary small" href="subscribe.html?plan=trial_14">Start trial →</a>
+        <p class="trial-desc">Need a little more time? Get 14 days to try everything — Auto-Crypter and the Battle Calculator — and make sure it fits your setup.</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=trial_14">Start trial →</a>
       </div>
     </div>
 
@@ -571,10 +571,96 @@
       <p class="closing-body">You already have enough things to do in Total Battle. Let Auto-Crypter handle the crypts.</p>
       <p class="closing-recap">One subscription. All your accounts. Two devices. Unlimited crypting.</p>
       <p></p>
-      <a class="cta primary" href="subscribe.html">Subscribe →</a>
+      <a class="cta primary" href="subscribe.html?tier=autocrypt">Subscribe →</a>
       <a class="cta secondary" id="download-btn"
          href="https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.7/TBAutoCrypt_0.0.7.zip">Download v0.0.7</a>
       <a class="closing-link" href="install.html">New here? Follow the step-by-step installation guide →</a>
+      <p class="release-notes" id="release-notes"></p>
+    </div>
+  </article>
+  <article class="tool-card">
+    <span class="tool-status">Available</span>
+    <h2>Battle Calculator</h2>
+    <p class="tool-hook">The right troop numbers for every attack, without the spreadsheet.</p>
+    <p>Enter your Leadership, Dominance and troop stats once, pick the troops you want to send, and the Battle Calculator works out how many of each to bring and in which order they attack — so you spend your capacity instead of guessing at it.</p>
+
+    <div class="benefit-grid advantage-grid">
+      <div class="benefit-tile">
+        <p class="benefit-title">Exact troop counts</p>
+        <p class="benefit-desc">Counts for every troop in your list, calculated from your own stats and capacity.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Battle order</p>
+        <p class="benefit-desc">See the order your troops will attack in before you send them.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Write to the battle screen</p>
+        <p class="benefit-desc">Fill in the numbers in the game for you instead of typing them troop by troop.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Your lists on your phone</p>
+        <p class="benefit-desc">Lists sync to <a href="lists.html" style="color:var(--gold-bright);">My Battle Lists</a>, so you can check them while playing on mobile.</p>
+      </div>
+    </div>
+
+    <h3 class="tool-subheading">Pricing</h3>
+    <p>Same plans as Auto-Crypter — the longer you commit, the less it costs per month. Covers all your accounts on up to 2 devices.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <p class="pricing-name">Monthly</p>
+        <p class="pricing-price">€4.99</p>
+        <p class="pricing-permonth">per month</p>
+        <p class="pricing-billed">Billed monthly</p>
+        <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=monthly">Subscribe →</a>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-badge">Save 17%</span>
+        <p class="pricing-name">3 Months</p>
+        <p class="pricing-price">€12.49</p>
+        <p class="pricing-permonth">≈ €4.16 / mo</p>
+        <p class="pricing-billed">Billed every 3 months</p>
+        <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=quarterly">Subscribe →</a>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-badge">Save 25%</span>
+        <p class="pricing-name">6 Months</p>
+        <p class="pricing-price">€22.49</p>
+        <p class="pricing-permonth">≈ €3.75 / mo</p>
+        <p class="pricing-billed">Billed every 6 months</p>
+        <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=semiannual">Subscribe →</a>
+      </div>
+    </div>
+    <p style="font-size:0.85rem; color:var(--ink-dim); margin-top:14px;">cCc clan member? The Battle Calculator is free for you, and Auto-Crypter is 50% off — <a href="subscribe.html#ccc" style="color:var(--gold-bright);">request access here</a>.</p>
+  </article>
+  <article class="tool-card">
+    <span class="tool-status">Best value</span>
+    <h2>All-In: Auto-Crypter + Battle Calculator</h2>
+    <p class="tool-hook">Both tools, one subscription, for less than buying them separately.</p>
+    <p>Everything above in a single plan — all your accounts, 2 devices, unlimited crypting and every Battle Calculator feature — for about 13% less than subscribing to both tools on their own.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <p class="pricing-name">Monthly</p>
+        <p class="pricing-price">€12.99</p>
+        <p class="pricing-permonth">per month</p>
+        <p class="pricing-billed">Billed monthly</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=monthly">Subscribe →</a>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-badge">Save 17%</span>
+        <p class="pricing-name">3 Months</p>
+        <p class="pricing-price">€32.49</p>
+        <p class="pricing-permonth">≈ €10.83 / mo</p>
+        <p class="pricing-billed">Billed every 3 months</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=quarterly">Subscribe →</a>
+      </div>
+      <div class="pricing-card featured">
+        <span class="pricing-badge">Save 25% • Best value</span>
+        <p class="pricing-name">6 Months</p>
+        <p class="pricing-price">€58.49</p>
+        <p class="pricing-permonth">≈ €9.75 / mo</p>
+        <p class="pricing-billed">Billed every 6 months</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=semiannual">Subscribe →</a>
+      </div>
     </div>
   </article>
   <article class="tool-card placeholder">
@@ -585,7 +671,7 @@
 <footer>
   <img src="tools-logo.png" alt="Total Battle Tools" />
   <p class="foot-word">Q's Total Battle Tools</p>
-  <p class="foot-links"><a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="devices.html">Manage Subscription</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></p>
+  <p class="foot-links"><a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="devices.html">Manage Subscription</a> &nbsp;·&nbsp; <a href="lists.html">My Battle Lists</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></p>
 </footer>
 
 <script>

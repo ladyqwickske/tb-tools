@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>My Battle Lists — Q's TB Tools</title>
+<meta name="description" content="View your Battle Calculator lists on any device." />
+<meta name="theme-color" content="#05060a" />
+<link rel="icon" href="tools-logo.png" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #05060a;
+    --panel: #0c1020;
+    --panel-line: #1c2440;
+    --gold: #d4af37;
+    --gold-bright: #f2d68f;
+    --gold-dim: #8a742f;
+    --emerald: #3d6b42;
+    --emerald-bright: #6fa373;
+    --danger: #c25b5b;
+    --danger-bright: #e08585;
+    --ink: #e9e6da;
+    --ink-dim: #a8a692;
+    --display: 'Cinzel', serif;
+    --body: 'Spectral', serif;
+    --utility: 'Oswald', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+  a { color: var(--gold-bright); }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(212,175,55,0.15);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .brand img { height: 30px; width: 30px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(212,175,55,0.35)); }
+  .brand-word { font-family: var(--utility); letter-spacing: 0.14em; font-size: 0.76rem; color: var(--gold-bright); }
+  header nav { display: flex; gap: 16px; }
+  header nav a {
+    font-family: var(--utility);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-dim);
+  }
+  header nav a:hover { color: var(--gold-bright); }
+
+  main { max-width: 620px; margin: 0 auto; padding: 22px 16px 80px; }
+  h1 { font-family: var(--display); font-size: 1.35rem; color: var(--gold-bright); margin: 0 0 4px; text-align: center; letter-spacing: 0.03em; }
+  p.sub { color: var(--ink-dim); margin: 0 0 18px; font-size: 0.92rem; text-align: center; font-style: italic; }
+  #g_id_signin_container { display: flex; justify-content: center; margin: 10px 0; }
+
+  .msg {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    padding: 18px;
+    text-align: center;
+    color: var(--ink-dim);
+    font-size: 0.94rem;
+    margin-top: 14px;
+  }
+  .msg strong { color: var(--ink); }
+  .msg.error { border-color: var(--danger); color: var(--danger-bright); }
+  .hidden { display: none !important; }
+
+  .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  select {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 12px;
+    background: var(--panel);
+    color: var(--ink);
+    border: 1px solid var(--gold-dim);
+    border-radius: 3px;
+    font-family: var(--utility);
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+  button.icon-btn {
+    padding: 11px 13px;
+    background: transparent;
+    color: var(--gold-bright);
+    border: 1px solid var(--panel-line);
+    border-radius: 3px;
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  button.icon-btn:disabled { opacity: 0.5; }
+
+  .meta { font-size: 0.8rem; color: var(--ink-dim); font-style: italic; margin: 0 2px 12px; }
+
+  .tabs { display: flex; border-bottom: 1px solid var(--panel-line); margin-bottom: 12px; }
+  .tab {
+    flex: 1;
+    padding: 10px 6px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--ink-dim);
+    font-family: var(--utility);
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .tab[aria-selected="true"] { color: var(--gold-bright); border-bottom-color: var(--gold); }
+
+  .section-title {
+    font-family: var(--utility);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--emerald-bright);
+    margin: 16px 2px 6px;
+  }
+  .rows { list-style: none; margin: 0; padding: 0; background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--panel-line); }
+  .row:last-child { border-bottom: none; }
+  .row img, .row .noimg {
+    width: 44px; height: 44px; border-radius: 3px; object-fit: cover; flex-shrink: 0;
+    background: #141a30; border: 1px solid var(--panel-line);
+  }
+  .row .noimg { display: flex; align-items: center; justify-content: center; font-family: var(--utility); color: var(--ink-dim); }
+  .row .pos { font-family: var(--utility); color: var(--gold-dim); width: 22px; text-align: right; flex-shrink: 0; }
+  .row .name { flex: 1; min-width: 0; }
+  .row .name .troop { font-family: var(--utility); font-size: 1rem; color: var(--ink); letter-spacing: 0.02em; }
+  .row .name .tier { color: var(--gold-bright); margin-left: 4px; font-family: var(--utility); }
+  .row .name .group { font-size: 0.74rem; color: var(--ink-dim); font-style: italic; }
+  .row .count {
+    font-family: var(--utility);
+    font-size: 1.25rem;
+    color: var(--gold-bright);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .capacity { margin-top: 16px; display: grid; gap: 8px; }
+  .cap { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; padding: 10px 12px; }
+  .cap-top { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--ink-dim); font-family: var(--utility); letter-spacing: 0.04em; }
+  .cap-top .num { font-variant-numeric: tabular-nums; color: var(--ink); }
+  .bar { height: 6px; background: #141a30; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--emerald-bright); }
+  .cap.low .bar > span { background: var(--danger-bright); }
+  .formula { font-size: 0.8rem; color: var(--ink-dim); margin: 14px 2px 0; font-style: italic; }
+  .signed-in { text-align: center; font-size: 0.78rem; color: var(--ink-dim); margin-top: 26px; }
+  .signed-in button { background: none; border: none; color: var(--gold-dim); font-family: inherit; font-size: inherit; text-decoration: underline; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html">
+    <img src="tools-logo.png" alt="" />
+    <span class="brand-word">Q's TB Tools</span>
+  </a>
+  <nav>
+    <a href="devices.html">Account</a>
+  </nav>
+</header>
+
+<main>
+  <h1>My Battle Lists</h1>
+  <p class="sub" id="intro">Sign in with the Google account you use in TB-Tools.</p>
+
+  <div id="g_id_signin_container"></div>
+  <div class="msg hidden" id="status-msg"></div>
+
+  <section id="viewer" class="hidden">
+    <div class="toolbar">
+      <label for="list-select" class="hidden">List</label>
+      <select id="list-select" aria-label="Choose a list"></select>
+      <button class="icon-btn" id="refresh-btn" title="Reload from server">Refresh</button>
+    </div>
+    <p class="meta" id="meta"></p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-troops" aria-selected="true">Troops</button>
+      <button class="tab" role="tab" id="tab-order" aria-selected="false">Battle order</button>
+    </div>
+
+    <div id="panel-troops"></div>
+    <div id="panel-order" class="hidden"></div>
+  </section>
+
+  <p class="signed-in hidden" id="signed-in"></p>
+</main>
+
+<script>
+  const GOOGLE_CLIENT_ID_WEB = "47674606892-0m90hd0cd01kijo69ssuqtn1j3igp32i.apps.googleusercontent.com";
+  const WORKER_BASE_URL = "https://auto-crypt.ccc-hq.com";
+  const ICON_BASE = "img/troops/";
+  const LAST_LIST_KEY = "tbtools.lastList";
+
+  let idToken = null;
+  let snapshot = null;
+
+  const $ = (id) => document.getElementById(id);
+
+  function esc(str) {
+    const d = document.createElement("div");
+    d.textContent = str == null ? "" : String(str);
+    return d.innerHTML;
+  }
+  function fmt(n) { return n == null ? "—" : Number(n).toLocaleString(); }
+  function store(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+  function recall(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+  function timeAgo(unix) {
+    if (!unix) return "";
+    const s = Math.max(0, Math.floor(Date.now() / 1000 - unix));
+    if (s < 60) return "just now";
+    if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
+    const d = Math.floor(s / 86400);
+    return d === 1 ? "yesterday" : `${d} days ago`;
+  }
+
+  function showMessage(html, isError) {
+    const el = $("status-msg");
+    el.innerHTML = html;
+    el.classList.toggle("error", !!isError);
+    el.classList.remove("hidden");
+  }
+  function hideMessage() { $("status-msg").classList.add("hidden"); }
+
+  function icon(entry) {
+    if (entry.icon) {
+      return `<img src="${ICON_BASE}${esc(entry.icon)}" alt="" loading="lazy" width="44" height="44" />`;
+    }
+    return `<span class="noimg">${esc((entry.label || "?").charAt(0))}</span>`;
+  }
+
+  function nameCell(entry) {
+    return `<div class="name">
+      <div><span class="troop">${esc(entry.label)}</span><span class="tier">${esc(entry.tier)}</span></div>
+      <div class="group">${esc(entry.group || "")}</div>
+    </div>`;
+  }
+
+  function renderList(list) {
+    // Troops tab
+    let html = "";
+    if (list.record_missing) {
+      html += `<div class="msg">The record <strong>${esc(list.record_name)}</strong> this list uses no longer exists on your PC, so there are no counts.</div>`;
+    }
+    for (const section of list.sections || []) {
+      html += `<h2 class="section-title">${esc(section.title)}</h2><ul class="rows">`;
+      for (const r of section.rows) {
+        html += `<li class="row">${icon(r)}${nameCell(r)}<span class="count">${fmt(r.count)}</span></li>`;
+      }
+      html += `</ul>`;
+    }
+    if ((list.capacity || []).length) {
+      html += `<div class="capacity">`;
+      for (const c of list.capacity) {
+        const pct = c.capacity > 0 ? (100 * c.used) / c.capacity : 0;
+        const low = c.pool === "Leadership" && pct < 99;
+        html += `<div class="cap${low ? " low" : ""}">
+          <div class="cap-top"><span>${esc(c.pool)}</span><span class="num">${fmt(c.used)} / ${fmt(c.capacity)} (${pct.toFixed(1)}%)</span></div>
+          <div class="bar"><span style="width:${Math.min(100, pct).toFixed(1)}%"></span></div>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+    html += `<p class="formula">Record: ${esc(list.record_name)} · ${esc(list.formula || "")}</p>`;
+    $("panel-troops").innerHTML = html;
+
+    // Battle order tab
+    const order = list.battle_order || [];
+    let oh = order.length
+      ? `<p class="meta">The order your troops attack in, first to last.</p><ul class="rows">`
+      : `<div class="msg">No battle order for this list.</div>`;
+    order.forEach((r, i) => {
+      oh += `<li class="row"><span class="pos">${i + 1}.</span>${icon(r)}${nameCell(r)}</li>`;
+    });
+    if (order.length) oh += `</ul>`;
+    $("panel-order").innerHTML = oh;
+  }
+
+  function selectTab(which) {
+    const troops = which === "troops";
+    $("tab-troops").setAttribute("aria-selected", String(troops));
+    $("tab-order").setAttribute("aria-selected", String(!troops));
+    $("panel-troops").classList.toggle("hidden", !troops);
+    $("panel-order").classList.toggle("hidden", troops);
+  }
+
+  function renderSnapshot(data) {
+    snapshot = data.snapshot;
+    const lists = (snapshot && snapshot.lists) || [];
+    if (!lists.length) {
+      $("viewer").classList.add("hidden");
+      showMessage(
+        `<strong>No lists synced yet.</strong><br>Open the Battle Calculator in TB-Tools on your PC. ` +
+        `Your lists upload automatically when the app starts and every time you save (setting: "Sync my lists to the TB-Tools website" on the Results tab).`
+      );
+      return;
+    }
+    hideMessage();
+    const select = $("list-select");
+    const wanted = recall(LAST_LIST_KEY) || snapshot.last_list;
+    select.innerHTML = lists.map((l, i) => `<option value="${i}">${esc(l.name)}</option>`).join("");
+    const idx = Math.max(0, lists.findIndex((l) => l.name === wanted));
+    select.value = String(idx);
+    $("meta").textContent = `Synced ${timeAgo(data.updated_at)}${data.device_name ? " from " + data.device_name : ""}.`;
+    $("viewer").classList.remove("hidden");
+    renderList(lists[idx]);
+  }
+
+  async function loadLists() {
+    const btn = $("refresh-btn");
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${WORKER_BASE_URL}/calc/lists`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_token: idToken }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        showMessage("Your sign-in expired. Please sign in again.", true);
+        $("g_id_signin_container").classList.remove("hidden");
+        return;
+      }
+      if (res.status === 403 && body.error === "no_calc_access") {
+        $("viewer").classList.add("hidden");
+        const pending = body.ccc === "pending";
+        showMessage(
+          pending
+            ? `<strong>Your cCc membership request is waiting for approval.</strong><br>Your lists will show up here once it's approved.`
+            : `<strong>This account doesn't have Battle Calculator access.</strong><br>` +
+              `<a href="subscribe.html?tier=battlecalc">Get the Battle Calculator</a> — or, if you're in the cCc clan, ` +
+              `<a href="subscribe.html">request free access</a>.`
+        );
+        return;
+      }
+      if (!res.ok) throw new Error(body.detail || body.error || `Could not load lists (${res.status})`);
+      renderSnapshot(body);
+    } catch (err) {
+      showMessage(esc(err.message || "Something went wrong."), true);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function handleCredentialResponse(response) {
+    idToken = response.credential;
+    try {
+      const payload = JSON.parse(decodeURIComponent(escape(atob(idToken.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")))));
+      $("signed-in").innerHTML = `Signed in as ${esc(payload.email)} · <button id="signout">Sign out</button>`;
+      $("signed-in").classList.remove("hidden");
+      $("signout").addEventListener("click", () => {
+        google.accounts.id.disableAutoSelect();
+        location.reload();
+      });
+    } catch (e) {}
+    $("g_id_signin_container").classList.add("hidden");
+    $("intro").classList.add("hidden");
+    showMessage("Loading your lists…");
+    loadLists();
+  }
+
+  $("list-select").addEventListener("change", (e) => {
+    const list = snapshot.lists[Number(e.target.value)];
+    store(LAST_LIST_KEY, list.name);
+    renderList(list);
+  });
+  $("refresh-btn").addEventListener("click", loadLists);
+  $("tab-troops").addEventListener("click", () => selectTab("troops"));
+  $("tab-order").addEventListener("click", () => selectTab("order"));
+
+  window.onload = function () {
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID_WEB,
+      callback: handleCredentialResponse,
+      auto_select: true, // returning visitors on a phone go straight to their lists
+    });
+    google.accounts.id.renderButton($("g_id_signin_container"), { theme: "filled_black", size: "large", width: 280 });
+    google.accounts.id.prompt();
+  };
+</script>
+</body>
+</html>

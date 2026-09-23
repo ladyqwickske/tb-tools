@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>cCc Members — Q's TB Tools Admin</title>
+<link rel="icon" href="tools-logo.png" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #05060a;
+    --panel: #0c1020;
+    --panel-line: #1c2440;
+    --gold: #d4af37;
+    --gold-bright: #f2d68f;
+    --gold-dim: #8a742f;
+    --emerald-bright: #6fa373;
+    --danger: #c25b5b;
+    --danger-bright: #e08585;
+    --ink: #e9e6da;
+    --ink-dim: #a8a692;
+    --display: 'Cinzel', serif;
+    --body: 'Spectral', serif;
+    --utility: 'Oswald', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--void); color: var(--ink); font-family: var(--body); line-height: 1.5; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(212,175,55,0.15); }
+  header a { font-family: var(--utility); font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); text-decoration: none; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-family: var(--display); color: var(--gold-bright); font-size: 1.4rem; margin: 0 0 4px; }
+  h2 { font-family: var(--utility); font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--emerald-bright); margin: 26px 0 8px; }
+  p.sub { color: var(--ink-dim); font-style: italic; margin: 0 0 16px; font-size: 0.92rem; }
+  .hidden { display: none !important; }
+  .msg { padding: 12px 14px; border: 1px solid var(--panel-line); background: var(--panel); border-radius: 3px; color: var(--ink-dim); margin: 10px 0; font-size: 0.9rem; }
+  .msg.error { border-color: var(--danger); color: var(--danger-bright); }
+  .msg.warn { border-color: var(--gold-dim); color: var(--gold-bright); }
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filters button, .btn {
+    padding: 7px 12px; background: transparent; color: var(--ink-dim); border: 1px solid var(--panel-line);
+    border-radius: 2px; font-family: var(--utility); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+  }
+  .filters button[aria-pressed="true"] { color: var(--gold-bright); border-color: var(--gold); }
+  .btn.approve { color: var(--emerald-bright); border-color: var(--emerald-bright); }
+  .btn.deny, .btn.revoke { color: var(--danger-bright); border-color: var(--danger); }
+  .btn:disabled { opacity: 0.5; cursor: wait; }
+  .card { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; padding: 12px 14px; margin-top: 8px; display: flex; gap: 12px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+  .who { min-width: 0; flex: 1 1 280px; }
+  .who .tb { font-family: var(--utility); font-size: 1.02rem; color: var(--ink); }
+  .who .email { font-size: 0.84rem; color: var(--ink-dim); word-break: break-all; }
+  .who .extra { font-size: 0.78rem; color: var(--ink-dim); font-style: italic; }
+  .chip { font-family: var(--utility); font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; margin-left: 6px; vertical-align: middle; }
+  .chip.pending { background: var(--gold); color: var(--void); }
+  .chip.approved { background: var(--emerald-bright); color: var(--void); }
+  .chip.denied, .chip.revoked { background: var(--danger); color: var(--void); }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  form.add { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; align-items: end; }
+  form.add label { font-family: var(--utility); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); display: grid; gap: 4px; }
+  input[type="text"], input[type="email"] { padding: 9px 11px; background: var(--void); border: 1px solid var(--panel-line); border-radius: 2px; color: var(--ink); font-family: var(--body); font-size: 0.94rem; width: 100%; }
+  #g_id_signin_container { margin: 12px 0; }
+  .empty { color: var(--ink-dim); font-style: italic; padding: 10px 0; }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html">← TB Tools</a>
+  <a href="lists.html">My lists</a>
+</header>
+<main>
+  <h1>cCc members</h1>
+  <p class="sub">Approved members get the Battle Calculator free and 50% off Auto-Crypt. Revoking removes calculator access immediately and drops the discount from their next renewal.</p>
+
+  <div id="g_id_signin_container"></div>
+  <div class="msg hidden" id="status"></div>
+
+  <section id="admin" class="hidden">
+    <div class="msg warn hidden" id="coupon-warn">STRIPE_COUPON_CCC_AUTOCRYPT isn't set on the Worker, so approved members currently pay full price for Auto-Crypt. The free calculator works regardless.</div>
+
+    <h2>Add a member directly</h2>
+    <form class="add" id="add-form">
+      <label>Google email<input type="email" id="add-email" required placeholder="member@gmail.com" /></label>
+      <label>TB username<input type="text" id="add-tb" placeholder="in-game name" /></label>
+      <label>Note<input type="text" id="add-note" placeholder="optional" /></label>
+      <button class="btn approve" type="submit">Add as approved</button>
+    </form>
+
+    <h2>Requests &amp; members</h2>
+    <div class="filters" id="filters">
+      <button data-f="pending" aria-pressed="true">Pending <span id="n-pending"></span></button>
+      <button data-f="approved" aria-pressed="false">Approved <span id="n-approved"></span></button>
+      <button data-f="other" aria-pressed="false">Denied / revoked <span id="n-other"></span></button>
+      <button data-f="all" aria-pressed="false">All</button>
+    </div>
+    <div id="rows"></div>
+  </section>
+</main>
+
+<script>
+  const GOOGLE_CLIENT_ID_WEB = "47674606892-0m90hd0cd01kijo69ssuqtn1j3igp32i.apps.googleusercontent.com";
+  const WORKER_BASE_URL = "https://auto-crypt.ccc-hq.com";
+  let idToken = null;
+  let members = [];
+  let filter = "pending";
+  const $ = (id) => document.getElementById(id);
+
+  function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+  function date(unix) { return unix ? new Date(unix * 1000).toLocaleDateString() : "—"; }
+  function status(html, kind) {
+    const el = $("status");
+    el.innerHTML = html;
+    el.className = "msg" + (kind ? " " + kind : "");
+  }
+
+  async function api(path, extra) {
+    const res = await fetch(WORKER_BASE_URL + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_token: idToken, ...(extra || {}) }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (res.status === 403) throw new Error("This Google account is not an admin (add it to ADMIN_EMAILS on the Worker).");
+    if (res.status === 401) throw new Error("Sign-in expired — reload the page and sign in again.");
+    if (!res.ok) throw new Error(body.detail || body.error || `Request failed (${res.status})`);
+    return body;
+  }
+
+  function subText(m) {
+    if (!m.sub_tier && !m.sub_status) return "no subscription";
+    const until = m.current_period_end ? ` · until ${date(m.current_period_end)}` : "";
+    return `${m.sub_tier || "legacy"} · ${m.sub_status || "?"}${until}`;
+  }
+
+  function actionsFor(m) {
+    const b = (action, label, cls) => `<button class="btn ${cls}" data-email="${esc(m.email)}" data-action="${action}">${label}</button>`;
+    if (m.status === "pending") return b("approve", "Approve", "approve") + b("deny", "Deny", "deny");
+    if (m.status === "approved") return b("revoke", "Revoke", "revoke");
+    return b("approve", "Approve", "approve");
+  }
+
+  function render() {
+    const counts = { pending: 0, approved: 0, other: 0 };
+    members.forEach((m) => { counts[m.status === "pending" || m.status === "approved" ? m.status : "other"]++; });
+    $("n-pending").textContent = `(${counts.pending})`;
+    $("n-approved").textContent = `(${counts.approved})`;
+    $("n-other").textContent = `(${counts.other})`;
+
+    const shown = members.filter((m) =>
+      filter === "all" ? true
+      : filter === "other" ? (m.status === "denied" || m.status === "revoked")
+      : m.status === filter);
+
+    $("rows").innerHTML = shown.length ? shown.map((m) => `
+      <div class="card">
+        <div class="who">
+          <div class="tb">${esc(m.tb_username || "(no TB name)")}<span class="chip ${esc(m.status)}">${esc(m.status)}</span></div>
+          <div class="email">${esc(m.email)}${m.display_name ? " · " + esc(m.display_name) : ""}</div>
+          <div class="extra">Requested ${date(m.requested_at)}${m.decided_at ? " · decided " + date(m.decided_at) : ""} · ${esc(subText(m))}${m.note ? " · " + esc(m.note) : ""}</div>
+        </div>
+        <div class="actions">${actionsFor(m)}</div>
+      </div>`).join("") : `<p class="empty">Nothing here.</p>`;
+
+    $("rows").querySelectorAll("button[data-action]").forEach((btn) => {
+      btn.addEventListener("click", () => act(btn.dataset.email, btn.dataset.action, btn));
+    });
+  }
+
+  async function load() {
+    try {
+      const data = await api("/admin/ccc/list");
+      members = data.members || [];
+      $("coupon-warn").classList.toggle("hidden", !!data.coupon_configured);
+      $("admin").classList.remove("hidden");
+      $("status").classList.add("hidden");
+      render();
+    } catch (err) {
+      status(esc(err.message), "error");
+    }
+  }
+
+  async function act(email, action, btn, extra) {
+    if (action === "revoke" && !confirm(`Revoke cCc membership for ${email}?\n\nThey lose free calculator access right away, and the 50% Auto-Crypt discount is removed from their next renewal.`)) return;
+    if (btn) btn.disabled = true;
+    try {
+      const r = await api("/admin/ccc/set", { email, action, ...(extra || {}) });
+      status(`${esc(r.email)} → <strong>${esc(r.status)}</strong>${r.stripe_note ? " · Stripe: " + esc(r.stripe_note) : ""}`,
+             r.stripe_note && r.stripe_note.includes("FAILED") ? "error" : "");
+      await load();
+      $("status").classList.remove("hidden");
+    } catch (err) {
+      status(esc(err.message), "error");
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  $("filters").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-f]");
+    if (!b) return;
+    filter = b.dataset.f;
+    $("filters").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    render();
+  });
+
+  $("add-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("add-email").value.trim();
+    if (!email) return;
+    await act(email, "add", e.submitter, { tb_username: $("add-tb").value.trim() || undefined, note: $("add-note").value.trim() || undefined });
+    $("add-form").reset();
+    if (e.submitter) e.submitter.disabled = false;
+  });
+
+  window.onload = function () {
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID_WEB,
+      callback: (resp) => {
+        idToken = resp.credential;
+        $("g_id_signin_container").classList.add("hidden");
+        status("Loading…");
+        load();
+      },
+    });
+    google.accounts.id.renderButton($("g_id_signin_container"), { theme: "filled_black", size: "large", width: 280 });
+  };
+</script>
+</body>
+</html>
