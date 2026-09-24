@@ -307,10 +307,22 @@
     $("panel-order").classList.toggle("hidden", troops);
   }
 
+  // 2026-09-24: lists from EVERY computer on this account (one snapshot per
+  // computer), flattened into one picker. `allLists[i]` = { list, computer }.
+  let allLists = [];
+
   function renderSnapshot(data) {
-    snapshot = data.snapshot;
-    const lists = (snapshot && snapshot.lists) || [];
-    if (!lists.length) {
+    // Newer Worker: data.computers[]; older Worker: a single data.snapshot.
+    const computers = Array.isArray(data.computers) && data.computers.length
+      ? data.computers
+      : (data.snapshot ? [{ device_name: data.device_name, updated_at: data.updated_at, snapshot: data.snapshot }] : []);
+    allLists = [];
+    computers.forEach((c) => {
+      ((c.snapshot && c.snapshot.lists) || []).forEach((l) => allLists.push({ list: l, computer: c }));
+    });
+    snapshot = computers.length ? computers[0].snapshot : null;
+
+    if (!allLists.length) {
       $("viewer").classList.add("hidden");
       showMessage(
         `<strong>No lists synced yet.</strong><br>Open the Battle Calculator in TB-Tools on your PC. ` +
@@ -320,14 +332,47 @@
     }
     hideMessage();
     const select = $("list-select");
-    const wanted = recall(LAST_LIST_KEY) || snapshot.last_list;
-    select.innerHTML = lists.map((l, i) => `<option value="${i}">${esc(l.name)}</option>`).join("");
-    const idx = Math.max(0, lists.findIndex((l) => l.name === wanted));
+    const multiPC = computers.length > 1;
+    const pcName = (c) => c.device_name || "Unnamed computer";
+    const keyOf = (e) => `${pcName(e.computer)}\u0001${e.list.name}`;
+    const wanted = recall(LAST_LIST_KEY) || (snapshot && snapshot.last_list);
+
+    // Grouped by Registration record -- and by computer when there's more
+    // than one -- each option showing the formula too.
+    const shortFormula = (f) => String(f || "").split(" (")[0];
+    const groups = new Map();
+    allLists.forEach((e, i) => {
+      const rec = e.list.record_name || "No record";
+      const key = multiPC ? `${pcName(e.computer)} — ${rec}` : rec;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push({ l: e.list, i });
+    });
+    const useGroups = groups.size > 1;
+    select.innerHTML = [...groups.keys()].sort((a, b) => a.localeCompare(b)).map((g) => {
+      const opts = groups.get(g).map(({ l, i }) => {
+        const f = shortFormula(l.formula);
+        const label = l.name.includes(f) || !f ? l.name : `${l.name} — ${f}`;
+        return `<option value="${i}">${esc(label)}</option>`;
+      }).join("");
+      return useGroups ? `<optgroup label="${esc(g)}">${opts}</optgroup>` : opts;
+    }).join("");
+
+    let idx = allLists.findIndex((e) => keyOf(e) === wanted);
+    if (idx < 0) idx = allLists.findIndex((e) => e.list.name === wanted);
+    if (idx < 0) idx = 0;
     select.value = String(idx);
-    $("meta").textContent = `Synced ${timeAgo(data.updated_at)}${data.device_name ? " from " + data.device_name : ""}.`;
     $("viewer").classList.remove("hidden");
-    renderList(lists[idx]);
+    showEntry(idx);
   }
+
+  function showEntry(idx) {
+    const e = allLists[idx];
+    if (!e) return;
+    const c = e.computer;
+    $("meta").textContent = `Synced ${timeAgo(c.updated_at)}${c.device_name ? " from " + c.device_name : ""}.`;
+    renderList(e.list);
+  }
+
 
   async function loadLists() {
     const btn = $("refresh-btn");
@@ -378,9 +423,10 @@
   }
 
   $("list-select").addEventListener("change", (e) => {
-    const list = snapshot.lists[Number(e.target.value)];
-    store(LAST_LIST_KEY, list.name);
-    renderList(list);
+    const entry = allLists[Number(e.target.value)];
+    if (!entry) return;
+    store(LAST_LIST_KEY, `${entry.computer.device_name || "Unnamed computer"}\u0001${entry.list.name}`);
+    showEntry(Number(e.target.value));
   });
   $("refresh-btn").addEventListener("click", loadLists);
   $("tab-troops").addEventListener("click", () => selectTab("troops"));
