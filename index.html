@@ -266,6 +266,41 @@
     margin-top: 18px !important;
   }
   .download-note a { color: var(--gold-bright); }
+  .pricing-section { scroll-margin-top: 24px; }
+  .plan-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 18px; }
+  .plan-tabs button {
+    font-family: var(--utility); font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 9px 16px; background: transparent; color: var(--ink-dim);
+    border: 1px solid var(--panel-line); border-radius: 2px; cursor: pointer;
+  }
+  .plan-tabs button:hover { color: var(--gold-bright); }
+  .plan-tabs button[aria-selected="true"] { color: var(--gold-bright); border-color: var(--gold); background: rgba(212,175,55,0.07); }
+  .plan-tab-tag { color: var(--emerald-bright); margin-left: 6px; font-size: 0.66rem; }
+  .plan-heading { font-family: var(--display); color: var(--gold-bright); font-size: 1.1rem; margin: 0 0 6px; }
+  .plan-panel + .plan-panel { margin-top: 26px; }
+  .js-tabs .plan-panel + .plan-panel { margin-top: 0; }
+  .js-tabs .plan-panel[hidden] { display: none; }
+  .ccc-box {
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    margin-top: 28px; padding: 24px 26px;
+    border: 1px solid rgba(111,163,115,0.5); border-left: 3px solid var(--emerald-bright);
+    border-radius: 3px; background: rgba(61,107,66,0.12);
+    scroll-margin-top: 24px;
+  }
+  .ccc-box .cta { flex-shrink: 0; }
+  .keep-case { text-transform: none; }
+  .ccc-eyebrow {
+    font-family: var(--utility); font-size: 0.72rem !important; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--emerald-bright) !important; margin: 0 0 4px !important;
+  }
+  .ccc-title { font-family: var(--display); color: var(--gold-bright); font-size: 1.2rem; margin: 0 0 10px; }
+  .ccc-perks { margin: 0 0 10px !important; padding-left: 20px; }
+  .ccc-perks li { color: var(--ink); }
+  .ccc-perks strong { color: var(--gold-bright); font-weight: 600; }
+  .ccc-fine { font-size: 0.85rem !important; margin: 0 !important; }
+  @media (max-width: 720px) {
+    .ccc-box { flex-direction: column; align-items: flex-start; }
+  }
   .release-notes {
     width: 100%;
     margin-top: 4px;
@@ -516,7 +551,7 @@
     <a href="https://ccc-hq.com">← Back to ccc-hq.com</a>
   </nav>
   <nav>
-    <a href="#download">Download</a> &nbsp;·&nbsp; <a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="lists.html">My Battle Lists</a> &nbsp;·&nbsp; <a href="devices.html">My Account</a>
+    <a href="#download">Download</a> &nbsp;·&nbsp; <a href="#pricing">Pricing</a> &nbsp;·&nbsp; <a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="lists.html">My Battle Lists</a> &nbsp;·&nbsp; <a href="devices.html">My Account</a>
   </nav>
 </header>
 <section class="hero">
@@ -539,7 +574,7 @@
     </div>
     <p class="download-meta">Windows · portable .zip — just unzip and run, no installer.</p>
     <p class="release-notes" id="release-notes"></p>
-    <p class="download-note">Haven't picked a plan yet? Download first — the plans for each tool are <a href="#tools-list">listed below</a>.</p>
+    <p class="download-note">Haven't picked a plan yet? Download first — you can <a href="#pricing">choose a plan</a> or start a trial whenever you're ready.</p>
   </article>
   <article class="tool-card" id="tools-list">
     <span class="tool-status">Available</span>
@@ -575,82 +610,12 @@
     </ul>
     <p style="font-size:0.85rem; color:var(--ink-dim);">Works at 1024×768, 1366×768, 1680×1050, 1760×990, and 1920×1080. Need another resolution? Email support@ccc-hq.com. Full setup details are in the <a href="install.html" style="color:var(--gold-bright);">installation guide</a>.</p>
 
-    <h3 class="tool-subheading">One subscription. All your accounts.</h3>
-    <p>Whether you play one account or several, you don't need a separate subscription for each account. Your subscription covers all of your Total Battle accounts. And because Auto-Crypter can be installed on up to 2 devices per subscription, you can use it where it suits you best — for example, on your main PC and your laptop.</p>
-    <div class="benefit-grid">
-      <div class="benefit-tile">
-        <p class="benefit-title">All your accounts</p>
-        <p class="benefit-desc">No additional charge for additional Total Battle accounts.</p>
-      </div>
-      <div class="benefit-tile">
-        <p class="benefit-title">2 devices</p>
-        <p class="benefit-desc">Install and use Auto-Crypter on up to two devices.</p>
-      </div>
-      <div class="benefit-tile">
-        <p class="benefit-title">Unlimited usage</p>
-        <p class="benefit-desc">No march limits. No crypt limits. No hourly limits.</p>
-      </div>
-    </div>
-
-    <h3 class="tool-subheading">Pricing</h3>
-    <p>One plan, four ways to pay for it — the longer you commit, the less it costs per month. Every plan includes everything above: all your accounts, 2 devices, unlimited use.</p>
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <p class="pricing-name">Monthly</p>
-        <p class="pricing-price">€9.99</p>
-        <p class="pricing-permonth">per month</p>
-        <p class="pricing-billed">Billed monthly</p>
-        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=monthly">Subscribe →</a>
-      </div>
-      <div class="pricing-card">
-        <span class="pricing-badge">Save 17%</span>
-        <p class="pricing-name">3 Months</p>
-        <p class="pricing-price">€24.99</p>
-        <p class="pricing-permonth">≈ €8.33 / mo</p>
-        <p class="pricing-billed">Billed every 3 months</p>
-        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=quarterly">Subscribe →</a>
-      </div>
-      <div class="pricing-card">
-        <span class="pricing-badge">Save 25%</span>
-        <p class="pricing-name">6 Months</p>
-        <p class="pricing-price">€44.99</p>
-        <p class="pricing-permonth">≈ €7.50 / mo</p>
-        <p class="pricing-billed">Billed every 6 months</p>
-        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=semiannual">Subscribe →</a>
-      </div>
-      <!--div class="pricing-card featured">
-        <span class="pricing-badge">Save 33% • Best value</span>
-        <p class="pricing-name">Yearly</p>
-        <p class="pricing-price">€79.99</p>
-        <p class="pricing-permonth">≈ €6.67 / mo</p>
-        <p class="pricing-billed">Billed once per year</p>
-        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=annual">Subscribe →</a>
-      </div-->
-    </div>
-
-    <h3 class="tool-subheading">Try it before you commit</h3>
-    <p>Not sure if Auto-Crypter is right for you? Try it with your own accounts, your own setup and your own crypting preferences.</p>
-    <div class="trial-grid">
-      <div class="trial-card">
-        <p class="trial-name">7-Day Trial</p>
-        <p class="trial-price">€2.99</p>
-        <p class="trial-desc">A full 7 days to test Auto-Crypter — and the Battle Calculator — and see how they work for you.</p>
-        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=trial_7">Start trial →</a>
-      </div>
-      <div class="trial-card">
-        <p class="trial-name">14-Day Trial</p>
-        <p class="trial-price">€4.99</p>
-        <p class="trial-desc">Need a little more time? Get 14 days to try everything — Auto-Crypter and the Battle Calculator — and make sure it fits your setup.</p>
-        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=trial_14">Start trial →</a>
-      </div>
-    </div>
 
     <div class="closing-block">
       <p class="closing-tagline">Spend less time managing crypts.</p>
       <p class="closing-body">You already have enough things to do in Total Battle. Let Auto-Crypter handle the crypts.</p>
       <p class="closing-recap">One subscription. All your accounts. Two devices. Unlimited crypting.</p>
-      <p></p>
-      <a class="cta primary" href="subscribe.html?tier=autocrypt">Subscribe →</a>
+      <a class="cta primary" href="#pricing" data-plan-link="autocrypt">See plans &amp; pricing →</a>
       <a class="cta secondary js-download-btn" href="https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.1.2/TB-Tools_0.1.2.zip">Download TB-Tools v0.1.2</a>
       <a class="closing-link" href="install.html">New here? Follow the step-by-step installation guide →</a>
     </div>
@@ -695,68 +660,169 @@
     </div>
 
     <div class="tool-actions">
+      <a class="cta primary" href="#pricing" data-plan-link="battlecalc">See plans &amp; pricing →</a>
       <a class="cta secondary js-download-btn" href="https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.1.2/TB-Tools_0.1.2.zip">Download TB-Tools v0.1.2</a>
-      <p style="margin:0; font-size:0.9rem;">Same app as Auto-Crypter — the Battle Calculator is its own tab.</p>
+      <p style="margin:0; font-size:0.9rem; flex-basis:100%;">Same app as Auto-Crypter — the Battle Calculator is its own tab.</p>
     </div>
 
-    <h3 class="tool-subheading">Pricing</h3>
-    <p>Same plans as Auto-Crypter — the longer you commit, the less it costs per month. Covers all your accounts on up to 2 devices.</p>
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <p class="pricing-name">Monthly</p>
-        <p class="pricing-price">€4.99</p>
-        <p class="pricing-permonth">per month</p>
-        <p class="pricing-billed">Billed monthly</p>
-        <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=monthly">Subscribe →</a>
+  </article>
+  <article class="tool-card pricing-section" id="pricing">
+    <span class="tool-status">Plans &amp; pricing</span>
+    <h2>One subscription. All your accounts.</h2>
+    <p>Pick the tool you need, or get both with All-In. Every plan works the same way: it covers all of your Total Battle accounts, on up to 2 devices, with no usage limits — and the longer you commit, the less it costs per month.</p>
+    <div class="benefit-grid">
+      <div class="benefit-tile">
+        <p class="benefit-title">All your accounts</p>
+        <p class="benefit-desc">No additional charge for additional Total Battle accounts.</p>
       </div>
-      <div class="pricing-card">
-        <span class="pricing-badge">Save 17%</span>
-        <p class="pricing-name">3 Months</p>
-        <p class="pricing-price">€12.49</p>
-        <p class="pricing-permonth">≈ €4.16 / mo</p>
-        <p class="pricing-billed">Billed every 3 months</p>
-        <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=quarterly">Subscribe →</a>
+      <div class="benefit-tile">
+        <p class="benefit-title">2 devices</p>
+        <p class="benefit-desc">Use TB-Tools on up to two devices — for example your main PC and your laptop.</p>
       </div>
-      <div class="pricing-card">
-        <span class="pricing-badge">Save 25%</span>
-        <p class="pricing-name">6 Months</p>
-        <p class="pricing-price">€22.49</p>
-        <p class="pricing-permonth">≈ €3.75 / mo</p>
-        <p class="pricing-billed">Billed every 6 months</p>
-        <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=semiannual">Subscribe →</a>
+      <div class="benefit-tile">
+        <p class="benefit-title">Unlimited usage</p>
+        <p class="benefit-desc">No march limits. No crypt limits. No hourly limits.</p>
       </div>
     </div>
-    <p style="font-size:0.85rem; color:var(--ink-dim); margin-top:14px;">cCc clan member? The Battle Calculator is free for you, and Auto-Crypter is 50% off — <a href="subscribe.html#ccc" style="color:var(--gold-bright);">request access here</a>.</p>
-  </article>
-  <article class="tool-card">
-    <span class="tool-status">Best value</span>
-    <h2>All-In: Auto-Crypter + Battle Calculator</h2>
-    <p class="tool-hook">Both tools, one subscription, for less than buying them separately.</p>
-    <p>Everything above in a single plan — all your accounts, 2 devices, unlimited crypting and every Battle Calculator feature — for about 13% less than subscribing to both tools on their own.</p>
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <p class="pricing-name">Monthly</p>
-        <p class="pricing-price">€12.99</p>
-        <p class="pricing-permonth">per month</p>
-        <p class="pricing-billed">Billed monthly</p>
-        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=monthly">Subscribe →</a>
+
+    <h3 class="tool-subheading">Choose your plan</h3>
+    <div class="plan-tabs" role="tablist" aria-label="Choose a plan">
+      <button type="button" role="tab" id="tab-all_in" aria-controls="plan-all_in" aria-selected="true">All-In <span class="plan-tab-tag">Best value</span></button>
+      <button type="button" role="tab" id="tab-autocrypt" aria-controls="plan-autocrypt" aria-selected="false">Auto-Crypter</button>
+      <button type="button" role="tab" id="tab-battlecalc" aria-controls="plan-battlecalc" aria-selected="false">Battle Calculator</button>
+    </div>
+
+    <div class="plan-panel" id="plan-all_in" role="tabpanel" aria-labelledby="tab-all_in">
+      <h4 class="plan-heading">All-In: Auto-Crypter + Battle Calculator</h4>
+      <p>Both tools in a single plan, for about 13% less than subscribing to each on its own.</p>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <p class="pricing-name">Monthly</p>
+          <p class="pricing-price">€12.99</p>
+          <p class="pricing-permonth">per month</p>
+          <p class="pricing-billed">Billed monthly</p>
+          <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=monthly">Subscribe →</a>
+        </div>
+        <div class="pricing-card">
+          <span class="pricing-badge">Save 17%</span>
+          <p class="pricing-name">3 Months</p>
+          <p class="pricing-price">€32.49</p>
+          <p class="pricing-permonth">≈ €10.83 / mo</p>
+          <p class="pricing-billed">Billed every 3 months</p>
+          <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=quarterly">Subscribe →</a>
+        </div>
+        <div class="pricing-card featured">
+          <span class="pricing-badge">Save 25% • Best value</span>
+          <p class="pricing-name">6 Months</p>
+          <p class="pricing-price">€58.49</p>
+          <p class="pricing-permonth">≈ €9.75 / mo</p>
+          <p class="pricing-billed">Billed every 6 months</p>
+          <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=semiannual">Subscribe →</a>
+        </div>
       </div>
-      <div class="pricing-card">
-        <span class="pricing-badge">Save 17%</span>
-        <p class="pricing-name">3 Months</p>
-        <p class="pricing-price">€32.49</p>
-        <p class="pricing-permonth">≈ €10.83 / mo</p>
-        <p class="pricing-billed">Billed every 3 months</p>
-        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=quarterly">Subscribe →</a>
+    </div>
+    <div class="plan-panel" id="plan-autocrypt" role="tabpanel" aria-labelledby="tab-autocrypt">
+      <h4 class="plan-heading">Auto-Crypter</h4>
+      <p>Unlimited automated crypting.</p>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <p class="pricing-name">Monthly</p>
+          <p class="pricing-price">€9.99</p>
+          <p class="pricing-permonth">per month</p>
+          <p class="pricing-billed">Billed monthly</p>
+          <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=monthly">Subscribe →</a>
+        </div>
+        <div class="pricing-card">
+          <span class="pricing-badge">Save 17%</span>
+          <p class="pricing-name">3 Months</p>
+          <p class="pricing-price">€24.99</p>
+          <p class="pricing-permonth">≈ €8.33 / mo</p>
+          <p class="pricing-billed">Billed every 3 months</p>
+          <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=quarterly">Subscribe →</a>
+        </div>
+        <div class="pricing-card">
+          <span class="pricing-badge">Save 25%</span>
+          <p class="pricing-name">6 Months</p>
+          <p class="pricing-price">€44.99</p>
+          <p class="pricing-permonth">≈ €7.50 / mo</p>
+          <p class="pricing-billed">Billed every 6 months</p>
+          <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=semiannual">Subscribe →</a>
+        </div>
+        <!--div class="pricing-card featured">
+          <span class="pricing-badge">Save 33% • Best value</span>
+          <p class="pricing-name">Yearly</p>
+          <p class="pricing-price">€79.99</p>
+          <p class="pricing-permonth">≈ €6.67 / mo</p>
+          <p class="pricing-billed">Billed once per year</p>
+          <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=annual">Subscribe →</a>
+        </div-->
       </div>
-      <div class="pricing-card featured">
-        <span class="pricing-badge">Save 25% • Best value</span>
-        <p class="pricing-name">6 Months</p>
-        <p class="pricing-price">€58.49</p>
-        <p class="pricing-permonth">≈ €9.75 / mo</p>
-        <p class="pricing-billed">Billed every 6 months</p>
-        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=semiannual">Subscribe →</a>
+    </div>
+    <div class="plan-panel" id="plan-battlecalc" role="tabpanel" aria-labelledby="tab-battlecalc">
+      <h4 class="plan-heading">Battle Calculator</h4>
+      <p>Every Battle Calculator feature, including Write to Battle Screen and list sync to your phone.</p>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <p class="pricing-name">Monthly</p>
+          <p class="pricing-price">€4.99</p>
+          <p class="pricing-permonth">per month</p>
+          <p class="pricing-billed">Billed monthly</p>
+          <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=monthly">Subscribe →</a>
+        </div>
+        <div class="pricing-card">
+          <span class="pricing-badge">Save 17%</span>
+          <p class="pricing-name">3 Months</p>
+          <p class="pricing-price">€12.49</p>
+          <p class="pricing-permonth">≈ €4.16 / mo</p>
+          <p class="pricing-billed">Billed every 3 months</p>
+          <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=quarterly">Subscribe →</a>
+        </div>
+        <div class="pricing-card">
+          <span class="pricing-badge">Save 25%</span>
+          <p class="pricing-name">6 Months</p>
+          <p class="pricing-price">€22.49</p>
+          <p class="pricing-permonth">≈ €3.75 / mo</p>
+          <p class="pricing-billed">Billed every 6 months</p>
+          <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=semiannual">Subscribe →</a>
+        </div>
       </div>
+    </div>
+
+    <h3 class="tool-subheading">Try it before you commit</h3>
+    <p>Not sure yet? Trials include <strong>both</strong> tools, so you can test everything with your own accounts and your own setup.</p>
+    <div class="trial-grid">
+      <div class="trial-card">
+        <p class="trial-name">7-Day Trial</p>
+        <p class="trial-price">€2.99</p>
+        <p class="trial-desc">A full 7 days to test Auto-Crypter — and the Battle Calculator — and see how they work for you.</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=trial_7">Start trial →</a>
+      </div>
+      <div class="trial-card">
+        <p class="trial-name">14-Day Trial</p>
+        <p class="trial-price">€4.99</p>
+        <p class="trial-desc">Need a little more time? Get 14 days to try everything — Auto-Crypter and the Battle Calculator — and make sure it fits your setup.</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=trial_14">Start trial →</a>
+      </div>
+    </div>
+
+    <div class="ccc-box" id="ccc">
+      <div class="ccc-text">
+        <p class="ccc-eyebrow"><span class="keep-case">cCc</span> clan members</p>
+        <h3 class="ccc-title">Special pricing for the cCc family</h3>
+        <ul class="ccc-perks">
+          <li><strong>Battle Calculator — free.</strong> No subscription needed.</li>
+          <li><strong>Auto-Crypter — 50% off</strong> every plan, starting with a free 7-day trial. No card needed up front.</li>
+        </ul>
+        <p class="ccc-fine">Request access once with the Google account you use in TB-Tools. Membership is checked and approved by hand, and the discount ends if you leave the clan.</p>
+      </div>
+      <a class="cta primary" href="subscribe.html#ccc">Request <span class="keep-case">cCc</span> access →</a>
+    </div>
+
+    <div class="closing-block">
+      <p class="closing-tagline">Ready when you are.</p>
+      <p class="closing-recap">One download. Every tool. All your accounts.</p>
+      <a class="cta secondary js-download-btn" href="https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.1.2/TB-Tools_0.1.2.zip">Download TB-Tools v0.1.2</a>
+      <a class="closing-link" href="install.html">New here? Follow the step-by-step installation guide →</a>
     </div>
   </article>
   <article class="tool-card placeholder">
@@ -767,7 +833,7 @@
 <footer>
   <img src="tools-logo.png" alt="Total Battle Tools" />
   <p class="foot-word">Q's Total Battle Tools</p>
-  <p class="foot-links"><a href="#download">Download</a> &nbsp;·&nbsp; <a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="devices.html">Manage Subscription</a> &nbsp;·&nbsp; <a href="lists.html">My Battle Lists</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></p>
+  <p class="foot-links"><a href="#download">Download</a> &nbsp;·&nbsp; <a href="#pricing">Pricing</a> &nbsp;·&nbsp; <a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="devices.html">Manage Subscription</a> &nbsp;·&nbsp; <a href="lists.html">My Battle Lists</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></p>
 </footer>
 
 <script>
@@ -830,6 +896,36 @@
     } else {
       poster(current);
     }
+  })();
+</script>
+<script>
+  // Plans & pricing tabs. Without JS all three plans simply show stacked.
+  (function () {
+    const section = document.getElementById("pricing");
+    if (!section) return;
+    section.classList.add("js-tabs");
+    const tabs = section.querySelectorAll('.plan-tabs [role="tab"]');
+    function select(tier) {
+      tabs.forEach(function (t) {
+        const on = t.id === "tab-" + tier;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      });
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener("click", function () { select(t.id.slice(4)); });
+      t.addEventListener("keydown", function (e) {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        const next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+        next.focus(); next.click();
+      });
+    });
+    // "See plans" links in the tool cards open the matching tab.
+    document.querySelectorAll("[data-plan-link]").forEach(function (a) {
+      a.addEventListener("click", function () { select(a.dataset.planLink); });
+    });
+    select("all_in");
   })();
 </script>
 </body>
