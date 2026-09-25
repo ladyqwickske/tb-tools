@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Installing Auto-Crypter — Q's TB Tools</title>
-<meta name="description" content="Step-by-step installation and setup guide for TB Auto-Crypter." />
+<title>Installing TB-Tools — Q's TB Tools</title>
+<meta name="description" content="Step-by-step installation and setup guide for TB-Tools (Auto-Crypter and Battle Calculator)." />
 <link rel="icon" href="tools-logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -322,7 +322,7 @@
 <div class="stars"></div>
 <header>
   <nav>
-    <a href="index.html">← Back to Auto-Crypter</a>
+    <a href="index.html">← Back to TB-Tools</a>
   </nav>
   <nav>
     <a href="devices.html">My Account</a>
@@ -331,8 +331,8 @@
 
 <section class="hero">
   <p class="eyebrow">Installation Guide</p>
-  <h1>Getting Auto-Crypter up and running</h1>
-  <p class="tagline">Everything you need to install TB Auto-Crypter and get your display set up correctly, from download to your first automated run.</p>
+  <h1>Getting TB-Tools up and running</h1>
+  <p class="tagline">One download gives you both Auto-Crypter and the Battle Calculator. Here's everything you need, from download to your first automated run.</p>
 </section>
 
 <nav class="toc" aria-label="Guide sections">
@@ -362,30 +362,30 @@
   </article>
 
   <article class="step-card" id="download">
-    <div class="step-head"><span class="step-num">1</span><h2>Download Auto-Crypter</h2></div>
-    <p>Grab the latest version below. It comes as a single .zip file.</p>
+    <div class="step-head"><span class="step-num">1</span><h2>Download TB-Tools</h2></div>
+    <p>Grab the latest version below. It comes as a single .zip file and contains <strong>both</strong> Auto-Crypter and the Battle Calculator — there's nothing separate to download for either tool. Which tools you can use depends on your subscription or trial.</p>
     <div class="download-row">
       <a class="cta primary" id="download-btn"
-         href="https://github.com/ladyqwickske/tb-tools/releases/download/auto-crypter-0.0.7/TBAutoCrypt_0.0.7.zip">Download v0.0.7</a>
+         href="https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.1.2/TB-Tools_0.1.2.zip">Download TB-Tools v0.1.2</a>
     </div>
   </article>
 
   <article class="step-card" id="copy">
     <div class="step-head"><span class="step-num">2</span><h2>Unzip and install the folder</h2></div>
-    <p>Auto-Crypter is distributed as a folder, not a single file — the .exe depends on other files that ship alongside it.</p>
+    <p>TB-Tools is distributed as a folder, not a single file — the .exe depends on other files that ship alongside it.</p>
     <ol>
       <li>Unzip the download.</li>
-      <li>Copy the <strong>entire</strong> TBAutoCrypt folder to where you want to run it from — your Desktop or a dedicated Programs folder both work well.</li>
-      <li>Don't move or copy just <code>TBAutoCrypt.exe</code> on its own — it won't launch without the rest of the folder.</li>
+      <li>Copy the <strong>entire</strong> TB-Tools folder to where you want to run it from — your Desktop or a dedicated Programs folder both work well.</li>
+      <li>Don't move or copy just <code>TB-Tools.exe</code> on its own — it won't launch without the rest of the folder.</li>
     </ol>
   </article>
 
   <article class="step-card" id="launch">
     <div class="step-head"><span class="step-num">3</span><h2>First launch</h2></div>
     <ol>
-      <li>Open the TBAutoCrypt folder and double-click <code>TBAutoCrypt.exe</code>.</li>
-      <li>Sign in with the Google account tied to your Total Battle play, and accept the access prompt Auto-Crypter shows you.</li>
-      <li>Once that's done, the main Auto-Crypter window opens and you're ready for setup.</li>
+      <li>Open the TB-Tools folder and double-click <code>TB-Tools.exe</code>.</li>
+      <li>Sign in with the Google account tied to your Total Battle play, and accept the access prompt TB-Tools shows you.</li>
+      <li>Once that's done, the main TB-Tools window opens and you're ready for setup.</li>
     </ol>
   </article>
 
@@ -447,7 +447,7 @@
   <article class="step-card help-card" id="help">
     <h2 style="font-family: var(--display); color: var(--gold-bright); margin: 0 0 8px;">Need a hand?</h2>
     <p>Stuck on a step, or running a resolution that isn't listed above? Email <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a> and we'll help you sort it out.</p>
-    <a class="cta secondary" href="index.html">← Back to Auto-Crypter</a>
+    <a class="cta secondary" href="index.html">← Back to TB-Tools</a>
   </article>
 
 </main>
@@ -455,7 +455,7 @@
 <footer>
   <img src="tools-logo.png" alt="Total Battle Tools" />
   <p class="foot-word">Q's Total Battle Tools</p>
-  <p class="foot-links"><a href="index.html">Auto-Crypter</a> &nbsp;·&nbsp; <a href="devices.html">Manage Subscription</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></p>
+  <p class="foot-links"><a href="index.html">TB-Tools</a> &nbsp;·&nbsp; <a href="devices.html">Manage Subscription</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></p>
 </footer>
 
 <script>
@@ -468,7 +468,7 @@
       .then((info) => {
         if (!info || !info.version || !info.download_url) return;
         const btn = document.getElementById("download-btn");
-        btn.textContent = `Download v${info.version}`;
+        btn.textContent = `Download TB-Tools v${info.version}`;
         btn.href = info.download_url;
       })
       .catch(() => {
