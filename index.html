@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Installing TB-Tools — Q's TB Tools</title>
-<meta name="description" content="Step-by-step installation and setup guide for TB-Tools (Auto-Crypter and Battle Calculator)." />
+<title>Q's TB Tools</title>
+<meta name="description" content="Tools built for Total Battle — Auto-Crypter and the Battle Calculator in one download." />
 <link rel="icon" href="tools-logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,8 +19,6 @@
     --gold-dim: #8a742f;
     --emerald: #3d6b42;
     --emerald-bright: #6fa373;
-    --rust: #a85c32;
-    --rust-bright: #dd9a63;
     --ink: #e9e6da;
     --ink-dim: #a8a692;
     --display: 'Cinzel', serif;
@@ -59,6 +57,24 @@
     padding: 18px clamp(20px, 5vw, 56px);
     border-bottom: 1px solid rgba(212,175,55,0.15);
   }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .brand img {
+    height: 34px;
+    width: 34px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(212,175,55,0.35));
+  }
+  .brand-word {
+    font-family: var(--utility);
+    letter-spacing: 0.14em;
+    font-size: 0.8rem;
+    color: var(--gold-bright);
+  }
   header nav a {
     font-family: var(--utility);
     font-size: 0.78rem;
@@ -74,7 +90,22 @@
     position: relative;
     z-index: 1;
     text-align: center;
-    padding: 64px 20px 36px;
+    padding: 80px 20px 60px;
+  }
+  .hero-logo {
+    width: clamp(220px, 34vw, 340px);
+    margin: 0 auto 8px;
+    display: block;
+    filter: drop-shadow(0 0 34px rgba(212,175,55,0.25));
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-logo {
+      animation: float 7s ease-in-out infinite;
+    }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
   }
   .eyebrow {
     font-family: var(--utility);
@@ -90,162 +121,81 @@
     margin: 0 12px;
     font-size: 0.68rem;
   }
-  .hero h1 {
-    font-family: var(--display);
-    font-size: clamp(1.8rem, 4vw, 2.4rem);
-    color: var(--gold-bright);
-    margin: 0 0 12px;
-    letter-spacing: 0.02em;
-  }
   .tagline {
-    max-width: 52ch;
-    margin: 0 auto;
-    font-size: clamp(1rem, 1.6vw, 1.1rem);
+    max-width: 46ch;
+    margin: 26px auto 0;
+    font-size: clamp(1rem, 1.6vw, 1.15rem);
     font-style: italic;
     color: var(--ink-dim);
   }
-  .toc {
+  .tools {
     position: relative;
     z-index: 1;
-    max-width: 760px;
-    margin: 30px auto 0;
-    padding: 0 clamp(20px, 6vw, 56px);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-  }
-  .toc a {
-    font-family: var(--utility);
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: var(--ink-dim);
-    border: 1px solid var(--panel-line);
-    border-radius: 20px;
-    padding: 7px 16px;
-    transition: color 0.25s ease, border-color 0.25s ease;
-  }
-  .toc a:hover, .toc a:focus-visible {
-    color: var(--gold-bright);
-    border-color: var(--gold-dim);
-  }
-  .guide {
-    position: relative;
-    z-index: 1;
-    max-width: 760px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 40px clamp(20px, 6vw, 56px) 100px;
+    padding: 20px clamp(20px, 6vw, 56px) 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
   }
-  .step-card {
+  .tool-card {
     background: linear-gradient(180deg, var(--panel) 0%, #080a15 100%);
     border: 1px solid var(--panel-line);
     border-radius: 4px;
-    padding: 30px 32px;
-    margin-bottom: 22px;
+    padding: 34px 32px;
     position: relative;
-    scroll-margin-top: 24px;
   }
-  .step-card::before {
+  .tool-card::before {
     content: '';
     position: absolute;
     top: 0; left: 32px;
     width: 40px; height: 3px;
     background: linear-gradient(90deg, var(--gold), transparent);
   }
-  .step-head {
+  .tool-status {
+    display: inline-block;
+    font-family: var(--utility);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--void);
+    background: var(--gold);
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+  .tool-status.soon {
+    background: transparent;
+    color: var(--emerald-bright);
+    border: 1px solid var(--emerald);
+  }
+  .tool-card h2 {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    letter-spacing: 0.03em;
+    color: var(--gold-bright);
+    margin: 0 0 12px;
+  }
+  .tool-card p {
+    color: var(--ink-dim);
+    margin: 0 0 8px;
+    font-size: 1rem;
+  }
+  .tool-card ul {
+    margin: 16px 0 0;
+    padding-left: 20px;
+    color: var(--ink-dim);
+    font-size: 0.96rem;
+  }
+  .tool-card li { margin-bottom: 6px; }
+  .tool-actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 14px;
-    margin: 0 0 14px;
-  }
-  .step-num {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: 1.5px solid var(--gold-dim);
-    color: var(--gold-bright);
-    font-family: var(--utility);
-    font-size: 0.95rem;
-  }
-  .step-head h2 {
-    font-family: var(--display);
-    font-size: 1.25rem;
-    letter-spacing: 0.02em;
-    color: var(--gold-bright);
-    margin: 0;
-  }
-  .step-card p { color: var(--ink-dim); margin: 0 0 10px; font-size: 0.98rem; }
-  .step-card ul, .step-card ol { margin: 8px 0 10px; padding-left: 22px; color: var(--ink-dim); font-size: 0.96rem; }
-  .step-card li { margin-bottom: 6px; }
-  .step-card strong { color: var(--ink); }
-  .req-list { list-style: none; padding-left: 0; margin: 14px 0 4px; }
-  .req-list li {
-    position: relative;
-    padding-left: 26px;
-    margin-bottom: 10px;
-  }
-  .req-list li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: var(--emerald-bright);
-    font-weight: 700;
-  }
-  .setting-block {
-    border-top: 1px solid var(--panel-line);
-    padding-top: 16px;
-    margin-top: 16px;
-  }
-  .setting-block:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
-  .setting-block .setting-title {
-    font-family: var(--utility);
-    font-size: 0.82rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--gold-bright);
-    margin: 0 0 6px;
-  }
-  .setting-value {
-    color: var(--emerald-bright);
-    font-family: var(--utility);
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
-  }
-  .note-box, .warn-box {
-    border-radius: 2px;
-    padding: 13px 18px;
-    margin: 14px 0 4px;
-    font-size: 0.9rem;
-  }
-  .note-box {
-    background: rgba(111,163,115,0.08);
-    border-left: 3px solid var(--emerald);
-    color: var(--ink-dim);
-  }
-  .note-box strong { color: var(--emerald-bright); }
-  .warn-box {
-    background: rgba(212,175,55,0.07);
-    border-left: 3px solid var(--rust);
-    color: var(--ink-dim);
-  }
-  .warn-box strong { color: var(--rust-bright); }
-  code {
-    background: #0c1020;
-    border: 1px solid var(--panel-line);
-    border-radius: 3px;
-    padding: 1px 6px;
-    font-family: Consolas, 'Courier New', monospace;
-    font-size: 0.86em;
-    color: var(--gold-bright);
+    margin-top: 24px;
   }
   .cta {
-    display: inline-block;
     font-family: var(--utility);
     font-size: 0.78rem;
     letter-spacing: 0.12em;
@@ -259,7 +209,8 @@
     color: var(--void);
     background: linear-gradient(180deg, var(--gold-bright), var(--gold));
   }
-  .cta.primary:hover, .cta.primary:focus-visible {
+  .cta.primary:hover,
+  .cta.primary:focus-visible {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(212,175,55,0.25);
   }
@@ -268,23 +219,257 @@
     background: transparent;
     border: 1px solid var(--gold-dim);
   }
-  .cta.secondary:hover, .cta.secondary:focus-visible {
+  .cta.secondary:hover,
+  .cta.secondary:focus-visible {
     border-color: var(--gold);
     color: var(--gold-bright);
     background: rgba(212,175,55,0.08);
   }
-  .download-row {
+  .download-panel {
+    border-color: rgba(111,163,115,0.45);
+    text-align: center;
+    scroll-margin-top: 24px;
+  }
+  .download-panel::before {
+    left: 50%;
+    width: 80px;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, transparent, var(--emerald-bright), transparent);
+  }
+  .download-panel .tool-status { background: var(--emerald-bright); }
+  .download-panel > p { max-width: 58ch; margin-left: auto; margin-right: auto; }
+  .download-includes {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 14px;
-    margin-top: 6px;
+    justify-content: center;
+    gap: 10px;
+    margin: 18px 0 4px;
   }
-  .help-card {
+  .download-includes span {
+    font-family: var(--utility);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-bright);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    padding: 5px 12px;
+  }
+  .download-panel .tool-actions { justify-content: center; }
+  .download-panel .cta.primary { font-size: 0.9rem; padding: 15px 34px; }
+  .download-meta {
+    font-size: 0.85rem !important;
+    margin-top: 14px !important;
+  }
+  .download-note {
+    font-size: 0.9rem !important;
+    margin-top: 18px !important;
+  }
+  .download-note a { color: var(--gold-bright); }
+  .release-notes {
+    width: 100%;
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+    font-style: italic;
+    display: none;
+  }
+  .tool-hook {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    color: var(--emerald-bright);
+    font-style: italic;
+    margin: -6px 0 16px;
+  }
+  .tool-subheading {
+    font-family: var(--display);
+    font-size: 1.12rem;
+    letter-spacing: 0.02em;
+    color: var(--gold-bright);
+    margin: 30px 0 12px;
+    padding-top: 24px;
+    border-top: 1px solid var(--panel-line);
+  }
+  .benefit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin: 16px 0 4px;
+  }
+  .benefit-tile {
+    background: var(--void);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    padding: 14px 16px;
+  }
+  .benefit-title {
+    font-family: var(--utility);
+    font-size: 0.82rem;
+    letter-spacing: 0.03em;
+    color: var(--gold-bright);
+    margin: 0 0 4px;
+  }
+  .benefit-desc { font-size: 0.82rem; color: var(--ink-dim); margin: 0; }
+  .benefit-grid.advantage-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  @media (max-width: 720px) {
+    .benefit-grid.advantage-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 420px) {
+    .benefit-grid.advantage-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 18px 0 4px;
+  }
+  .pricing-card {
+    background: var(--void);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    padding: 22px 18px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .pricing-card.featured {
+    border-color: var(--gold-dim);
+    background: rgba(212,175,55,0.05);
+  }
+  .pricing-badge {
+    display: inline-block;
+    font-family: var(--utility);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--void);
+    background: var(--gold);
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin: 0 auto 12px;
+  }
+  .pricing-name {
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 0 0 8px;
+  }
+  .pricing-price {
+    font-family: var(--display);
+    font-size: 1.7rem;
+    color: var(--gold-bright);
+    margin: 0 0 2px;
+  }
+  .pricing-permonth {
+    font-size: 0.78rem;
+    color: var(--emerald-bright);
+    margin: 0 0 10px;
+  }
+  .pricing-billed { font-size: 0.8rem; color: var(--ink-dim); margin: 0 0 18px; flex-grow: 1; }
+  .trial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin: 18px 0 4px;
+  }
+  .trial-card {
+    background: var(--void);
+    border: 1px solid var(--panel-line);
+    border-radius: 2px;
+    padding: 22px 20px;
+    text-align: center;
+  }
+  .trial-name {
+    font-family: var(--utility);
+    font-size: 0.76rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 0 0 8px;
+  }
+  .trial-price {
+    font-family: var(--display);
+    font-size: 1.7rem;
+    color: var(--gold-bright);
+    margin: 0 0 10px;
+  }
+  .trial-desc { font-size: 0.85rem; color: var(--ink-dim); margin: 0 0 16px; }
+  .cta.small { font-size: 0.72rem; padding: 9px 20px; }
+  .platform-note p { margin: 0 0 10px; }
+  .closing-block {
+    text-align: center;
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid var(--panel-line);
+  }
+  .closing-tagline {
+    font-family: var(--display);
+    font-size: 1.15rem;
+    color: var(--gold-bright);
+    margin: 0 0 8px;
+  }
+  .closing-body { color: var(--ink-dim); margin: 0 0 6px; }
+  .closing-recap {
+    font-family: var(--utility);
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--emerald-bright);
+    font-style: normal;
+    margin: 14px 0 22px;
+  }
+  .closing-link {
+    display: block;
+    margin-top: 16px;
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    text-decoration: none;
+  }
+  .closing-link:hover, .closing-link:focus-visible { color: var(--gold-bright); }
+  .tool-card.placeholder {
+    text-align: center;
+    color: var(--ink-dim);
     border-style: dashed;
   }
-  .help-card p { color: var(--ink-dim); }
+  .tool-card.placeholder h2 {
+    color: var(--ink-dim);
+    font-family: var(--utility);
+    font-size: 1rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .video-block { margin: 18px 0 6px; }
+  .video-langs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .video-langs button {
+    font-family: var(--utility); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 7px 14px; background: transparent; color: var(--ink-dim);
+    border: 1px solid var(--panel-line); border-radius: 2px; cursor: pointer;
+  }
+  .video-langs button[aria-pressed="true"] { color: var(--gold-bright); border-color: var(--gold); background: rgba(212,175,55,0.07); }
+  .video-frame {
+    position: relative; width: 100%; aspect-ratio: 16 / 9; background: var(--void);
+    border: 1px solid var(--panel-line); border-radius: 2px; overflow: hidden;
+  }
+  .video-frame iframe, .video-frame .video-poster { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video-poster { cursor: pointer; padding: 0; background: #000 center / cover no-repeat; }
+  .video-poster::after {
+    content: '▶'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 68px; height: 48px; border-radius: 10px; background: rgba(5,6,10,0.8);
+    color: var(--gold-bright); font-size: 22px; line-height: 48px; text-align: center;
+    border: 1px solid var(--gold-dim);
+  }
+  .video-poster:hover::after, .video-poster:focus-visible::after { background: var(--gold); color: var(--void); }
+  .video-note { font-size: 0.8rem; color: var(--ink-dim); margin: 8px 0 0; }
   footer {
     position: relative;
     z-index: 1;
@@ -313,163 +498,298 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
-  footer .foot-links a { color: var(--ink-dim); text-decoration: none; }
+  footer .foot-links a {
+    color: var(--ink-dim);
+    text-decoration: none;
+  }
   footer .foot-links a:hover { color: var(--gold-bright); }
-  :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+  :focus-visible {
+    outline: 2px solid var(--gold-bright);
+    outline-offset: 3px;
+  }
 </style>
 </head>
 <body>
 <div class="stars"></div>
 <header>
   <nav>
-    <a href="index.html">← Back to TB-Tools</a>
+    <a href="https://ccc-hq.com">← Back to ccc-hq.com</a>
   </nav>
   <nav>
-    <a href="devices.html">My Account</a>
+    <a href="#download">Download</a> &nbsp;·&nbsp; <a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="lists.html">My Battle Lists</a> &nbsp;·&nbsp; <a href="devices.html">My Account</a>
   </nav>
 </header>
-
 <section class="hero">
-  <p class="eyebrow">Installation Guide</p>
-  <h1>Getting TB-Tools up and running</h1>
-  <p class="tagline">One download gives you both Auto-Crypter and the Battle Calculator. Here's everything you need, from download to your first automated run.</p>
+  <p class="eyebrow">Q's TB Tools</p>
+  <img class="hero-logo" src="tools-logo.png" alt="Total Battle Tools" />
+  <p class="tagline">Tools built to make life in Total Battle a little easier — Auto-Crypt and the Battle Calculator, with more on the way.</p>
 </section>
-
-<nav class="toc" aria-label="Guide sections">
-  <a href="#requirements">What you'll need</a>
-  <a href="#download">1. Download</a>
-  <a href="#copy">2. Install the folder</a>
-  <a href="#launch">3. First launch</a>
-  <a href="#display">4. Set your display &amp; zoom</a>
-  <a href="#configure">5. Configure the app</a>
-  <a href="#run">6. Run it</a>
-  <a href="#help">Need help?</a>
-</nav>
-
-<main class="guide">
-
-  <article class="step-card" id="requirements">
-    <div class="step-head"><h2>What you'll need</h2></div>
-    <ul class="req-list">
-      <li>Windows 10 or Windows 11.</li>
-      <li>Google Chrome installed, with you logged into the Total Battle account you want to automate.</li>
-      <li>A screen resolution of 1024×768, 1366×768, 1680×1050, 1760×990, or 1920×1080. Need something else? Email <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a>.</li>
-      <li>About 10 minutes, before your next crypting session.</li>
-    </ul>
-    <div class="note-box">
-      <strong>Why the display settings matter:</strong> Auto-Crypter finds buttons and crypts by their exact position on screen. Step 4 below walks through the handful of settings that need to stay fixed so it always clicks in the right place.
+<section class="tools">
+  <article class="tool-card download-panel" id="download">
+    <span class="tool-status">One download · every tool</span>
+    <h2>Download TB-Tools</h2>
+    <p>Auto-Crypter and the Battle Calculator live in the same app — there's only one thing to download. Install it once, sign in with Google, and the tools on your subscription or trial are ready to use.</p>
+    <div class="download-includes" aria-label="Included in the download">
+      <span>✦ Auto-Crypter</span>
+      <span>✦ Battle Calculator</span>
     </div>
+    <div class="tool-actions">
+      <a class="cta primary js-download-btn" href="https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.1.2/TB-Tools_0.1.2.zip">Download TB-Tools v0.1.2</a>
+      <a class="cta secondary" href="install.html">Installation guide →</a>
+    </div>
+    <p class="download-meta">Windows · portable .zip — just unzip and run, no installer.</p>
+    <p class="release-notes" id="release-notes"></p>
+    <p class="download-note">Haven't picked a plan yet? Download first — the plans for each tool are <a href="#tools-list">listed below</a>.</p>
   </article>
+  <article class="tool-card" id="tools-list">
+    <span class="tool-status">Available</span>
+    <h2>Total Battle Auto-Crypter</h2>
+    <p class="tool-hook">Hit your crypting target without babysitting a crypt run.</p>
+    <p>You know the drill: scroll the watchtower, find a crypt, pick the type, send a commander, wait, repeat — for as long as it takes to hit whatever your clan expects from you. It's not hard, it's just tedious, and it ties up your attention the whole time.</p>
+    <p>Auto-Crypter does that loop for you. Set your preferences once, hit start, and it works through your crypts on its own — so you consistently hit your numbers without a dedicated crypting session eating your evening.</p>
 
-  <article class="step-card" id="download">
-    <div class="step-head"><span class="step-num">1</span><h2>Download TB-Tools</h2></div>
-    <p>Grab the latest version below. It comes as a single .zip file and contains <strong>both</strong> Auto-Crypter and the Battle Calculator — there's nothing separate to download for either tool. Which tools you can use depends on your subscription or trial.</p>
-    <div class="download-row">
-      <a class="cta primary" id="download-btn"
-         href="https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.1.2/TB-Tools_0.1.2.zip">Download TB-Tools v0.1.2</a>
-    </div>
-  </article>
-
-  <article class="step-card" id="copy">
-    <div class="step-head"><span class="step-num">2</span><h2>Unzip and install the folder</h2></div>
-    <p>TB-Tools is distributed as a folder, not a single file — the .exe depends on other files that ship alongside it.</p>
-    <ol>
-      <li>Unzip the download.</li>
-      <li>Copy the <strong>entire</strong> TB-Tools folder to where you want to run it from — your Desktop or a dedicated Programs folder both work well.</li>
-      <li>Don't move or copy just <code>TB-Tools.exe</code> on its own — it won't launch without the rest of the folder.</li>
-    </ol>
-  </article>
-
-  <article class="step-card" id="launch">
-    <div class="step-head"><span class="step-num">3</span><h2>First launch</h2></div>
-    <ol>
-      <li>Open the TB-Tools folder and double-click <code>TB-Tools.exe</code>.</li>
-      <li>Sign in with the Google account tied to your Total Battle play, and accept the access prompt TB-Tools shows you.</li>
-      <li>Once that's done, the main TB-Tools window opens and you're ready for setup.</li>
-    </ol>
-  </article>
-
-  <article class="step-card" id="display">
-    <div class="step-head"><span class="step-num">4</span><h2>Set your display &amp; zoom</h2></div>
-    <p>Five settings need to match exactly, every time you run Auto-Crypter — not just today. Go through each one now:</p>
-
-    <div class="setting-block">
-      <p class="setting-title">Screen resolution <span class="setting-value">— one of the supported sizes</span></p>
-      <p>Right-click your desktop → <em>Display settings</em> → set <em>Display resolution</em> to 1024×768, 1366×768, 1680×1050, 1760×990, or 1920×1080.</p>
+    <div class="benefit-grid advantage-grid">
+      <div class="benefit-tile">
+        <p class="benefit-title">Hit clan targets, consistently</p>
+        <p class="benefit-desc">Runs through your crypts the same reliable way every time, so you're not scrambling to catch up before a deadline.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Get your time back</p>
+        <p class="benefit-desc">What used to be a dedicated sitting is now something that runs on your computer while you do something else.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">One less thing to juggle</p>
+        <p class="benefit-desc">No more tabbing back and forth to click through crypts between everything else you're doing.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Skip the boring part</p>
+        <p class="benefit-desc">The repetitive clicking is the least fun part of crypting anyway — let the tool grind it out instead of you.</p>
+      </div>
     </div>
 
-    <div class="setting-block">
-      <p class="setting-title">Windows display scale <span class="setting-value">— 100%</span></p>
-      <p>Same Display settings page, under <em>Scale &amp; layout</em> → set <em>Scale</em> to 100%. This is often set higher by default on laptop screens, so check it even if you never touched it.</p>
-    </div>
-
-    <div class="setting-block">
-      <p class="setting-title">Chrome browser zoom <span class="setting-value">— 100%</span></p>
-      <p>In Chrome, press <code>Ctrl+0</code> to reset zoom to 100% on the Total Battle tab. Chrome remembers zoom per site, so if you'd zoomed in before, reset it now.</p>
-    </div>
-
-    <div class="setting-block">
-      <p class="setting-title">Chrome's toolbar &amp; bookmarks bar <span class="setting-value">— hidden</span></p>
-      <p>Only the tab title and address bar should be visible above the page. Press <code>Ctrl+Shift+B</code> to hide the bookmarks bar, and clear any other toolbars from Chrome's toolbar area.</p>
-    </div>
-
-    <div class="setting-block">
-      <p class="setting-title">Total Battle's in-game map zoom <span class="setting-value">— 125%</span></p>
-      <p>This one's inside the game, not Chrome or Windows. On the world map, use Total Battle's own zoom control to set it to 125%, and leave it there.</p>
-    </div>
-
-    <div class="warn-box">
-      <strong>Don't mix these up:</strong> Chrome's browser zoom (100%) and Total Battle's in-game map zoom (125%) are two different settings. Auto-Crypter needs both set correctly at the same time.
-    </div>
-  </article>
-
-  <article class="step-card" id="configure">
-    <div class="step-head"><span class="step-num">5</span><h2>Configure Auto-Crypter</h2></div>
-    <p>Back in the app, a few quick choices before your first run:</p>
+    <h3 class="tool-subheading">How it works</h3>
     <ul>
-      <li><strong>Select your Total Battle window</strong> — so Auto-Crypter knows which browser window to watch.</li>
-      <li><strong>Choose your captains</strong> — up to three per run.</li>
-      <li><strong>Set your crypt filters</strong> — exclude any crypt types you don't want it to run (this will slow things down a little, so only exclude what you need to).</li>
-      <li><strong>Optional: set a run limit</strong> — cap it by time or by number of marches, or leave it unlimited.</li>
+      <li><strong>You tell it what to run.</strong> Pick your commanders (up to three), choose which crypt types to include, and filter out the ones you don't want. It also works on Tartaros crypts.</li>
+      <li><strong>It finds the crypts for you.</strong> Auto-Crypter reads your watchtower list and works through it on its own and navigates to the crypt. It will find it even if a crypt shows up off-center on screen.</li>
+      <li><strong>It doesn't stop until you want it to.</strong> No caps on marches, crypts, or hours — run it for a quick top-up or let it carry a full session.</li>
     </ul>
+    <p style="font-size:0.85rem; color:var(--ink-dim);">Works at 1024×768, 1366×768, 1680×1050, 1760×990, and 1920×1080. Need another resolution? Email support@ccc-hq.com. Full setup details are in the <a href="install.html" style="color:var(--gold-bright);">installation guide</a>.</p>
+
+    <h3 class="tool-subheading">One subscription. All your accounts.</h3>
+    <p>Whether you play one account or several, you don't need a separate subscription for each account. Your subscription covers all of your Total Battle accounts. And because Auto-Crypter can be installed on up to 2 devices per subscription, you can use it where it suits you best — for example, on your main PC and your laptop.</p>
+    <div class="benefit-grid">
+      <div class="benefit-tile">
+        <p class="benefit-title">All your accounts</p>
+        <p class="benefit-desc">No additional charge for additional Total Battle accounts.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">2 devices</p>
+        <p class="benefit-desc">Install and use Auto-Crypter on up to two devices.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Unlimited usage</p>
+        <p class="benefit-desc">No march limits. No crypt limits. No hourly limits.</p>
+      </div>
+    </div>
+
+    <h3 class="tool-subheading">Pricing</h3>
+    <p>One plan, four ways to pay for it — the longer you commit, the less it costs per month. Every plan includes everything above: all your accounts, 2 devices, unlimited use.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <p class="pricing-name">Monthly</p>
+        <p class="pricing-price">€9.99</p>
+        <p class="pricing-permonth">per month</p>
+        <p class="pricing-billed">Billed monthly</p>
+        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=monthly">Subscribe →</a>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-badge">Save 17%</span>
+        <p class="pricing-name">3 Months</p>
+        <p class="pricing-price">€24.99</p>
+        <p class="pricing-permonth">≈ €8.33 / mo</p>
+        <p class="pricing-billed">Billed every 3 months</p>
+        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=quarterly">Subscribe →</a>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-badge">Save 25%</span>
+        <p class="pricing-name">6 Months</p>
+        <p class="pricing-price">€44.99</p>
+        <p class="pricing-permonth">≈ €7.50 / mo</p>
+        <p class="pricing-billed">Billed every 6 months</p>
+        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=semiannual">Subscribe →</a>
+      </div>
+      <!--div class="pricing-card featured">
+        <span class="pricing-badge">Save 33% • Best value</span>
+        <p class="pricing-name">Yearly</p>
+        <p class="pricing-price">€79.99</p>
+        <p class="pricing-permonth">≈ €6.67 / mo</p>
+        <p class="pricing-billed">Billed once per year</p>
+        <a class="cta secondary small" href="subscribe.html?tier=autocrypt&amp;plan=annual">Subscribe →</a>
+      </div-->
+    </div>
+
+    <h3 class="tool-subheading">Try it before you commit</h3>
+    <p>Not sure if Auto-Crypter is right for you? Try it with your own accounts, your own setup and your own crypting preferences.</p>
+    <div class="trial-grid">
+      <div class="trial-card">
+        <p class="trial-name">7-Day Trial</p>
+        <p class="trial-price">€2.99</p>
+        <p class="trial-desc">A full 7 days to test Auto-Crypter — and the Battle Calculator — and see how they work for you.</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=trial_7">Start trial →</a>
+      </div>
+      <div class="trial-card">
+        <p class="trial-name">14-Day Trial</p>
+        <p class="trial-price">€4.99</p>
+        <p class="trial-desc">Need a little more time? Get 14 days to try everything — Auto-Crypter and the Battle Calculator — and make sure it fits your setup.</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=trial_14">Start trial →</a>
+      </div>
+    </div>
+
+    <div class="closing-block">
+      <p class="closing-tagline">Spend less time managing crypts.</p>
+      <p class="closing-body">You already have enough things to do in Total Battle. Let Auto-Crypter handle the crypts.</p>
+      <p class="closing-recap">One subscription. All your accounts. Two devices. Unlimited crypting.</p>
+      <p></p>
+      <a class="cta primary" href="subscribe.html?tier=autocrypt">Subscribe →</a>
+      <a class="cta secondary js-download-btn" href="https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.1.2/TB-Tools_0.1.2.zip">Download TB-Tools v0.1.2</a>
+      <a class="closing-link" href="install.html">New here? Follow the step-by-step installation guide →</a>
+    </div>
   </article>
+  <article class="tool-card">
+    <span class="tool-status">Available</span>
+    <h2>Battle Calculator</h2>
+    <p class="tool-hook">The right troop numbers for every attack, without the spreadsheet.</p>
+    <p>Enter your Leadership, Dominance and troop stats once, pick the troops you want to send, and the Battle Calculator works out how many of each to bring and in which order they attack — so you spend your capacity instead of guessing at it.</p>
 
-  <article class="step-card" id="run">
-    <div class="step-head"><span class="step-num">6</span><h2>Run it</h2></div>
-    <p>Open Total Battle to the watchtower or crypt list, then:</p>
-    <ul>
-      <li>Click <strong>Start</strong> in the app, or press <code>F9</code>, to begin.</li>
-      <li>Press <code>Ctrl+Q</code> any time to stop immediately.</li>
-      <li>Keep an eye on it while it runs, and check the <strong>Logs</strong> area in the app if anything looks off.</li>
-    </ul>
+    <div class="benefit-grid advantage-grid">
+      <div class="benefit-tile">
+        <p class="benefit-title">Exact troop counts</p>
+        <p class="benefit-desc">Counts for every troop in your list, calculated from your own stats and capacity.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Battle order</p>
+        <p class="benefit-desc">See the order your troops will attack in before you send them.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Write to the battle screen</p>
+        <p class="benefit-desc">Fill in the numbers in the game for you instead of typing them troop by troop.</p>
+      </div>
+      <div class="benefit-tile">
+        <p class="benefit-title">Your lists on your phone</p>
+        <p class="benefit-desc">Lists sync to <a href="lists.html" style="color:var(--gold-bright);">My Battle Lists</a>, so you can check them while playing on mobile.</p>
+      </div>
+    </div>
+
+
+    <h3 class="tool-subheading">Video tutorial</h3>
+    <p>See how to register your stats, build a list and read the results — about as quick as reading this page.</p>
+    <div class="video-block" id="calc-video">
+      <div class="video-langs" role="group" aria-label="Video language">
+        <button type="button" data-video="6RvYcCfrMwg" aria-pressed="true">English</button>
+        <button type="button" data-video="yE30bg3jjAg" aria-pressed="false">Türkçe</button>
+      </div>
+      <div class="video-frame">
+        <button type="button" class="video-poster" aria-label="Play the Battle Calculator tutorial"></button>
+      </div>
+      <p class="video-note">Or watch on YouTube: <a href="https://youtu.be/6RvYcCfrMwg" style="color:var(--gold-bright);">English</a> · <a href="https://youtu.be/yE30bg3jjAg" style="color:var(--gold-bright);">Türkçe</a></p>
+    </div>
+
+    <div class="tool-actions">
+      <a class="cta secondary js-download-btn" href="https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.1.2/TB-Tools_0.1.2.zip">Download TB-Tools v0.1.2</a>
+      <p style="margin:0; font-size:0.9rem;">Same app as Auto-Crypter — the Battle Calculator is its own tab.</p>
+    </div>
+
+    <h3 class="tool-subheading">Pricing</h3>
+    <p>Same plans as Auto-Crypter — the longer you commit, the less it costs per month. Covers all your accounts on up to 2 devices.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <p class="pricing-name">Monthly</p>
+        <p class="pricing-price">€4.99</p>
+        <p class="pricing-permonth">per month</p>
+        <p class="pricing-billed">Billed monthly</p>
+        <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=monthly">Subscribe →</a>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-badge">Save 17%</span>
+        <p class="pricing-name">3 Months</p>
+        <p class="pricing-price">€12.49</p>
+        <p class="pricing-permonth">≈ €4.16 / mo</p>
+        <p class="pricing-billed">Billed every 3 months</p>
+        <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=quarterly">Subscribe →</a>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-badge">Save 25%</span>
+        <p class="pricing-name">6 Months</p>
+        <p class="pricing-price">€22.49</p>
+        <p class="pricing-permonth">≈ €3.75 / mo</p>
+        <p class="pricing-billed">Billed every 6 months</p>
+        <a class="cta secondary small" href="subscribe.html?tier=battlecalc&amp;plan=semiannual">Subscribe →</a>
+      </div>
+    </div>
+    <p style="font-size:0.85rem; color:var(--ink-dim); margin-top:14px;">cCc clan member? The Battle Calculator is free for you, and Auto-Crypter is 50% off — <a href="subscribe.html#ccc" style="color:var(--gold-bright);">request access here</a>.</p>
   </article>
-
-  <article class="step-card help-card" id="help">
-    <h2 style="font-family: var(--display); color: var(--gold-bright); margin: 0 0 8px;">Need a hand?</h2>
-    <p>Stuck on a step, or running a resolution that isn't listed above? Email <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a> and we'll help you sort it out.</p>
-    <a class="cta secondary" href="index.html">← Back to TB-Tools</a>
+  <article class="tool-card">
+    <span class="tool-status">Best value</span>
+    <h2>All-In: Auto-Crypter + Battle Calculator</h2>
+    <p class="tool-hook">Both tools, one subscription, for less than buying them separately.</p>
+    <p>Everything above in a single plan — all your accounts, 2 devices, unlimited crypting and every Battle Calculator feature — for about 13% less than subscribing to both tools on their own.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <p class="pricing-name">Monthly</p>
+        <p class="pricing-price">€12.99</p>
+        <p class="pricing-permonth">per month</p>
+        <p class="pricing-billed">Billed monthly</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=monthly">Subscribe →</a>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-badge">Save 17%</span>
+        <p class="pricing-name">3 Months</p>
+        <p class="pricing-price">€32.49</p>
+        <p class="pricing-permonth">≈ €10.83 / mo</p>
+        <p class="pricing-billed">Billed every 3 months</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=quarterly">Subscribe →</a>
+      </div>
+      <div class="pricing-card featured">
+        <span class="pricing-badge">Save 25% • Best value</span>
+        <p class="pricing-name">6 Months</p>
+        <p class="pricing-price">€58.49</p>
+        <p class="pricing-permonth">≈ €9.75 / mo</p>
+        <p class="pricing-billed">Billed every 6 months</p>
+        <a class="cta secondary small" href="subscribe.html?tier=all_in&amp;plan=semiannual">Subscribe →</a>
+      </div>
+    </div>
   </article>
-
-</main>
-
+  <article class="tool-card placeholder">
+    <h2>More tools coming soon</h2>
+    <p>We're building out the TB Tools lineup — check back for updates.</p>
+  </article>
+</section>
 <footer>
   <img src="tools-logo.png" alt="Total Battle Tools" />
   <p class="foot-word">Q's Total Battle Tools</p>
-  <p class="foot-links"><a href="index.html">TB-Tools</a> &nbsp;·&nbsp; <a href="devices.html">Manage Subscription</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></p>
+  <p class="foot-links"><a href="#download">Download</a> &nbsp;·&nbsp; <a href="install.html">Installation Guide</a> &nbsp;·&nbsp; <a href="devices.html">Manage Subscription</a> &nbsp;·&nbsp; <a href="lists.html">My Battle Lists</a> &nbsp;·&nbsp; <a href="terms.html">Terms of Service</a></p>
 </footer>
 
 <script>
-  // Keeps the Download button's version/link in sync with version.json,
-  // same as the main page — the hardcoded href/text above are just the
-  // fallback if this fetch fails.
+  // Keeps every Download button's version/link in sync with version.json —
+  // the only file you need to edit when a new release goes out. The
+  // hardcoded href/text above stay as a fallback if this fetch fails
+  // (offline preview, version.json briefly unavailable, etc).
   (function () {
     fetch("version.json", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((info) => {
         if (!info || !info.version || !info.download_url) return;
-        const btn = document.getElementById("download-btn");
-        btn.textContent = `Download TB-Tools v${info.version}`;
-        btn.href = info.download_url;
+        document.querySelectorAll(".js-download-btn").forEach((btn) => {
+          btn.textContent = `Download TB-Tools v${info.version}`;
+          btn.href = info.download_url;
+        });
+
+        if (info.release_notes) {
+          const notesEl = document.getElementById("release-notes");
+          notesEl.textContent = info.release_notes;
+          notesEl.style.display = "block";
+        }
       })
       .catch(() => {
         /* keep the fallback link above as-is */
@@ -477,5 +797,40 @@
   })();
 </script>
 
+
+<script>
+  // Battle Calculator tutorial: shows the thumbnail and only loads YouTube
+  // (privacy-enhanced domain) when the visitor presses play.
+  (function () {
+    const root = document.getElementById("calc-video");
+    if (!root) return;
+    const frame = root.querySelector(".video-frame");
+    let current = "6RvYcCfrMwg";
+
+    function poster(id) {
+      frame.innerHTML = '<button type="button" class="video-poster" aria-label="Play the Battle Calculator tutorial"></button>';
+      const btn = frame.firstChild;
+      btn.style.backgroundImage = "url(https://i.ytimg.com/vi/" + id + "/hqdefault.jpg)";
+      btn.addEventListener("click", function () { play(id); });
+    }
+    function play(id) {
+      frame.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + id +
+        '?autoplay=1&rel=0" title="Battle Calculator tutorial" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+    }
+    root.querySelectorAll(".video-langs button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        root.querySelectorAll(".video-langs button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+        current = b.dataset.video;
+        poster(current);
+      });
+    });
+    // Turkish browsers start on the Turkish video.
+    if ((navigator.language || "").toLowerCase().indexOf("tr") === 0) {
+      root.querySelector('[data-video="yE30bg3jjAg"]').click();
+    } else {
+      poster(current);
+    }
+  })();
+</script>
 </body>
 </html>
