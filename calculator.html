@@ -761,7 +761,13 @@
     if (!selectedKeys.size) return appMessage("Select at least one troop to use.", "error");
     if (name !== editing && data.lists[name] &&
         !confirm(`A list called "${name}" already exists.\n\nReplace it with this one?`)) return;
-    const list = { name, record_name: recordName, formula_id: $("list-formula").value, selected_kinds: orderedSelection() };
+    const selected = orderedSelection();
+    // Keep the desktop app's stored march order for troops still in the list.
+    const prior = (data.lists[editing] || data.lists[name] || {}).batting_order || [];
+    const list = {
+      name, record_name: recordName, formula_id: $("list-formula").value, selected_kinds: selected,
+      batting_order: prior.filter((k) => selected.includes(k)),
+    };
     const ok = await save((d) => {
       d.lists[name] = list;
       d.last_list = name;
