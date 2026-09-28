@@ -105,7 +105,7 @@
 
   /* form controls */
   .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
-  select, input[type="text"], input[type="number"] {
+  select, input[type="text"] {
     width: 100%;
     min-width: 0;
     padding: 10px 11px;
@@ -120,7 +120,7 @@
   select { border-color: var(--gold-dim); }
   .toolbar select { flex: 1; width: auto; }
   input:focus, select:focus { border-color: var(--gold); outline: none; }
-  input[type="number"] { font-variant-numeric: tabular-nums; }
+  input.num { font-variant-numeric: tabular-nums; }
   label.field { display: block; }
   label.field > span {
     display: block;
@@ -356,9 +356,10 @@
   const LAST_TAB_KEY = "tbtools.calc.tab";
   const NEW = "__new__";
   const GROUPS = ["Guardsman", "Specialist", "Siege", "Monster"];
+  // [key, label, decimals] -- Strength epic takes one decimal, the pools are whole numbers.
   const CAPACITY_FIELDS = [
-    ["leadership", "Leadership"], ["dominance", "Dominance"],
-    ["authority", "Authority"], ["strength_epic", "Strength epic"],
+    ["leadership", "Leadership", 0], ["dominance", "Dominance", 0],
+    ["authority", "Authority", 0], ["strength_epic", "Strength epic", 1],
   ];
 
   let idToken = null;
@@ -663,8 +664,8 @@
     $("picker").innerHTML = html;
 
     // Registration: capacity + per-troop stat blocks.
-    $("capacity-fields").innerHTML = CAPACITY_FIELDS.map(([key, label]) =>
-      `<label class="field"><span>${esc(label)}</span><input type="number" inputmode="numeric" min="0" step="1" id="cap-${key}" /></label>`
+    $("capacity-fields").innerHTML = CAPACITY_FIELDS.map(([key, label, decimals]) =>
+      `<label class="field"><span>${esc(label)}</span><input type="text" class="num" data-decimals="${decimals}" inputmode="${decimals ? "decimal" : "numeric"}" autocomplete="off" id="cap-${key}" /></label>`
     ).join("");
     $("stat-fields").innerHTML = `<div class="stat-grid">` + catalog.registration_kinds.map((kind) => {
       const t = catalog.troops[kind];
@@ -672,8 +673,8 @@
       return `<div class="stat-block">
         ${iconImg(t.icons[2], 48)}
         <div class="title">${esc(t.label)}${note}</div>
-        ${t.has_strength ? `<label><span>Strength</span><input type="number" inputmode="decimal" min="0" step="0.5" id="st-${kind}-strength" /></label>` : ""}
-        <label><span>Health</span><input type="number" inputmode="decimal" min="0" step="0.5" id="st-${kind}-health" /></label>
+        ${t.has_strength ? `<label><span>Strength</span><input type="text" class="num" data-decimals="1" inputmode="decimal" autocomplete="off" id="st-${kind}-strength" /></label>` : ""}
+        <label><span>Health</span><input type="text" class="num" data-decimals="1" inputmode="decimal" autocomplete="off" id="st-${kind}-health" /></label>
       </div>`;
     }).join("") + `</div>`;
   }
@@ -810,8 +811,34 @@
     $("record-delete").classList.toggle("hidden", !rec);
   }
 
+  // Number fields are plain text boxes (no spinner arrows, no scroll-wheel
+  // changes). They accept digits only, plus -- in the Strength/Health/
+  // Strength epic boxes -- one "." or "," as the decimal separator and one
+  // decimal. Like the desktop app, an edit that would make the number
+  // invalid is simply ignored (the box keeps its previous value).
+  const NUM_PATTERN = { 0: /^\d*$/, 1: /^\d*([.,]\d?)?$/ };
+
+  document.addEventListener("focusin", (e) => {
+    const el = e.target;
+    if (el.classList && el.classList.contains("num")) el.dataset.prev = el.value;
+  });
+
+  document.addEventListener("input", (e) => {
+    const el = e.target;
+    if (!el.classList || !el.classList.contains("num")) return;
+    const pattern = NUM_PATTERN[Number(el.dataset.decimals || 0)];
+    if (pattern.test(el.value)) {
+      el.dataset.prev = el.value;
+      return;
+    }
+    const prev = el.dataset.prev || "";
+    const caret = Math.max(0, (el.selectionStart ?? el.value.length) - (el.value.length - prev.length));
+    el.value = prev;
+    try { el.setSelectionRange(caret, caret); } catch (err) {}
+  });
+
   function num(id) {
-    const v = parseFloat($(id).value);
+    const v = parseFloat($(id).value.replace(",", "."));
     return Number.isFinite(v) && v > 0 ? v : 0;
   }
 
@@ -823,7 +850,9 @@
         !confirm(`A record called "${name}" already exists.\n\nReplace it with these numbers?`)) return;
     const prior = data.records[editing] || data.records[name];
     const record = { name, troops: {} };
-    for (const [key] of CAPACITY_FIELDS) record[key] = Math.trunc(num(`cap-${key}`));
+    for (const [key, , decimals] of CAPACITY_FIELDS) {
+      record[key] = decimals ? Math.round(num(`cap-${key}`) * 10) / 10 : Math.trunc(num(`cap-${key}`));
+    }
     for (const kind of catalog.troop_order) {
       if (catalog.registration_kinds.includes(kind)) {
         record.troops[kind] = {
