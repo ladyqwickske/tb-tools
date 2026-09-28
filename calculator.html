@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Battle Calculator — Q's TB Tools</title>
+<meta name="description" content="The TB-Tools Battle Calculator in your browser: records, lists, troop counts and battle order." />
+<meta name="theme-color" content="#05060a" />
+<link rel="icon" href="tools-logo.png" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="session.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #05060a;
+    --panel: #0c1020;
+    --panel-2: #141a30;
+    --panel-line: #1c2440;
+    --gold: #d4af37;
+    --gold-bright: #f2d68f;
+    --gold-dim: #8a742f;
+    --emerald: #3d6b42;
+    --emerald-bright: #6fa373;
+    --danger: #c25b5b;
+    --danger-bright: #e08585;
+    --ink: #e9e6da;
+    --ink-dim: #a8a692;
+    --display: 'Cinzel', serif;
+    --body: 'Spectral', serif;
+    --utility: 'Oswald', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+  a { color: var(--gold-bright); }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(212,175,55,0.15);
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .brand img { height: 30px; width: 30px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(212,175,55,0.35)); }
+  .brand-word { font-family: var(--utility); letter-spacing: 0.14em; font-size: 0.76rem; color: var(--gold-bright); }
+  header nav { display: flex; gap: 16px; }
+  header nav a {
+    font-family: var(--utility);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-dim);
+  }
+  header nav a:hover { color: var(--gold-bright); }
+
+  main { max-width: 720px; margin: 0 auto; padding: 22px 16px 80px; }
+  h1 { font-family: var(--display); font-size: 1.35rem; color: var(--gold-bright); margin: 0 0 4px; text-align: center; letter-spacing: 0.03em; }
+  p.sub { color: var(--ink-dim); margin: 0 0 18px; font-size: 0.92rem; text-align: center; font-style: italic; }
+  #g_id_signin_container { display: flex; justify-content: center; margin: 10px 0; }
+
+  .msg {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    padding: 16px;
+    text-align: center;
+    color: var(--ink-dim);
+    font-size: 0.94rem;
+    margin: 14px 0;
+  }
+  .msg strong { color: var(--ink); }
+  .msg.error { border-color: var(--danger); color: var(--danger-bright); }
+  .msg.ok { border-color: var(--emerald); color: var(--emerald-bright); }
+  .hidden { display: none !important; }
+
+  /* main tabs */
+  .tabs { display: flex; border-bottom: 1px solid var(--panel-line); margin-bottom: 14px; }
+  .tab {
+    flex: 1;
+    padding: 10px 6px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--ink-dim);
+    font-family: var(--utility);
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .tab[aria-selected="true"] { color: var(--gold-bright); border-bottom-color: var(--gold); }
+  .tabs.small .tab { font-size: 0.72rem; padding: 8px 6px; }
+
+  /* form controls */
+  .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+  select, input[type="text"], input[type="number"] {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 11px;
+    background: var(--panel);
+    color: var(--ink);
+    border: 1px solid var(--panel-line);
+    border-radius: 3px;
+    font-family: var(--utility);
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+  select { border-color: var(--gold-dim); }
+  .toolbar select { flex: 1; width: auto; }
+  input:focus, select:focus { border-color: var(--gold); outline: none; }
+  input[type="number"] { font-variant-numeric: tabular-nums; }
+  label.field { display: block; }
+  label.field > span {
+    display: block;
+    font-family: var(--utility);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin: 0 0 4px 2px;
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media (max-width: 560px) { .grid-4 { grid-template-columns: 1fr 1fr; } }
+  .stack > * + * { margin-top: 12px; }
+  .hint { font-size: 0.8rem; color: var(--ink-dim); font-style: italic; margin: 4px 2px 0; }
+
+  button.btn {
+    padding: 11px 16px;
+    background: var(--gold);
+    color: #1a1406;
+    border: 1px solid var(--gold);
+    border-radius: 3px;
+    font-family: var(--utility);
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  button.btn.ghost { background: transparent; color: var(--gold-bright); border-color: var(--panel-line); }
+  button.btn.danger { background: transparent; color: var(--danger-bright); border-color: var(--danger); }
+  button.btn:disabled { opacity: 0.5; cursor: default; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .actions .spacer { flex: 1; }
+
+  .section-title {
+    font-family: var(--utility);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--emerald-bright);
+    margin: 18px 2px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .section-title button {
+    background: none; border: none; padding: 0; cursor: pointer;
+    font: inherit; letter-spacing: inherit; color: var(--gold-dim); text-transform: uppercase;
+  }
+  .section-title button:hover { color: var(--gold-bright); }
+
+  /* result rows (same as lists.html) */
+  .rows { list-style: none; margin: 0; padding: 0; background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--panel-line); }
+  .row:last-child { border-bottom: none; }
+  .row img, .row .noimg {
+    width: 44px; height: 44px; border-radius: 3px; object-fit: cover; flex-shrink: 0;
+    background: var(--panel-2); border: 1px solid var(--panel-line);
+  }
+  .row .noimg { display: flex; align-items: center; justify-content: center; font-family: var(--utility); color: var(--ink-dim); }
+  .row .pos { font-family: var(--utility); color: var(--gold-dim); width: 22px; text-align: right; flex-shrink: 0; }
+  .row .name { flex: 1; min-width: 0; }
+  .row .name .troop { font-family: var(--utility); font-size: 1rem; color: var(--ink); letter-spacing: 0.02em; }
+  .row .name .tier { color: var(--gold-bright); margin-left: 4px; font-family: var(--utility); }
+  .row .name .group { font-size: 0.74rem; color: var(--ink-dim); font-style: italic; }
+  .row .count {
+    font-family: var(--utility);
+    font-size: 1.25rem;
+    color: var(--gold-bright);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .results-2col { display: grid; grid-template-columns: 1fr; gap: 0 14px; }
+
+  .capacity { margin-top: 16px; display: grid; gap: 8px; }
+  .cap { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; padding: 10px 12px; }
+  .cap-top { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--ink-dim); font-family: var(--utility); letter-spacing: 0.04em; gap: 8px; }
+  .cap-top .num { font-variant-numeric: tabular-nums; color: var(--ink); }
+  .bar { height: 6px; background: var(--panel-2); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--emerald-bright); }
+  .cap.low .bar > span { background: var(--danger-bright); }
+  .meta { font-size: 0.8rem; color: var(--ink-dim); font-style: italic; margin: 10px 2px 0; }
+
+  /* troop picker */
+  .picker-group { margin-top: 10px; }
+  .tier-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; margin-top: 6px; }
+  .tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 4px 5px;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 4px;
+    color: var(--ink-dim);
+    font-family: var(--utility);
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+    line-height: 1.15;
+    text-align: center;
+    cursor: pointer;
+  }
+  .tile img { width: 52px; height: 52px; object-fit: cover; border-radius: 3px; opacity: 0.55; filter: grayscale(0.6); }
+  .tile .badge {
+    position: absolute; top: 3px; right: 4px;
+    font-size: 0.66rem; color: var(--gold-dim);
+  }
+  .tile[aria-pressed="true"] { border-color: var(--gold); background: #1a1a22; color: var(--ink); box-shadow: inset 0 0 0 1px var(--gold-dim); }
+  .tile[aria-pressed="true"] img { opacity: 1; filter: none; }
+  .tile[aria-pressed="true"] .badge { color: var(--gold-bright); }
+
+  /* registration stat blocks */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 6px; }
+  .stat-block { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; padding: 10px; display: grid; grid-template-columns: 48px 1fr; gap: 6px 10px; align-items: center; }
+  .stat-block img { width: 48px; height: 48px; border-radius: 3px; object-fit: cover; grid-row: span 3; align-self: start; }
+  .stat-block .title { font-family: var(--utility); color: var(--ink); font-size: 0.95rem; letter-spacing: 0.02em; }
+  .stat-block .title small { color: var(--ink-dim); font-size: 0.7rem; letter-spacing: 0.06em; margin-left: 4px; }
+  .stat-block label { display: flex; align-items: center; gap: 8px; font-family: var(--utility); font-size: 0.72rem; color: var(--ink-dim); letter-spacing: 0.06em; }
+  .stat-block label span { width: 58px; flex-shrink: 0; }
+  .stat-block input { padding: 7px 8px; font-size: 0.95rem; }
+
+  .preview { margin-top: 18px; border-top: 1px dashed var(--panel-line); padding-top: 4px; }
+  .preview .busy { opacity: 0.55; transition: opacity 0.15s; }
+  .footer-note { text-align: center; font-size: 0.74rem; color: var(--ink-dim); margin-top: 30px; font-style: italic; }
+  :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html">
+    <img src="tools-logo.png" alt="" />
+    <span class="brand-word">Q's TB Tools</span>
+  </a>
+  <nav>
+    <a href="lists.html">Desktop lists</a>
+    <a href="devices.html">Account</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Battle Calculator</h1>
+  <p class="sub" id="intro">Sign in with the Google account you use in TB-Tools.</p>
+
+  <div id="g_id_signin_container"></div>
+  <div class="msg hidden" id="status-msg" role="status"></div>
+
+  <section id="app" class="hidden">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="results" aria-selected="true">Results</button>
+      <button class="tab" role="tab" data-tab="lists" aria-selected="false">Lists</button>
+      <button class="tab" role="tab" data-tab="records" aria-selected="false">Records</button>
+    </div>
+    <div class="msg hidden" id="app-msg" role="status"></div>
+
+    <!-- ── Results ──────────────────────────────────────────── -->
+    <div id="panel-results" role="tabpanel">
+      <div id="results-empty" class="msg hidden"></div>
+      <div id="results-body" class="hidden">
+        <div class="toolbar">
+          <select id="results-select" aria-label="Choose a list"></select>
+          <button class="btn ghost" id="results-edit">Edit</button>
+        </div>
+        <div class="tabs small" role="tablist">
+          <button class="tab" role="tab" id="rtab-troops" aria-selected="true">Troops</button>
+          <button class="tab" role="tab" id="rtab-order" aria-selected="false">Battle order</button>
+        </div>
+        <div id="results-troops"></div>
+        <div id="results-order" class="hidden"></div>
+      </div>
+    </div>
+
+    <!-- ── Lists (create / edit) ────────────────────────────── -->
+    <div id="panel-lists" role="tabpanel" class="hidden">
+      <div class="toolbar">
+        <select id="list-select" aria-label="List to edit"></select>
+      </div>
+      <div class="stack">
+        <label class="field"><span>List name</span>
+          <input type="text" id="list-name" maxlength="80" autocomplete="off" placeholder="e.g. Main · Specialists die first" />
+        </label>
+        <div class="grid-2">
+          <label class="field"><span>Uses record</span><select id="list-record"></select></label>
+          <label class="field"><span>Formula</span><select id="list-formula"></select></label>
+        </div>
+        <p class="hint" id="list-formula-desc"></p>
+      </div>
+
+      <div class="section-title"><span>Troops to use</span><button type="button" id="list-clear">Clear</button></div>
+      <div id="picker"></div>
+
+      <div class="actions">
+        <button class="btn" id="list-save">Save list</button>
+        <span class="spacer"></span>
+        <button class="btn danger" id="list-delete">Delete</button>
+      </div>
+
+      <div class="preview" id="list-preview"></div>
+    </div>
+
+    <!-- ── Records (registration) ───────────────────────────── -->
+    <div id="panel-records" role="tabpanel" class="hidden">
+      <div class="toolbar">
+        <select id="record-select" aria-label="Record to edit"></select>
+      </div>
+      <div class="stack">
+        <label class="field"><span>Record name</span>
+          <input type="text" id="record-name" maxlength="80" autocomplete="off" placeholder="e.g. Main account" />
+        </label>
+      </div>
+      <div class="section-title"><span>Capacity</span></div>
+      <div class="grid-4" id="capacity-fields"></div>
+      <div class="section-title"><span>Troop stats (top tier)</span></div>
+      <p class="hint" style="margin-top:0">Strength and health per unit, as shown in the game. The four Monsters share Kraken's stats.</p>
+      <div id="stat-fields"></div>
+      <div class="actions">
+        <button class="btn" id="record-save">Save record</button>
+        <span class="spacer"></span>
+        <button class="btn danger" id="record-delete">Delete</button>
+      </div>
+    </div>
+
+    <p class="footer-note" id="footer-note"></p>
+  </section>
+</main>
+
+<script>
+  const GOOGLE_CLIENT_ID_WEB = "47674606892-0m90hd0cd01kijo69ssuqtn1j3igp32i.apps.googleusercontent.com";
+  const WORKER_BASE_URL = "https://auto-crypt.ccc-hq.com";
+  const ICON_BASE = "img/troops/";
+  const LAST_TAB_KEY = "tbtools.calc.tab";
+  const NEW = "__new__";
+  const GROUPS = ["Guardsman", "Specialist", "Siege", "Monster"];
+  const CAPACITY_FIELDS = [
+    ["leadership", "Leadership"], ["dominance", "Dominance"],
+    ["authority", "Authority"], ["strength_epic", "Strength epic"],
+  ];
+
+  let idToken = null;
+  let catalog = null;     // troop/formula catalog from the Worker
+  let data = null;        // { records, lists, last_record, last_list }
+  let updatedAt = null;   // server version of `data` (for conflict detection)
+  let outputs = [];       // computed lists from the Worker
+  let saving = false;
+
+  const $ = (id) => document.getElementById(id);
+
+  function esc(str) {
+    const d = document.createElement("div");
+    d.textContent = str == null ? "" : String(str);
+    return d.innerHTML;
+  }
+  function fmt(n) { return n == null ? "—" : Number(n).toLocaleString(); }
+  function store(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+  function recall(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  const byName = (a, b) => a.localeCompare(b);
+
+  function showMessage(el, html, kind) {
+    el.innerHTML = html;
+    el.classList.toggle("error", kind === "error");
+    el.classList.toggle("ok", kind === "ok");
+    el.classList.remove("hidden");
+  }
+  let appMsgTimer = null;
+  function appMessage(html, kind, autoHide) {
+    clearTimeout(appMsgTimer);
+    showMessage($("app-msg"), html, kind);
+    if (autoHide) appMsgTimer = setTimeout(() => $("app-msg").classList.add("hidden"), 3500);
+  }
+
+  // ── Worker calls ─────────────────────────────────────────────
+
+  async function api(path, payload) {
+    const res = await fetch(`${WORKER_BASE_URL}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_token: idToken, ...payload }),
+    });
+    const body = await res.json().catch(() => ({}));
+    return { res, body };
+  }
+
+  function handleAccessError(res, body) {
+    if (res.status === 401) {
+      $("app").classList.add("hidden");
+      showMessage($("status-msg"), "Your sign-in expired. Please sign in again.", "error");
+      $("g_id_signin_container").classList.remove("hidden");
+      return true;
+    }
+    if (res.status === 403 && body.error === "no_calc_access") {
+      $("app").classList.add("hidden");
+      showMessage($("status-msg"), body.ccc === "pending"
+        ? `<strong>Your cCc membership request is waiting for approval.</strong><br>The calculator opens here once it's approved.`
+        : `<strong>This account doesn't have Battle Calculator access.</strong><br>` +
+          `<a href="subscribe.html?tier=battlecalc">Get the Battle Calculator</a> — or, if you're in the cCc clan, ` +
+          `<a href="subscribe.html">request free access</a>.`);
+      return true;
+    }
+    return false;
+  }
+
+  function errorText(res, body) {
+    if (res.status === 404) return "The online calculator isn't available yet — please try again later.";
+    return body.detail || body.error || `Something went wrong (${res.status}).`;
+  }
+
+  async function loadAll() {
+    showMessage($("status-msg"), "Loading your calculator…");
+    try {
+      const { res, body } = await api("/calc/web/load", {});
+      if (handleAccessError(res, body)) return;
+      if (!res.ok) throw new Error(errorText(res, body));
+      catalog = body.catalog;
+      adopt(body);
+      $("status-msg").classList.add("hidden");
+      $("app").classList.remove("hidden");
+      buildStaticForms();
+      renderAll();
+      const tab = recall(LAST_TAB_KEY);
+      selectTab(Object.keys(data.records).length ? (tab || "results") : "records");
+    } catch (err) {
+      showMessage($("status-msg"), esc(err.message || "Something went wrong."), "error");
+    }
+  }
+
+  function adopt(body) {
+    data = body.data;
+    updatedAt = body.updated_at ?? null;
+    outputs = body.lists || [];
+  }
+
+  /** Apply `mutate` to a copy of the data and save it. Returns true on success. */
+  async function save(mutate, okText) {
+    if (saving) return false;
+    saving = true;
+    document.querySelectorAll("#app button.btn").forEach((b) => (b.disabled = true));
+    try {
+      const next = JSON.parse(JSON.stringify(data));
+      mutate(next);
+      const { res, body } = await api("/calc/web/save", { data: next, base_updated_at: updatedAt });
+      if (handleAccessError(res, body)) return false;
+      if (res.status === 409) {
+        adopt(body);
+        renderSelectors();
+        renderResults();
+        appMessage("<strong>Your calculator was changed in another tab or on another device.</strong><br>" +
+          "That newer copy is loaded now — your edits are still in the form, press Save again to apply them.", "error");
+        return false;
+      }
+      if (!res.ok) throw new Error(errorText(res, body));
+      adopt(body);
+      renderAll();
+      if (okText) appMessage(okText, "ok", true);
+      return true;
+    } catch (err) {
+      appMessage(esc(err.message || "Could not save."), "error");
+      return false;
+    } finally {
+      saving = false;
+      document.querySelectorAll("#app button.btn").forEach((b) => (b.disabled = false));
+    }
+  }
+
+  // ── shared rendering ─────────────────────────────────────────
+
+  function troopLabel(kind, tier) {
+    const t = catalog.troops[kind];
+    return tier === 7 && t.label_tier7 ? t.label_tier7 : t.label;
+  }
+  function iconImg(file, size) {
+    return file
+      ? `<img src="${ICON_BASE}${esc(file)}" alt="" loading="lazy" width="${size}" height="${size}" />`
+      : `<span class="noimg">?</span>`;
+  }
+  function rowIcon(entry) {
+    return entry.icon ? iconImg(entry.icon, 44) : `<span class="noimg">${esc((entry.label || "?").charAt(0))}</span>`;
+  }
+  function nameCell(entry) {
+    return `<div class="name">
+      <div><span class="troop">${esc(entry.label)}</span><span class="tier">${esc(entry.tier)}</span></div>
+      <div class="group">${esc(entry.group || "")}</div>
+    </div>`;
+  }
+
+  function troopsHtml(list) {
+    let html = "";
+    if (list.record_missing) {
+      html += `<div class="msg">The record <strong>${esc(list.record_name || "(none)")}</strong> this list uses doesn't exist, so there are no counts. Pick a record under <em>Lists</em>.</div>`;
+    }
+    for (const section of list.sections || []) {
+      html += `<h2 class="section-title"><span>${esc(section.title)}</span></h2><ul class="rows">`;
+      for (const r of section.rows) {
+        html += `<li class="row">${rowIcon(r)}${nameCell(r)}<span class="count">${fmt(r.count)}</span></li>`;
+      }
+      html += `</ul>`;
+    }
+    if ((list.capacity || []).length) {
+      html += `<div class="capacity">`;
+      for (const c of list.capacity) {
+        const pct = c.capacity > 0 ? (100 * c.used) / c.capacity : 0;
+        const low = c.pool === "Leadership" && pct < 99;
+        html += `<div class="cap${low ? " low" : ""}">
+          <div class="cap-top"><span>${esc(c.pool)}</span><span class="num">${fmt(c.used)} / ${fmt(c.capacity)} (${pct.toFixed(1)}%)</span></div>
+          <div class="bar"><span style="width:${Math.min(100, pct).toFixed(1)}%"></span></div>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+    return html;
+  }
+
+  function orderHtml(list) {
+    const order = list.battle_order || [];
+    if (!order.length) return `<div class="msg">No battle order for this list.</div>`;
+    let html = `<p class="meta" style="margin-top:0">The order your troops attack in, first to last.</p><ul class="rows">`;
+    order.forEach((r, i) => {
+      html += `<li class="row"><span class="pos">${i + 1}.</span>${rowIcon(r)}${nameCell(r)}</li>`;
+    });
+    return html + `</ul>`;
+  }
+
+  function renderAll() {
+    renderSelectors();
+    renderResults();
+    loadListIntoEditor($("list-select").value);
+    loadRecordIntoEditor($("record-select").value);
+    $("footer-note").textContent = updatedAt
+      ? `Saved to your account · last change ${new Date(updatedAt * 1000).toLocaleString()}`
+      : "Nothing saved yet — your records and lists are stored with your Google account.";
+  }
+
+  function renderSelectors() {
+    const recordNames = Object.keys(data.records).sort(byName);
+    const listNames = Object.keys(data.lists).sort(byName);
+
+    // Results picker, grouped by record like lists.html.
+    const groups = new Map();
+    outputs.forEach((l, i) => {
+      const g = l.record_name || "No record";
+      if (!groups.has(g)) groups.set(g, []);
+      groups.get(g).push({ l, i });
+    });
+    const shortFormula = (f) => String(f || "").split(" (")[0];
+    const useGroups = groups.size > 1;
+    const prevResult = $("results-select").value;
+    $("results-select").innerHTML = [...groups.keys()].sort(byName).map((g) => {
+      const opts = groups.get(g).map(({ l }) => {
+        const f = shortFormula(l.formula);
+        const label = l.name.includes(f) || !f ? l.name : `${l.name} — ${f}`;
+        return `<option value="${esc(l.name)}">${esc(label)}</option>`;
+      }).join("");
+      return useGroups ? `<optgroup label="${esc(g)}">${opts}</optgroup>` : opts;
+    }).join("");
+    const wantedResult = listNames.includes(prevResult) ? prevResult : (data.last_list || listNames[0] || "");
+    if (wantedResult) $("results-select").value = wantedResult;
+
+    // List editor picker.
+    const prevList = $("list-select").value;
+    $("list-select").innerHTML = `<option value="${NEW}">+ New list</option>` +
+      listNames.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
+    $("list-select").value = listNames.includes(prevList) ? prevList
+      : (prevList === NEW ? NEW : (data.lists[data.last_list] ? data.last_list : NEW));
+
+    // Record pickers.
+    const prevRecord = $("record-select").value;
+    $("record-select").innerHTML = `<option value="${NEW}">+ New record</option>` +
+      recordNames.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
+    $("record-select").value = recordNames.includes(prevRecord) ? prevRecord
+      : (prevRecord === NEW ? NEW : (data.records[data.last_record] ? data.last_record : (recordNames[0] || NEW)));
+
+    const prevListRecord = $("list-record").value;
+    $("list-record").innerHTML = recordNames.length
+      ? recordNames.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join("")
+      : `<option value="">(add a record first)</option>`;
+    if (recordNames.includes(prevListRecord)) $("list-record").value = prevListRecord;
+  }
+
+  // ── Results tab ──────────────────────────────────────────────
+
+  function renderResults() {
+    const hasRecords = Object.keys(data.records).length > 0;
+    if (!outputs.length) {
+      $("results-body").classList.add("hidden");
+      showMessage($("results-empty"), hasRecords
+        ? `<strong>No lists yet.</strong><br>Pick the troops you want to use under <a href="#" data-go="lists">Lists</a>.`
+        : `<strong>Start with a record.</strong><br>Enter your Leadership, Dominance and troop stats under <a href="#" data-go="records">Records</a>, then make a list.`);
+      return;
+    }
+    $("results-empty").classList.add("hidden");
+    $("results-body").classList.remove("hidden");
+    const list = outputs.find((l) => l.name === $("results-select").value) || outputs[0];
+    $("results-troops").innerHTML = troopsHtml(list) +
+      `<p class="meta">Record: ${esc(list.record_name)} · ${esc(list.formula || "")}</p>`;
+    $("results-order").innerHTML = orderHtml(list);
+  }
+
+  function selectResultsTab(which) {
+    const troops = which === "troops";
+    $("rtab-troops").setAttribute("aria-selected", String(troops));
+    $("rtab-order").setAttribute("aria-selected", String(!troops));
+    $("results-troops").classList.toggle("hidden", !troops);
+    $("results-order").classList.toggle("hidden", troops);
+  }
+
+  // ── Lists tab ────────────────────────────────────────────────
+
+  let selectedKeys = new Set();
+
+  function buildStaticForms() {
+    // Formula dropdown.
+    $("list-formula").innerHTML = catalog.formulas
+      .map((f) => `<option value="${esc(f.id)}">${esc(f.label)}</option>`).join("");
+
+    // Troop picker: per group, one row per tier (II, I, VII) like the desktop app.
+    let html = "";
+    for (const group of GROUPS) {
+      const kinds = catalog.troop_order.filter((k) => catalog.troops[k].group === group);
+      if (!kinds.length) continue;
+      html += `<div class="picker-group"><div class="section-title" style="margin-top:12px"><span>${esc(group)}</span>` +
+        `<button type="button" data-group="${esc(group)}">All II</button></div>`;
+      for (const tier of [2, 1, 7]) {
+        const tierKinds = kinds.filter((k) => catalog.troops[k].tiers.includes(tier));
+        if (!tierKinds.length) continue;
+        html += `<div class="tier-row">`;
+        for (const kind of tierKinds) {
+          const key = `${kind}#${tier}`;
+          const t = catalog.troops[kind];
+          html += `<button type="button" class="tile" data-key="${esc(key)}" aria-pressed="false" title="${esc(troopLabel(kind, tier))} ${esc(catalog.tier_labels[tier])}">
+            <span class="badge">${esc(catalog.tier_labels[tier])}</span>
+            ${iconImg(t.icons[tier], 52)}
+            <span>${esc(troopLabel(kind, tier))}</span>
+          </button>`;
+        }
+        html += `</div>`;
+      }
+      html += `</div>`;
+    }
+    $("picker").innerHTML = html;
+
+    // Registration: capacity + per-troop stat blocks.
+    $("capacity-fields").innerHTML = CAPACITY_FIELDS.map(([key, label]) =>
+      `<label class="field"><span>${esc(label)}</span><input type="number" inputmode="numeric" min="0" step="1" id="cap-${key}" /></label>`
+    ).join("");
+    $("stat-fields").innerHTML = `<div class="stat-grid">` + catalog.registration_kinds.map((kind) => {
+      const t = catalog.troops[kind];
+      const note = kind === "kraken" ? "<small>all Monsters</small>" : `<small>${esc(t.group)}</small>`;
+      return `<div class="stat-block">
+        ${iconImg(t.icons[2], 48)}
+        <div class="title">${esc(t.label)}${note}</div>
+        ${t.has_strength ? `<label><span>Strength</span><input type="number" inputmode="decimal" min="0" step="0.5" id="st-${kind}-strength" /></label>` : ""}
+        <label><span>Health</span><input type="number" inputmode="decimal" min="0" step="0.5" id="st-${kind}-health" /></label>
+      </div>`;
+    }).join("") + `</div>`;
+  }
+
+  function setTiles() {
+    document.querySelectorAll("#picker .tile").forEach((tile) => {
+      tile.setAttribute("aria-pressed", String(selectedKeys.has(tile.dataset.key)));
+    });
+  }
+
+  function loadListIntoEditor(name) {
+    const list = data.lists[name];
+    if (list) {
+      $("list-name").value = list.name;
+      if (data.records[list.record_name]) $("list-record").value = list.record_name;
+      $("list-formula").value = list.formula_id;
+      selectedKeys = new Set(list.selected_kinds);
+    } else {
+      $("list-name").value = "";
+      if (data.records[data.last_record]) $("list-record").value = data.last_record;
+      $("list-formula").value = catalog.formulas[0].id;
+      selectedKeys = new Set();
+    }
+    $("list-delete").classList.toggle("hidden", !list);
+    updateFormulaDesc();
+    setTiles();
+    schedulePreview();
+  }
+
+  function updateFormulaDesc() {
+    const f = catalog.formulas.find((x) => x.id === $("list-formula").value);
+    $("list-formula-desc").textContent = f ? f.description : "";
+  }
+
+  /** Selected keys in the desktop app's canonical tile order. */
+  function orderedSelection() {
+    const order = [];
+    for (const kind of catalog.troop_order) {
+      for (const tier of catalog.troops[kind].tiers) {
+        const key = `${kind}#${tier}`;
+        if (selectedKeys.has(key)) order.push(key);
+      }
+    }
+    return order;
+  }
+
+  // Live preview: counts for the list as it is in the editor, before saving.
+  let previewTimer = null;
+  let previewSeq = 0;
+  function schedulePreview() {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(runPreview, 350);
+  }
+  async function runPreview() {
+    const el = $("list-preview");
+    const record = data.records[$("list-record").value];
+    if (!record || !selectedKeys.size) {
+      el.innerHTML = `<p class="hint">${record ? "Select troops to see their counts." : "Add a record under Records to see counts."}</p>`;
+      return;
+    }
+    const seq = ++previewSeq;
+    el.classList.add("busy");
+    try {
+      const { res, body } = await api("/calc/compute", {
+        record,
+        list: { selected_kinds: orderedSelection(), formula_id: $("list-formula").value },
+      });
+      if (seq !== previewSeq) return;
+      if (handleAccessError(res, body)) return;
+      if (!res.ok) throw new Error(errorText(res, body));
+      el.innerHTML = `<div class="section-title" style="margin-top:10px"><span>Preview</span></div>` + troopsHtml(body.list);
+    } catch (err) {
+      if (seq === previewSeq) el.innerHTML = `<p class="hint">Preview unavailable: ${esc(err.message)}</p>`;
+    } finally {
+      if (seq === previewSeq) el.classList.remove("busy");
+    }
+  }
+
+  async function saveList() {
+    const name = $("list-name").value.trim();
+    const editing = $("list-select").value;
+    const recordName = $("list-record").value;
+    if (!name) return appMessage("Enter a list name before saving.", "error");
+    if (!data.records[recordName]) return appMessage("Add a record under <em>Records</em> first — a list needs one for its counts.", "error");
+    if (!selectedKeys.size) return appMessage("Select at least one troop to use.", "error");
+    if (name !== editing && data.lists[name] &&
+        !confirm(`A list called "${name}" already exists.\n\nReplace it with this one?`)) return;
+    const list = { name, record_name: recordName, formula_id: $("list-formula").value, selected_kinds: orderedSelection() };
+    const ok = await save((d) => {
+      d.lists[name] = list;
+      d.last_list = name;
+      d.last_record = recordName;
+    }, `List <strong>${esc(name)}</strong> saved.`);
+    if (ok) {
+      $("list-select").value = name;
+      $("results-select").value = name;
+      renderResults();
+      selectTab("results");
+    }
+  }
+
+  async function deleteList() {
+    const name = $("list-select").value;
+    if (!data.lists[name] || !confirm(`Delete list "${name}"? This can't be undone.`)) return;
+    const ok = await save((d) => {
+      delete d.lists[name];
+      if (d.last_list === name) d.last_list = "";
+    }, `List <strong>${esc(name)}</strong> deleted.`);
+    if (ok) {
+      $("list-select").value = NEW;
+      loadListIntoEditor(NEW);
+    }
+  }
+
+  // ── Records tab ──────────────────────────────────────────────
+
+  function loadRecordIntoEditor(name) {
+    const rec = data.records[name];
+    $("record-name").value = rec ? rec.name : "";
+    for (const [key] of CAPACITY_FIELDS) {
+      $(`cap-${key}`).value = rec && rec[key] ? rec[key] : "";
+    }
+    for (const kind of catalog.registration_kinds) {
+      const stats = (rec && rec.troops[kind]) || {};
+      if (catalog.troops[kind].has_strength) $(`st-${kind}-strength`).value = stats.strength || "";
+      $(`st-${kind}-health`).value = stats.health || "";
+    }
+    $("record-delete").classList.toggle("hidden", !rec);
+  }
+
+  function num(id) {
+    const v = parseFloat($(id).value);
+    return Number.isFinite(v) && v > 0 ? v : 0;
+  }
+
+  async function saveRecord() {
+    const name = $("record-name").value.trim();
+    const editing = $("record-select").value;
+    if (!name) return appMessage("Enter a record name before saving.", "error");
+    if (name !== editing && data.records[name] &&
+        !confirm(`A record called "${name}" already exists.\n\nReplace it with these numbers?`)) return;
+    const prior = data.records[editing] || data.records[name];
+    const record = { name, troops: {} };
+    for (const [key] of CAPACITY_FIELDS) record[key] = Math.trunc(num(`cap-${key}`));
+    for (const kind of catalog.troop_order) {
+      if (catalog.registration_kinds.includes(kind)) {
+        record.troops[kind] = {
+          strength: catalog.troops[kind].has_strength ? num(`st-${kind}-strength`) : 0,
+          health: num(`st-${kind}-health`),
+        };
+      } else if (prior && prior.troops[kind]) {
+        record.troops[kind] = prior.troops[kind]; // not on the form: keep whatever was there
+      }
+    }
+    if (!record.leadership && !record.dominance) {
+      if (!confirm("Leadership and Dominance are both empty, so every count will be 0. Save anyway?")) return;
+    }
+    const ok = await save((d) => {
+      d.records[name] = record;
+      d.last_record = name;
+    }, `Record <strong>${esc(name)}</strong> saved.`);
+    if (ok) {
+      $("record-select").value = name;
+      if (!Object.keys(data.lists).length) {
+        // First record: go straight on to making a list with it, like the desktop app.
+        $("list-select").value = NEW;
+        loadListIntoEditor(NEW);
+        $("list-record").value = name;
+        selectTab("lists");
+      }
+    }
+  }
+
+  async function deleteRecord() {
+    const name = $("record-select").value;
+    if (!data.records[name]) return;
+    const using = Object.values(data.lists).filter((l) => l.record_name === name).map((l) => l.name);
+    const extra = using.length ? `\n\n${using.length} list(s) use it and will show no counts until you pick another record: ${using.join(", ")}` : "";
+    if (!confirm(`Delete record "${name}"? This can't be undone.${extra}`)) return;
+    const ok = await save((d) => {
+      delete d.records[name];
+      if (d.last_record === name) d.last_record = "";
+    }, `Record <strong>${esc(name)}</strong> deleted.`);
+    if (ok) {
+      loadRecordIntoEditor($("record-select").value);
+    }
+  }
+
+  // ── tabs & events ────────────────────────────────────────────
+
+  function selectTab(which) {
+    document.querySelectorAll(".tabs:not(.small) .tab").forEach((t) => {
+      t.setAttribute("aria-selected", String(t.dataset.tab === which));
+    });
+    for (const p of ["results", "lists", "records"]) $(`panel-${p}`).classList.toggle("hidden", p !== which);
+    store(LAST_TAB_KEY, which);
+    if (which === "lists") schedulePreview();
+  }
+
+  document.querySelectorAll(".tabs:not(.small) .tab").forEach((t) => t.addEventListener("click", () => selectTab(t.dataset.tab)));
+  document.addEventListener("click", (e) => {
+    const go = e.target.closest("[data-go]");
+    if (go) { e.preventDefault(); selectTab(go.dataset.go); }
+  });
+
+  $("results-select").addEventListener("change", renderResults);
+  $("results-edit").addEventListener("click", () => {
+    const name = $("results-select").value;
+    if (!data.lists[name]) return;
+    $("list-select").value = name;
+    loadListIntoEditor(name);
+    selectTab("lists");
+  });
+  $("rtab-troops").addEventListener("click", () => selectResultsTab("troops"));
+  $("rtab-order").addEventListener("click", () => selectResultsTab("order"));
+
+  $("list-select").addEventListener("change", (e) => loadListIntoEditor(e.target.value));
+  $("list-record").addEventListener("change", schedulePreview);
+  $("list-formula").addEventListener("change", () => { updateFormulaDesc(); schedulePreview(); });
+  $("picker").addEventListener("click", (e) => {
+    const all = e.target.closest("[data-group]");
+    if (all) {
+      const group = all.dataset.group;
+      catalog.troop_order.filter((k) => catalog.troops[k].group === group).forEach((k) => selectedKeys.add(`${k}#2`));
+      setTiles();
+      schedulePreview();
+      return;
+    }
+    const tile = e.target.closest(".tile");
+    if (!tile) return;
+    const key = tile.dataset.key;
+    if (selectedKeys.has(key)) selectedKeys.delete(key);
+    else selectedKeys.add(key);
+    setTiles();
+    schedulePreview();
+  });
+  $("list-clear").addEventListener("click", () => { selectedKeys.clear(); setTiles(); schedulePreview(); });
+  $("list-save").addEventListener("click", saveList);
+  $("list-delete").addEventListener("click", deleteList);
+
+  $("record-select").addEventListener("change", (e) => loadRecordIntoEditor(e.target.value));
+  $("record-save").addEventListener("click", saveRecord);
+  $("record-delete").addEventListener("click", deleteRecord);
+
+  function handleCredentialResponse(token, email, info) {
+    idToken = token;
+    if (info && info.refresh) return; // silent renewal: keep the page as it is
+    $("g_id_signin_container").classList.add("hidden");
+    $("intro").classList.add("hidden");
+    loadAll();
+  }
+
+  window.onload = function () {
+    TBSession.start({
+      clientId: GOOGLE_CLIENT_ID_WEB,
+      container: $("g_id_signin_container"),
+      buttonWidth: 280,
+      onSignIn: handleCredentialResponse,
+    });
+  };
+</script>
+</body>
+</html>
