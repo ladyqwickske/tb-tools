@@ -124,7 +124,10 @@
     });
     const body = await res.json().catch(() => ({}));
     if (res.status === 403) throw new Error("This Google account is not an admin (add it to ADMIN_EMAILS on the Worker).");
-    if (res.status === 401) throw new Error("Sign-in expired — reload the page and sign in again.");
+    if (res.status === 401) {
+      TBSession.expired();
+      throw new Error("Your sign-in expired. Please sign in again.");
+    }
     if (!res.ok) throw new Error(body.detail || body.error || `Request failed (${res.status})`);
     return body;
   }

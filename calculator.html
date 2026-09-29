@@ -411,7 +411,7 @@
     if (res.status === 401) {
       $("app").classList.add("hidden");
       showMessage($("status-msg"), "Your sign-in expired. Please sign in again.", "error");
-      $("g_id_signin_container").classList.remove("hidden");
+      TBSession.expired();
       return true;
     }
     if (res.status === 403 && body.error === "no_calc_access") {

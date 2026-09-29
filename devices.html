@@ -474,6 +474,11 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_token: currentIdToken }),
       });
+      if (res.status === 401) {
+        document.getElementById("account-section").style.display = "none";
+        TBSession.expired();
+        return;
+      }
       if (!res.ok) throw new Error(`Could not load account (${res.status})`);
       const { devices, subscription, entitlements, ccc } = await res.json();
 
