@@ -11,9 +11,9 @@
  * Worker) and keeps that in localStorage. Pages send it in the same
  * `id_token` field as before; the Worker checks its signature on every
  * request, so access control is unchanged. While it's in use it is quietly
- * renewed once a day, so a regular visitor never sees the button again.
+ * renewed once it is a week old, so a regular visitor never sees the button again.
  *
- * If the Worker doesn't hand out session tokens (SESSION_SECRET not set),
+ * If the Worker doesn't hand out session tokens (older Worker still deployed),
  * this falls back to the old behaviour: the Google token is kept until it
  * expires (~1 hour) and Google is asked for a fresh one silently.
  *
@@ -31,7 +31,7 @@
   const KEY = "tbtools.idToken";
   const EXPIRY_MARGIN_S = 60;     // treat a token as expired 1 minute early
   const RENEW_BEFORE_S = 5 * 60;  // Google token: try a silent renewal 5 minutes before expiry
-  const SESSION_REFRESH_S = 24 * 60 * 60; // session token: renew when it is older than a day
+  const SESSION_REFRESH_S = 7 * 24 * 60 * 60; // session token: renew when it is older than 7 days (as champions)
   const SESSION_PREFIX = "tbs1.";
   const DEFAULT_WORKER_URL = "https://auto-crypt.ccc-hq.com";
 
