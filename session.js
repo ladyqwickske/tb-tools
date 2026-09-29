@@ -1,19 +1,21 @@
 /*
- * session.js — shared Google sign-in for every TB-Tools page (2026-09-23).
+ * session.js — shared Google sign-in for every TB-Tools page.
  *
- * Signing in once now carries over to lists.html, devices.html,
- * subscribe.html and admin.html (and to other tabs of the site) instead of
- * asking again on every page.
+ * Sign in once and you stay signed in on every page (calculator, lists,
+ * devices, subscribe, admin) and on later visits, until you press
+ * "Sign out" — the same way the cCc Champions dashboard remembers you.
  *
- * How: the Google ID token from the sign-in is kept in localStorage until it
- * expires (Google issues them for about 1 hour). A page that finds a valid
- * token skips the button and uses it straight away. Shortly before it
- * expires, Google is asked for a fresh one silently (auto sign-in); if that
- * isn't possible the normal button shows again on the next page.
+ * How (2026-09-29): Google's own sign-in token only lasts about an hour, so
+ * right after the Google sign-in this swaps it at the Worker's /session route
+ * for a TB-Tools session token that lasts 30 days (SESSION_TTL_DAYS on the
+ * Worker) and keeps that in localStorage. Pages send it in the same
+ * `id_token` field as before; the Worker checks its signature on every
+ * request, so access control is unchanged. While it's in use it is quietly
+ * renewed once a day, so a regular visitor never sees the button again.
  *
- * The Worker still verifies every token on every request exactly as before,
- * so nothing about access control changes here — this only remembers the
- * token in this browser. "Sign out" (top right of every page) forgets it.
+ * If the Worker doesn't hand out session tokens (SESSION_SECRET not set),
+ * this falls back to the old behaviour: the Google token is kept until it
+ * expires (~1 hour) and Google is asked for a fresh one silently.
  *
  * Usage on a page, after the Google script has loaded (window.onload):
  *   TBSession.start({
@@ -22,11 +24,16 @@
  *     buttonWidth: 300,
  *     onSignIn(token, email, info) { ... }   // info.refresh = true for a silent renewal
  *   });
+ * When the Worker answers 401, call TBSession.expired() — it forgets the
+ * token and shows the Google button again.
  */
 (function () {
   const KEY = "tbtools.idToken";
   const EXPIRY_MARGIN_S = 60;     // treat a token as expired 1 minute early
-  const RENEW_BEFORE_S = 5 * 60;  // try a silent renewal 5 minutes before expiry
+  const RENEW_BEFORE_S = 5 * 60;  // Google token: try a silent renewal 5 minutes before expiry
+  const SESSION_REFRESH_S = 24 * 60 * 60; // session token: renew when it is older than a day
+  const SESSION_PREFIX = "tbs1.";
+  const DEFAULT_WORKER_URL = "https://auto-crypt.ccc-hq.com";
 
   let opts = null;
   let renewTimer = null;
@@ -88,8 +95,34 @@
     document.getElementById("tb-signout").addEventListener("click", signOut);
   }
 
-  function scheduleRenew(payload) {
+  function isSession(token) { return token.indexOf(SESSION_PREFIX) === 0; }
+
+  /** Swap a Google token (or an older session token) for a fresh session token; null if unavailable. */
+  async function exchange(token) {
+    try {
+      const res = await fetch((opts.workerUrl || DEFAULT_WORKER_URL) + "/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_token: token }),
+      });
+      if (!res.ok) return null;
+      const body = await res.json();
+      return body && body.session_token ? body.session_token : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function scheduleRenew(token, payload) {
     clearTimeout(renewTimer);
+    if (isSession(token)) {
+      const age = nowS() - (payload.iat || 0);
+      renewTimer = setTimeout(async () => {
+        const fresh = await exchange(token);
+        if (fresh) accept(fresh, false);
+      }, Math.max(5, SESSION_REFRESH_S - age) * 1000);
+      return;
+    }
     const inS = payload.exp - RENEW_BEFORE_S - nowS();
     renewTimer = setTimeout(() => {
       try { google.accounts.id.prompt(); } catch (e) {}
@@ -104,8 +137,22 @@
     signedIn = true;
     if (opts.container) opts.container.style.display = "none";
     showBar(p.email);
-    scheduleRenew(p);
+    scheduleRenew(token, p);
     opts.onSignIn(token, p.email, { refresh });
+  }
+
+  async function onGoogleCredential(googleToken) {
+    const session = await exchange(googleToken);
+    accept(session || googleToken, false);
+  }
+
+  function showButton() {
+    if (!opts.container) return;
+    opts.container.style.display = "";
+    opts.container.classList.remove("hidden");
+    google.accounts.id.renderButton(opts.container, {
+      theme: "filled_black", size: "large", width: opts.buttonWidth || 300,
+    });
   }
 
   function signOut() {
@@ -115,11 +162,22 @@
     location.reload();
   }
 
+  /** The Worker rejected the token: forget it and ask for a new sign-in. */
+  function expired() {
+    forget();
+    clearTimeout(renewTimer);
+    signedIn = false;
+    const bar = document.getElementById("tb-session-bar");
+    if (bar) bar.remove();
+    showButton();
+    try { google.accounts.id.prompt(); } catch (e) {}
+  }
+
   function start(options) {
     opts = options;
     google.accounts.id.initialize({
       client_id: opts.clientId,
-      callback: (resp) => accept(resp.credential, false),
+      callback: (resp) => onGoogleCredential(resp.credential),
       auto_select: true,          // returning visitors are signed in without clicking
       cancel_on_tap_outside: true,
     });
@@ -127,13 +185,11 @@
     const s = stored();
     if (s) {
       accept(s.token, true);
+      // A Google token left over from before sessions existed: upgrade it quietly.
+      if (!isSession(s.token)) exchange(s.token).then((fresh) => { if (fresh) accept(fresh, false); });
       return;
     }
-    if (opts.container) {
-      google.accounts.id.renderButton(opts.container, {
-        theme: "filled_black", size: "large", width: opts.buttonWidth || 300,
-      });
-    }
+    showButton();
     try { google.accounts.id.prompt(); } catch (e) {}
   }
 
@@ -143,5 +199,5 @@
     return s ? s.token : null;
   }
 
-  window.TBSession = { start, signOut, token };
+  window.TBSession = { start, signOut, expired, token };
 })();
