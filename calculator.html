@@ -272,9 +272,10 @@
 
   <section id="app" class="hidden">
     <div class="tabs" role="tablist">
-      <button class="tab" role="tab" data-tab="results" aria-selected="true">Results</button>
+      <!-- Same order as the desktop app: Registration, then lists, then results. -->
+      <button class="tab" role="tab" data-tab="records" aria-selected="false">Registration</button>
       <button class="tab" role="tab" data-tab="lists" aria-selected="false">Lists</button>
-      <button class="tab" role="tab" data-tab="records" aria-selected="false">Records</button>
+      <button class="tab" role="tab" data-tab="results" aria-selected="true">Results</button>
     </div>
     <div class="msg hidden" id="app-msg" role="status"></div>
 
@@ -609,7 +610,7 @@
       $("results-body").classList.add("hidden");
       showMessage($("results-empty"), hasRecords
         ? `<strong>No lists yet.</strong><br>Pick the troops you want to use under <a href="#" data-go="lists">Lists</a>.`
-        : `<strong>Start with a record.</strong><br>Enter your Leadership, Dominance and troop stats under <a href="#" data-go="records">Records</a>, then make a list.`);
+        : `<strong>Start with a record.</strong><br>Enter your Leadership, Dominance and troop stats under <a href="#" data-go="records">Registration</a>, then make a list.`);
       return;
     }
     $("results-empty").classList.add("hidden");
@@ -732,7 +733,7 @@
     const el = $("list-preview");
     const record = data.records[$("list-record").value];
     if (!record || !selectedKeys.size) {
-      el.innerHTML = `<p class="hint">${record ? "Select troops to see their counts." : "Add a record under Records to see counts."}</p>`;
+      el.innerHTML = `<p class="hint">${record ? "Select troops to see their counts." : "Add a record under Registration to see counts."}</p>`;
       return;
     }
     const seq = ++previewSeq;
@@ -758,7 +759,7 @@
     const editing = $("list-select").value;
     const recordName = $("list-record").value;
     if (!name) return appMessage("Enter a list name before saving.", "error");
-    if (!data.records[recordName]) return appMessage("Add a record under <em>Records</em> first — a list needs one for its counts.", "error");
+    if (!data.records[recordName]) return appMessage("Add a record under <em>Registration</em> first — a list needs one for its counts.", "error");
     if (!selectedKeys.size) return appMessage("Select at least one troop to use.", "error");
     if (name !== editing && data.lists[name] &&
         !confirm(`A list called "${name}" already exists.\n\nReplace it with this one?`)) return;
