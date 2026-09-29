@@ -272,9 +272,10 @@
 
   <section id="app" class="hidden">
     <div class="tabs" role="tablist">
-      <button class="tab" role="tab" data-tab="results" aria-selected="true">Results</button>
+      <!-- Same order as the desktop app: Registration, then lists, then results. -->
+      <button class="tab" role="tab" data-tab="records" aria-selected="false">Registration</button>
       <button class="tab" role="tab" data-tab="lists" aria-selected="false">Lists</button>
-      <button class="tab" role="tab" data-tab="records" aria-selected="false">Records</button>
+      <button class="tab" role="tab" data-tab="results" aria-selected="true">Results</button>
     </div>
     <div class="msg hidden" id="app-msg" role="status"></div>
 
@@ -302,7 +303,7 @@
       </div>
       <div class="stack">
         <label class="field"><span>List name</span>
-          <input type="text" id="list-name" maxlength="80" autocomplete="off" placeholder="e.g. Main · Specialists die first" />
+          <input type="text" id="list-name" maxlength="80" autocomplete="off" placeholder="Filled in as record · formula — or type your own" />
         </label>
         <div class="grid-2">
           <label class="field"><span>Uses record</span><select id="list-record"></select></label>
@@ -609,7 +610,7 @@
       $("results-body").classList.add("hidden");
       showMessage($("results-empty"), hasRecords
         ? `<strong>No lists yet.</strong><br>Pick the troops you want to use under <a href="#" data-go="lists">Lists</a>.`
-        : `<strong>Start with a record.</strong><br>Enter your Leadership, Dominance and troop stats under <a href="#" data-go="records">Records</a>, then make a list.`);
+        : `<strong>Start with a record.</strong><br>Enter your Leadership, Dominance and troop stats under <a href="#" data-go="records">Registration</a>, then make a list.`);
       return;
     }
     $("results-empty").classList.add("hidden");
@@ -694,14 +695,39 @@
       selectedKeys = new Set(list.selected_kinds);
     } else {
       $("list-name").value = "";
+      lastAutoListName = "";
       if (data.records[data.last_record]) $("list-record").value = data.last_record;
       $("list-formula").value = catalog.formulas[0].id;
       selectedKeys = new Set();
     }
     $("list-delete").classList.toggle("hidden", !list);
     updateFormulaDesc();
+    maybeAutofillListName();
     setTiles();
     schedulePreview();
+  }
+
+  // List names work like the desktop app's: a NEW list is named
+  // "<record> · <formula>" (e.g. "Main · Specialists die first"), kept up to
+  // date when the record or formula changes -- but a name the user typed, or
+  // an existing list's name, is never overwritten.
+  let lastAutoListName = "";
+
+  function suggestedListName(recordName, formulaLabel) {
+    const record = String(recordName || "").trim();
+    const formula = String(formulaLabel || "").split(" (")[0].trim();
+    if (record && formula) return `${record} · ${formula}`;
+    return record || formula;
+  }
+
+  function maybeAutofillListName() {
+    if (data.lists[$("list-select").value]) return; // editing an existing list
+    const current = $("list-name").value.trim();
+    if (current && current !== lastAutoListName) return; // user typed their own
+    const recordName = data.records[$("list-record").value] ? $("list-record").value : "";
+    const formula = catalog.formulas.find((f) => f.id === $("list-formula").value);
+    lastAutoListName = suggestedListName(recordName, formula ? formula.label : "");
+    $("list-name").value = lastAutoListName;
   }
 
   function updateFormulaDesc() {
@@ -732,7 +758,7 @@
     const el = $("list-preview");
     const record = data.records[$("list-record").value];
     if (!record || !selectedKeys.size) {
-      el.innerHTML = `<p class="hint">${record ? "Select troops to see their counts." : "Add a record under Records to see counts."}</p>`;
+      el.innerHTML = `<p class="hint">${record ? "Select troops to see their counts." : "Add a record under Registration to see counts."}</p>`;
       return;
     }
     const seq = ++previewSeq;
@@ -758,7 +784,7 @@
     const editing = $("list-select").value;
     const recordName = $("list-record").value;
     if (!name) return appMessage("Enter a list name before saving.", "error");
-    if (!data.records[recordName]) return appMessage("Add a record under <em>Records</em> first — a list needs one for its counts.", "error");
+    if (!data.records[recordName]) return appMessage("Add a record under <em>Registration</em> first — a list needs one for its counts.", "error");
     if (!selectedKeys.size) return appMessage("Select at least one troop to use.", "error");
     if (name !== editing && data.lists[name] &&
         !confirm(`A list called "${name}" already exists.\n\nReplace it with this one?`)) return;
@@ -877,6 +903,7 @@
         $("list-select").value = NEW;
         loadListIntoEditor(NEW);
         $("list-record").value = name;
+        maybeAutofillListName();
         selectTab("lists");
       }
     }
@@ -926,8 +953,8 @@
   $("rtab-order").addEventListener("click", () => selectResultsTab("order"));
 
   $("list-select").addEventListener("change", (e) => loadListIntoEditor(e.target.value));
-  $("list-record").addEventListener("change", schedulePreview);
-  $("list-formula").addEventListener("change", () => { updateFormulaDesc(); schedulePreview(); });
+  $("list-record").addEventListener("change", () => { maybeAutofillListName(); schedulePreview(); });
+  $("list-formula").addEventListener("change", () => { updateFormulaDesc(); maybeAutofillListName(); schedulePreview(); });
   $("picker").addEventListener("click", (e) => {
     const all = e.target.closest("[data-group]");
     if (all) {
