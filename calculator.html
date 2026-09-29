@@ -303,7 +303,7 @@
       </div>
       <div class="stack">
         <label class="field"><span>List name</span>
-          <input type="text" id="list-name" maxlength="80" autocomplete="off" placeholder="e.g. Main · Specialists die first" />
+          <input type="text" id="list-name" maxlength="80" autocomplete="off" placeholder="Filled in as record · formula — or type your own" />
         </label>
         <div class="grid-2">
           <label class="field"><span>Uses record</span><select id="list-record"></select></label>
@@ -695,14 +695,39 @@
       selectedKeys = new Set(list.selected_kinds);
     } else {
       $("list-name").value = "";
+      lastAutoListName = "";
       if (data.records[data.last_record]) $("list-record").value = data.last_record;
       $("list-formula").value = catalog.formulas[0].id;
       selectedKeys = new Set();
     }
     $("list-delete").classList.toggle("hidden", !list);
     updateFormulaDesc();
+    maybeAutofillListName();
     setTiles();
     schedulePreview();
+  }
+
+  // List names work like the desktop app's: a NEW list is named
+  // "<record> · <formula>" (e.g. "Main · Specialists die first"), kept up to
+  // date when the record or formula changes -- but a name the user typed, or
+  // an existing list's name, is never overwritten.
+  let lastAutoListName = "";
+
+  function suggestedListName(recordName, formulaLabel) {
+    const record = String(recordName || "").trim();
+    const formula = String(formulaLabel || "").split(" (")[0].trim();
+    if (record && formula) return `${record} · ${formula}`;
+    return record || formula;
+  }
+
+  function maybeAutofillListName() {
+    if (data.lists[$("list-select").value]) return; // editing an existing list
+    const current = $("list-name").value.trim();
+    if (current && current !== lastAutoListName) return; // user typed their own
+    const recordName = data.records[$("list-record").value] ? $("list-record").value : "";
+    const formula = catalog.formulas.find((f) => f.id === $("list-formula").value);
+    lastAutoListName = suggestedListName(recordName, formula ? formula.label : "");
+    $("list-name").value = lastAutoListName;
   }
 
   function updateFormulaDesc() {
@@ -878,6 +903,7 @@
         $("list-select").value = NEW;
         loadListIntoEditor(NEW);
         $("list-record").value = name;
+        maybeAutofillListName();
         selectTab("lists");
       }
     }
@@ -927,8 +953,8 @@
   $("rtab-order").addEventListener("click", () => selectResultsTab("order"));
 
   $("list-select").addEventListener("change", (e) => loadListIntoEditor(e.target.value));
-  $("list-record").addEventListener("change", schedulePreview);
-  $("list-formula").addEventListener("change", () => { updateFormulaDesc(); schedulePreview(); });
+  $("list-record").addEventListener("change", () => { maybeAutofillListName(); schedulePreview(); });
+  $("list-formula").addEventListener("change", () => { updateFormulaDesc(); maybeAutofillListName(); schedulePreview(); });
   $("picker").addEventListener("click", (e) => {
     const all = e.target.closest("[data-group]");
     if (all) {
