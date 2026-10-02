@@ -337,7 +337,7 @@
       <div class="section-title"><span>Capacity</span></div>
       <div class="grid-4" id="capacity-fields"></div>
       <div class="section-title"><span>Troop stats (top tier)</span></div>
-      <p class="hint" style="margin-top:0">Strength and health per unit, as shown in the game. The four Monsters share Kraken's stats.</p>
+      <p class="hint" style="margin-top:0">Strength and health per unit, as shown in the game. The four Monsters share Kraken's stats; all Mercenaries share one bonus.</p>
       <div id="stat-fields"></div>
       <div class="actions">
         <button class="btn" id="record-save">Save record</button>
@@ -356,7 +356,8 @@
   const ICON_BASE = "img/troops/";
   const LAST_TAB_KEY = "tbtools.calc.tab";
   const NEW = "__new__";
-  const GROUPS = ["Guardsman", "Specialist", "Siege", "Monster"];
+  const GROUPS = ["Guardsman", "Specialist", "Siege", "Monster", "Mercenary"];
+  const GROUP_TITLES = { Mercenary: "Mercenaries" };
   // [key, label, decimals] -- Strength epic takes one decimal, the pools are whole numbers.
   const CAPACITY_FIELDS = [
     ["leadership", "Leadership", 0], ["dominance", "Dominance", 0],
@@ -494,6 +495,11 @@
     const t = catalog.troops[kind];
     return tier === 7 && t.label_tier7 ? t.label_tier7 : t.label;
   }
+  // "II" / "I" / "VII" badge -- none for the single-tier Mercenaries.
+  function tierBadge(kind, tier) {
+    return catalog.troops[kind].tiers.length > 1 ? catalog.tier_labels[tier] : "";
+  }
+  const MERC_KEY = () => catalog.merc_stats_key || "mercenary";
   function iconImg(file, size) {
     return file
       ? `<img src="${ICON_BASE}${esc(file)}" alt="" loading="lazy" width="${size}" height="${size}" />`
@@ -643,21 +649,24 @@
     for (const group of GROUPS) {
       const kinds = catalog.troop_order.filter((k) => catalog.troops[k].group === group);
       if (!kinds.length) continue;
-      html += `<div class="picker-group"><div class="section-title" style="margin-top:12px"><span>${esc(group)}</span>` +
-        `<button type="button" data-group="${esc(group)}">All II</button></div>`;
+      html += `<div class="picker-group"><div class="section-title" style="margin-top:12px"><span>${esc(GROUP_TITLES[group] || group)}</span>` +
+        `<button type="button" data-group="${esc(group)}">${group === "Mercenary" ? "All" : "All II"}</button></div>`;
       for (const tier of [2, 1, 7]) {
         const tierKinds = kinds.filter((k) => catalog.troops[k].tiers.includes(tier));
         if (!tierKinds.length) continue;
-        html += `<div class="tier-row">`;
-        for (const kind of tierKinds) {
+        // At most 4 tiles per row, like every other family (only the 17
+        // single-tier Mercenaries need more than one row).
+        tierKinds.forEach((kind, i) => {
+          if (i % 4 === 0) html += `${i ? "</div>" : ""}<div class="tier-row">`;
           const key = `${kind}#${tier}`;
           const t = catalog.troops[kind];
-          html += `<button type="button" class="tile" data-key="${esc(key)}" aria-pressed="false" title="${esc(troopLabel(kind, tier))} ${esc(catalog.tier_labels[tier])}">
-            <span class="badge">${esc(catalog.tier_labels[tier])}</span>
+          const badge = tierBadge(kind, tier);
+          html += `<button type="button" class="tile" data-key="${esc(key)}" aria-pressed="false" title="${esc(troopLabel(kind, tier))}${badge ? " " + esc(badge) : ""}">
+            ${badge ? `<span class="badge">${esc(badge)}</span>` : ""}
             ${iconImg(t.icons[tier], 52)}
             <span>${esc(troopLabel(kind, tier))}</span>
           </button>`;
-        }
+        });
         html += `</div>`;
       }
       html += `</div>`;
@@ -668,7 +677,13 @@
     $("capacity-fields").innerHTML = CAPACITY_FIELDS.map(([key, label, decimals]) =>
       `<label class="field"><span>${esc(label)}</span><input type="text" class="num" data-decimals="${decimals}" inputmode="${decimals ? "decimal" : "numeric"}" autocomplete="off" id="cap-${key}" /></label>`
     ).join("");
-    $("stat-fields").innerHTML = `<div class="stat-grid">` + catalog.registration_kinds.map((kind) => {
+    // Mercenaries first: they're the first troops in the in-game list.
+    $("stat-fields").innerHTML = `<div class="stat-grid">` + (catalog.merc_kinds ? `<div class="stat-block">
+        ${iconImg(catalog.troops.superior_hunter ? catalog.troops.superior_hunter.icons[2] : "", 48)}
+        <div class="title">Mercenaries<small>one bonus for all</small></div>
+        <label><span>Strength</span><input type="text" class="num" data-decimals="1" inputmode="decimal" autocomplete="off" id="st-merc-strength" /></label>
+        <label><span>Health</span><input type="text" class="num" data-decimals="1" inputmode="decimal" autocomplete="off" id="st-merc-health" /></label>
+      </div>` : "") + catalog.registration_kinds.map((kind) => {
       const t = catalog.troops[kind];
       const note = kind === "kraken" ? "<small>all Monsters</small>" : `<small>${esc(t.group)}</small>`;
       return `<div class="stat-block">
@@ -834,6 +849,11 @@
       if (catalog.troops[kind].has_strength) $(`st-${kind}-strength`).value = stats.strength || "";
       $(`st-${kind}-health`).value = stats.health || "";
     }
+    if (catalog.merc_kinds) {
+      const merc = (rec && rec.troops[MERC_KEY()]) || {};
+      $("st-merc-strength").value = merc.strength || "";
+      $("st-merc-health").value = merc.health || "";
+    }
     $("record-delete").classList.toggle("hidden", !rec);
   }
 
@@ -888,6 +908,12 @@
       } else if (prior && prior.troops[kind]) {
         record.troops[kind] = prior.troops[kind]; // not on the form: keep whatever was there
       }
+    }
+    if (catalog.merc_kinds) {
+      // The one Strength/Health bonus every mercenary shares.
+      record.troops[MERC_KEY()] = { strength: num("st-merc-strength"), health: num("st-merc-health") };
+    } else if (prior && prior.troops.mercenary) {
+      record.troops.mercenary = prior.troops.mercenary;
     }
     if (!record.leadership && !record.dominance) {
       if (!confirm("Leadership and Dominance are both empty, so every count will be 0. Save anyway?")) return;
