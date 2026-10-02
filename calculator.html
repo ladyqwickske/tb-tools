@@ -924,14 +924,24 @@
     }, `Record <strong>${esc(name)}</strong> saved.`);
     if (ok) {
       $("record-select").value = name;
-      if (!Object.keys(data.lists).length) {
-        // First record: go straight on to making a list with it, like the desktop app.
+      // Go straight on to this record's list, like the desktop app: the
+      // record's own list if it has one (the last opened one, else the most
+      // recently changed), otherwise a new list for it -- never whatever list
+      // happened to be open before, which may belong to another record.
+      const own = Object.values(data.lists).filter((l) => l.record_name === name);
+      if (own.length) {
+        const last = data.lists[data.last_list];
+        const pick = last && last.record_name === name ? last
+          : own.reduce((a, b) => ((b.updated_at || 0) > (a.updated_at || 0) ? b : a));
+        $("list-select").value = pick.name;
+        loadListIntoEditor(pick.name);
+      } else {
         $("list-select").value = NEW;
         loadListIntoEditor(NEW);
         $("list-record").value = name;
         maybeAutofillListName();
-        selectTab("lists");
       }
+      selectTab("lists");
     }
   }
 
