@@ -190,8 +190,8 @@
     if (btn) btn.disabled = true;
     try {
       const r = await api("/admin/ccc/set", { email, action, ...(extra || {}) });
-      status(`${esc(r.email)} → <strong>${esc(r.status)}</strong>${r.stripe_note ? " · Stripe: " + esc(r.stripe_note) : ""}`,
-             r.stripe_note && r.stripe_note.includes("FAILED") ? "error" : "");
+      status(`${esc(r.email)} → <strong>${esc(r.status)}</strong>${r.stripe_note ? " · Stripe: " + esc(r.stripe_note) : ""}${r.email_note ? " · Email to member: " + esc(r.email_note) : ""}`,
+             (r.stripe_note && r.stripe_note.includes("FAILED")) || (r.email_note && r.email_note !== "sent") ? "error" : "");
       await load();
       $("status").classList.remove("hidden");
     } catch (err) {
