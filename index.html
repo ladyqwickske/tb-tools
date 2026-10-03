@@ -505,6 +505,18 @@
   }
   .video-poster:hover::after, .video-poster:focus-visible::after { background: var(--gold); color: var(--void); }
   .video-note { font-size: 0.8rem; color: var(--ink-dim); margin: 8px 0 0; }
+  .web-live {
+    margin-top: 30px; padding: 24px 26px;
+    border: 1px solid rgba(111,163,115,0.5); border-left: 3px solid var(--emerald-bright);
+    border-radius: 3px; background: rgba(61,107,66,0.12);
+    scroll-margin-top: 24px;
+  }
+  .web-live .tool-status { background: var(--emerald-bright); margin-bottom: 10px; }
+  .web-live h3 { font-family: var(--display); color: var(--gold-bright); font-size: 1.2rem; margin: 0 0 10px; }
+  .web-live ul { margin: 12px 0 0; }
+  .web-live li { color: var(--ink); }
+  .web-live li strong { color: var(--gold-bright); font-weight: 600; }
+  .web-live-tagline { font-family: var(--display); color: var(--emerald-bright); font-style: italic; margin: 14px 0 0 !important; }
   footer {
     position: relative;
     z-index: 1;
@@ -641,14 +653,14 @@
       </div>
       <div class="benefit-tile">
         <p class="benefit-title">Your lists on your phone</p>
-        <p class="benefit-desc">Lists sync to <a href="lists.html" style="color:var(--gold-bright);">My Battle Lists</a>, so you can check them while playing on mobile.</p>
+        <p class="benefit-desc">Lists sync to <a href="lists.html" style="color:var(--gold-bright);">My Battle Lists</a> and the <a href="#web-calculator" style="color:var(--gold-bright);">web calculator</a>, so you can use them while playing on mobile.</p>
       </div>
     </div>
 
 
     <h3 class="tool-subheading">Video tutorial</h3>
     <p>See how to register your stats, build a list and read the results — about as quick as reading this page.</p>
-    <div class="video-block" id="calc-video">
+    <div class="video-block js-video" data-title="Battle Calculator tutorial">
       <div class="video-langs" role="group" aria-label="Video language">
         <button type="button" data-video="6RvYcCfrMwg" aria-pressed="true">English</button>
         <button type="button" data-video="yE30bg3jjAg" aria-pressed="false">Türkçe</button>
@@ -657,6 +669,33 @@
         <button type="button" class="video-poster" aria-label="Play the Battle Calculator tutorial"></button>
       </div>
       <p class="video-note">Or watch on YouTube: <a href="https://youtu.be/6RvYcCfrMwg" style="color:var(--gold-bright);">English</a> · <a href="https://youtu.be/yE30bg3jjAg" style="color:var(--gold-bright);">Türkçe</a></p>
+    </div>
+
+    <div class="web-live" id="web-calculator">
+      <span class="tool-status">Now live</span>
+      <h3>The Battle Calculator, now on the web</h3>
+      <p>No Windows computer? No problem. The <a href="calculator.html" style="color:var(--gold-bright);">web Battle Calculator</a> runs in any browser — on your phone, tablet, Mac or Chromebook. Sign in with the same Google account you use in TB-Tools and you're ready to go.</p>
+      <ul>
+        <li><strong>Fully in sync with the desktop app.</strong> Your stats and troop lists sync both ways — build a list on your PC and it's already there on your phone, and the other way round.</li>
+        <li><strong>Every option, everywhere.</strong> Stats, troop lists, exact troop counts and battle order all work in the browser.</li>
+        <li><strong>One exception:</strong> <em>Write to battle screen</em> needs the Windows desktop app, because it fills in the numbers inside the game on your computer.</li>
+      </ul>
+      <p class="web-live-tagline">Take your troop lists with you wherever you go!</p>
+
+      <div class="video-block js-video" data-title="Web Battle Calculator tutorial">
+        <div class="video-langs" role="group" aria-label="Video language">
+          <button type="button" data-video="bop7K_FajNc" aria-pressed="true">English</button>
+          <button type="button" data-video="AD3-7k2q-VA" aria-pressed="false">Türkçe</button>
+        </div>
+        <div class="video-frame">
+          <button type="button" class="video-poster" aria-label="Play the Web Battle Calculator tutorial"></button>
+        </div>
+        <p class="video-note">Or watch on YouTube: <a href="https://youtu.be/bop7K_FajNc" style="color:var(--gold-bright);">English</a> · <a href="https://youtu.be/AD3-7k2q-VA" style="color:var(--gold-bright);">Türkçe</a></p>
+      </div>
+
+      <div class="tool-actions">
+        <a class="cta primary" href="calculator.html">Open the web calculator →</a>
+      </div>
     </div>
 
     <div class="tool-actions">
@@ -865,38 +904,36 @@
 
 
 <script>
-  // Battle Calculator tutorial: shows the thumbnail and only loads YouTube
-  // (privacy-enhanced domain) when the visitor presses play.
-  (function () {
-    const root = document.getElementById("calc-video");
-    if (!root) return;
+  // Battle Calculator tutorials (desktop + web): each shows the thumbnail and
+  // only loads YouTube (privacy-enhanced domain) when the visitor presses play.
+  document.querySelectorAll(".js-video").forEach(function (root) {
     const frame = root.querySelector(".video-frame");
-    let current = "6RvYcCfrMwg";
+    const title = root.dataset.title || "Video";
+    const buttons = root.querySelectorAll(".video-langs button");
 
     function poster(id) {
-      frame.innerHTML = '<button type="button" class="video-poster" aria-label="Play the Battle Calculator tutorial"></button>';
+      frame.innerHTML = '<button type="button" class="video-poster"></button>';
       const btn = frame.firstChild;
+      btn.setAttribute("aria-label", "Play the " + title);
       btn.style.backgroundImage = "url(https://i.ytimg.com/vi/" + id + "/hqdefault.jpg)";
       btn.addEventListener("click", function () { play(id); });
     }
     function play(id) {
       frame.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + id +
-        '?autoplay=1&rel=0" title="Battle Calculator tutorial" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+        '?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+      frame.firstChild.title = title;
     }
-    root.querySelectorAll(".video-langs button").forEach(function (b) {
-      b.addEventListener("click", function () {
-        root.querySelectorAll(".video-langs button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
-        current = b.dataset.video;
-        poster(current);
-      });
+    function select(b) {
+      buttons.forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      poster(b.dataset.video);
+    }
+    buttons.forEach(function (b) {
+      b.addEventListener("click", function () { select(b); });
     });
-    // Turkish browsers start on the Turkish video.
-    if ((navigator.language || "").toLowerCase().indexOf("tr") === 0) {
-      root.querySelector('[data-video="yE30bg3jjAg"]').click();
-    } else {
-      poster(current);
-    }
-  })();
+    // Turkish browsers start on the Turkish video (the second button).
+    const turkish = (navigator.language || "").toLowerCase().indexOf("tr") === 0;
+    select(buttons[turkish && buttons[1] ? 1 : 0]);
+  });
 </script>
 <script>
   // Plans & pricing tabs. Without JS all three plans simply show stacked.
