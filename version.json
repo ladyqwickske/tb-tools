@@ -1,7 +1,7 @@
 {
-  "version": "0.1.5.1",
-  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.1.5.1/TB-Tools-0.1.5.1.zip",
+  "version": "0.1.6",
+  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.1.6/TB-Tools-0.1.6.zip",
   "release_notes": "",
-  "published_at": "2026-10-04",
-  "required": true
+  "published_at": "2026-10-07",
+  "required": false
 }
