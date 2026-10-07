@@ -195,6 +195,13 @@
     white-space: nowrap;
   }
   .results-2col { display: grid; grid-template-columns: 1fr; gap: 0 14px; }
+  /* Results: two troops per row like the desktop app (left, right, next
+     row...), so reading order matches it; one column on a phone. */
+  @media (min-width: 600px) {
+    .rows.pairs { display: grid; grid-template-columns: 1fr 1fr; }
+    .rows.pairs .row:nth-child(odd) { border-right: 1px solid var(--panel-line); }
+    .rows.pairs .row:nth-last-child(2):nth-child(odd) { border-bottom: none; }
+  }
 
   .capacity { margin-top: 16px; display: grid; gap: 8px; }
   .cap { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; padding: 10px 12px; }
@@ -386,8 +393,9 @@
   const GROUP_TITLES = { Mercenary: "Mercenaries" };
   // [key, label, decimals] -- Strength epic takes one decimal, the pools are whole numbers.
   const CAPACITY_FIELDS = [
-    ["leadership", "Leadership", 0], ["dominance", "Dominance", 0],
-    ["authority", "Authority", 0], ["strength_epic", "Strength epic", 1],
+    // Same order as the desktop app and the game: Authority before Dominance.
+    ["leadership", "Leadership", 0], ["authority", "Authority", 0],
+    ["dominance", "Dominance", 0], ["strength_epic", "Strength epic", 1],
   ];
 
   let idToken = null;
@@ -550,7 +558,7 @@
       html += `<div class="msg">The record <strong>${esc(list.record_name || "(none)")}</strong> this list uses doesn't exist, so there are no counts. Pick a record under <em>Lists</em>.</div>`;
     }
     for (const section of list.sections || []) {
-      html += `<h2 class="section-title"><span>${esc(section.title)}</span></h2><ul class="rows">`;
+      html += `<h2 class="section-title"><span>${esc(section.title)}</span></h2><ul class="rows pairs">`;
       for (const r of section.rows) {
         html += `<li class="row">${rowIcon(r)}${nameCell(r)}<span class="count">${fmt(r.count)}</span></li>`;
       }
