@@ -247,6 +247,16 @@
 
   .preview { margin-top: 18px; border-top: 1px dashed var(--panel-line); padding-top: 4px; }
   .preview .busy { opacity: 0.55; transition: opacity 0.15s; }
+  /* send a list to another member (2026-10-07) */
+  .sent-by { color: var(--gold-bright); }
+  dialog#send-dialog {
+    background: var(--panel); color: var(--ink); border: 1px solid var(--gold-dim); border-radius: 6px;
+    padding: 16px; width: min(440px, calc(100vw - 32px));
+  }
+  dialog#send-dialog::backdrop { background: rgba(0, 0, 0, 0.6); }
+  dialog#send-dialog h2 { font-family: var(--display); font-size: 1.05rem; color: var(--gold-bright); margin: 0 0 6px; }
+  #send-members { width: 100%; margin-top: 8px; min-height: 180px; }
+  #send-members option { padding: 4px 2px; }
   .footer-note { text-align: center; font-size: 0.74rem; color: var(--ink-dim); margin-top: 30px; font-style: italic; }
   :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
 </style>
@@ -301,6 +311,7 @@
       <div class="toolbar">
         <select id="list-select" aria-label="List to edit"></select>
       </div>
+      <p class="hint sent-by hidden" id="list-sent-by"></p>
       <div class="stack">
         <label class="field"><span>List name</span>
           <input type="text" id="list-name" maxlength="80" autocomplete="off" placeholder="Filled in as record · formula — or type your own" />
@@ -317,6 +328,7 @@
 
       <div class="actions">
         <button class="btn" id="list-save">Save list</button>
+        <button class="btn ghost hidden" id="list-send">Send to member…</button>
         <span class="spacer"></span>
         <button class="btn danger" id="list-delete">Delete</button>
       </div>
@@ -350,6 +362,20 @@
   </section>
 </main>
 
+<dialog id="send-dialog" aria-labelledby="send-title">
+  <h2 id="send-title">Send to member</h2>
+  <p class="hint" id="send-what" style="margin:0 0 10px"></p>
+  <input type="text" id="send-search" autocomplete="off" placeholder="Search by name — or type their Google email" />
+  <select id="send-members" size="8" aria-label="Member"></select>
+  <p class="hint" id="send-note">It goes straight into their calculator, online and on their computer. Sending it again later updates their copy.</p>
+  <div class="msg hidden" id="send-msg" role="status"></div>
+  <div class="actions">
+    <button class="btn" id="send-go">Send</button>
+    <span class="spacer"></span>
+    <button class="btn ghost" id="send-cancel">Cancel</button>
+  </div>
+</dialog>
+
 <script>
   const GOOGLE_CLIENT_ID_WEB = "47674606892-0m90hd0cd01kijo69ssuqtn1j3igp32i.apps.googleusercontent.com";
   const WORKER_BASE_URL = "https://auto-crypt.ccc-hq.com";
@@ -370,6 +396,8 @@
   let updatedAt = null;   // server version of `data` (for conflict detection)
   let outputs = [];       // computed lists from the Worker
   let saving = false;
+  let canSend = false;     // may send lists to other members (admins + allowed senders)
+  let sendMembers = null; // cached /calc/send/members result
 
   const $ = (id) => document.getElementById(id);
 
@@ -452,6 +480,7 @@
   }
 
   function adopt(body) {
+    if (body.can_send !== undefined) canSend = !!body.can_send;
     data = body.data;
     updatedAt = body.updated_at ?? null;
     outputs = body.lists || [];
@@ -622,8 +651,10 @@
     $("results-empty").classList.add("hidden");
     $("results-body").classList.remove("hidden");
     const list = outputs.find((l) => l.name === $("results-select").value) || outputs[0];
+    const stored = data.lists[list.name];
+    const sent = stored && stored.sent_by ? `<br><span class="sent-by">${esc(sentByText(stored.sent_by))}</span>` : "";
     $("results-troops").innerHTML = troopsHtml(list) +
-      `<p class="meta">Record: ${esc(list.record_name)} · ${esc(list.formula || "")}</p>`;
+      `<p class="meta">Record: ${esc(list.record_name)} · ${esc(list.formula || "")}${sent}</p>`;
     $("results-order").innerHTML = orderHtml(list);
   }
 
@@ -716,6 +747,10 @@
       selectedKeys = new Set();
     }
     $("list-delete").classList.toggle("hidden", !list);
+    $("list-send").classList.toggle("hidden", !(list && canSend));
+    const sentBy = list && list.sent_by;
+    $("list-sent-by").textContent = sentBy ? sentByText(sentBy) : "";
+    $("list-sent-by").classList.toggle("hidden", !sentBy);
     updateFormulaDesc();
     maybeAutofillListName();
     setTiles();
@@ -833,6 +868,80 @@
     if (ok) {
       $("list-select").value = NEW;
       loadListIntoEditor(NEW);
+    }
+  }
+
+  // ── Send a list to another member (2026-10-07) ─────────────────
+
+  function sentByText(sentBy) {
+    const when = sentBy.at ? ` on ${new Date(sentBy.at).toLocaleDateString()}` : "";
+    return `Sent to you by ${sentBy.name || sentBy.email}${when}.`;
+  }
+
+  function memberLabel(m) {
+    const main = m.tb_username || m.name || m.email;
+    const extra = m.tb_username && m.name && m.name !== m.tb_username ? ` (${m.name})` : "";
+    return `${main}${extra}${m.ccc ? " · cCc" : ""}`;
+  }
+
+  function renderSendMembers() {
+    const q = $("send-search").value.trim().toLowerCase();
+    const shown = (sendMembers || []).filter((m) =>
+      !q || [m.tb_username, m.name, m.email].some((v) => String(v || "").toLowerCase().includes(q)));
+    $("send-members").innerHTML = shown
+      .map((m) => `<option value="${esc(m.email)}">${esc(memberLabel(m))}</option>`).join("");
+    if (shown.length === 1) $("send-members").selectedIndex = 0;
+  }
+
+  async function openSendDialog() {
+    const name = $("list-select").value;
+    const list = data.lists[name];
+    if (!list) return;
+    $("send-what").innerHTML = `Sends the saved list <strong>${esc(name)}</strong> with its record ` +
+      `<strong>${esc(list.record_name)}</strong>.`;
+    $("send-search").value = "";
+    $("send-msg").classList.add("hidden");
+    $("send-go").disabled = false;
+    $("send-dialog").showModal();
+    if (!sendMembers) {
+      $("send-members").innerHTML = "<option disabled>Loading members…</option>";
+      const { res, body } = await api("/calc/send/members", {});
+      if (handleAccessError(res, body)) return $("send-dialog").close();
+      if (!res.ok) {
+        showMessage($("send-msg"), esc(res.status === 403 ? "Your account can't send lists." : errorText(res, body)), "error");
+        $("send-members").innerHTML = "";
+        return;
+      }
+      sendMembers = body.members || [];
+    }
+    renderSendMembers();
+    $("send-search").focus();
+  }
+
+  async function sendList() {
+    const name = $("list-select").value;
+    const list = data.lists[name];
+    const record = list && data.records[list.record_name];
+    if (!list || !record) {
+      return showMessage($("send-msg"), "This list's record is missing — pick a record and save the list first.", "error");
+    }
+    const typed = $("send-search").value.trim();
+    const to = $("send-members").value || (typed.includes("@") ? typed : "");
+    if (!to) return showMessage($("send-msg"), "Choose who to send it to.", "error");
+    $("send-go").disabled = true;
+    try {
+      const { sent_by: _a, ...cleanRecord } = record;
+      const { sent_by: _b, ...cleanList } = list;
+      const { res, body } = await api("/calc/send", { to, record: cleanRecord, list: cleanList });
+      if (handleAccessError(res, body)) return $("send-dialog").close();
+      if (!res.ok) throw new Error(errorText(res, body));
+      $("send-dialog").close();
+      const renamed = body.list_name !== name ? ` (as <strong>${esc(body.list_name)}</strong>)` : "";
+      appMessage(`Sent <strong>${esc(name)}</strong> to <strong>${esc(body.to.name)}</strong>${renamed}.`, "ok", true);
+    } catch (err) {
+      showMessage($("send-msg"), esc(err.message || "Could not send."), "error");
+    } finally {
+      $("send-go").disabled = false;
     }
   }
 
@@ -1014,6 +1123,12 @@
 
   $("record-select").addEventListener("change", (e) => loadRecordIntoEditor(e.target.value));
   $("record-save").addEventListener("click", saveRecord);
+  $("list-send").addEventListener("click", openSendDialog);
+  $("send-go").addEventListener("click", sendList);
+  $("send-cancel").addEventListener("click", () => $("send-dialog").close());
+  $("send-search").addEventListener("input", renderSendMembers);
+  $("send-search").addEventListener("keydown", (e) => { if (e.key === "Enter") sendList(); });
+  $("send-members").addEventListener("dblclick", sendList);
   $("record-delete").addEventListener("click", deleteRecord);
 
   function handleCredentialResponse(token, email, info) {

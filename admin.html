@@ -97,6 +97,14 @@
       <button data-f="all" aria-pressed="false">All</button>
     </div>
     <div id="rows"></div>
+
+    <h2>Can send lists to members</h2>
+    <p class="sub" style="text-align:left;margin-top:0">These people (and every admin) get a <em>Send to member…</em> button in the Battle Calculator: it puts a list with its registration straight into another member's calculator, online and in the desktop app.</p>
+    <form class="add" id="sender-form">
+      <label>Google email<input type="email" id="sender-email" required placeholder="officer@gmail.com" /></label>
+      <button class="btn approve" type="submit">Allow sending</button>
+    </form>
+    <div id="senders"></div>
   </section>
 </main>
 
@@ -106,6 +114,8 @@
   let idToken = null;
   let members = [];
   let filter = "pending";
+  let senders = null;       // null = calc_senders table not set up yet
+  let sendersNote = "";
   const $ = (id) => document.getElementById(id);
 
   function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
@@ -141,7 +151,11 @@
   function actionsFor(m) {
     const b = (action, label, cls) => `<button class="btn ${cls}" data-email="${esc(m.email)}" data-action="${action}">${label}</button>`;
     if (m.status === "pending") return b("approve", "Approve", "approve") + b("deny", "Deny", "deny");
-    if (m.status === "approved") return b("revoke", "Revoke", "revoke");
+    if (m.status === "approved") {
+      const sends = isSender(m.email);
+      const toggle = senders === null ? "" : `<button class="btn" data-email="${esc(m.email)}" data-send="${sends ? "0" : "1"}">${sends ? "Stop sending lists" : "Allow sending lists"}</button>`;
+      return toggle + b("revoke", "Revoke", "revoke");
+    }
     return b("approve", "Approve", "approve");
   }
 
@@ -170,12 +184,67 @@
     $("rows").querySelectorAll("button[data-action]").forEach((btn) => {
       btn.addEventListener("click", () => act(btn.dataset.email, btn.dataset.action, btn));
     });
+    $("rows").querySelectorAll("button[data-send]").forEach((btn) => {
+      btn.addEventListener("click", () => setSender(btn.dataset.email, btn.dataset.send === "1", btn));
+    });
+    renderSenders();
+  }
+
+  // ── who may send lists (2026-10-07) ──
+  function isSender(email) {
+    return !!senders && senders.some((x) => x.email.toLowerCase() === String(email).toLowerCase());
+  }
+
+  function renderSenders() {
+    if (senders === null) {
+      $("senders").innerHTML = `<p class="empty">${esc(sendersNote || "Not available yet.")}</p>`;
+      $("sender-form").classList.add("hidden");
+      return;
+    }
+    $("sender-form").classList.remove("hidden");
+    $("senders").innerHTML = senders.length ? senders.map((x) => `
+      <div class="card">
+        <div class="who">
+          <div class="tb">${esc(x.tb_username || x.display_name || x.email)}</div>
+          <div class="email">${esc(x.email)}${x.display_name && x.tb_username ? " · " + esc(x.display_name) : ""}</div>
+          <div class="extra">Allowed ${date(x.added_at)}${x.added_by ? " by " + esc(x.added_by) : ""}</div>
+        </div>
+        <div class="actions"><button class="btn revoke" data-email="${esc(x.email)}" data-send="0">Stop sending</button></div>
+      </div>`).join("") : `<p class="empty">Only admins can send lists right now.</p>`;
+    $("senders").querySelectorAll("button[data-send]").forEach((btn) => {
+      btn.addEventListener("click", () => setSender(btn.dataset.email, false, btn));
+    });
+  }
+
+  async function loadSenders() {
+    try {
+      const r = await api("/admin/senders/list");
+      senders = r.senders || [];
+    } catch (err) {
+      senders = null;
+      sendersNote = err.message;
+    }
+  }
+
+  async function setSender(email, allow, btn) {
+    if (btn) btn.disabled = true;
+    try {
+      await api("/admin/senders/set", { email, allow });
+      await loadSenders();
+      render();
+      status(`${esc(email)} ${allow ? "can now send lists" : "can no longer send lists"}.`, "");
+      $("status").classList.remove("hidden");
+    } catch (err) {
+      status(esc(err.message), "error");
+      if (btn) btn.disabled = false;
+    }
   }
 
   async function load() {
     try {
       const data = await api("/admin/ccc/list");
       members = data.members || [];
+      await loadSenders();
       $("coupon-warn").classList.toggle("hidden", !!data.coupon_configured);
       $("admin").classList.remove("hidden");
       $("status").classList.add("hidden");
@@ -214,6 +283,15 @@
     if (!email) return;
     await act(email, "add", e.submitter, { tb_username: $("add-tb").value.trim() || undefined, note: $("add-note").value.trim() || undefined });
     $("add-form").reset();
+    if (e.submitter) e.submitter.disabled = false;
+  });
+
+  $("sender-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("sender-email").value.trim();
+    if (!email) return;
+    await setSender(email, true, e.submitter);
+    $("sender-form").reset();
     if (e.submitter) e.submitter.disabled = false;
   });
 
