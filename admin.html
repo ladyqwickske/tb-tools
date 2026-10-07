@@ -98,6 +98,10 @@
     </div>
     <div id="rows"></div>
 
+    <h2>Grandfathered users</h2>
+    <p class="sub" style="text-align:left;margin-top:0">Full access without a subscription: the <em>grandfathered_users</em> table and the old GitHub allowlist. They can receive lists; allow them here to send lists too.</p>
+    <div id="grandfathered"></div>
+
     <h2>Can send lists to members</h2>
     <p class="sub" style="text-align:left;margin-top:0">These people (and every admin) get a <em>Send to member…</em> button in the Battle Calculator: it puts a list with its registration straight into another member's calculator, online and in the desktop app.</p>
     <form class="add" id="sender-form">
@@ -115,6 +119,7 @@
   let members = [];
   let filter = "pending";
   let senders = null;       // null = calc_senders table not set up yet
+  let grandfathered = [];
   let sendersNote = "";
   const $ = (id) => document.getElementById(id);
 
@@ -195,7 +200,30 @@
     return !!senders && senders.some((x) => x.email.toLowerCase() === String(email).toLowerCase());
   }
 
+  function renderGrandfathered() {
+    const source = { table: "grandfathered table", allowlist: "GitHub allowlist", both: "table + GitHub allowlist" };
+    $("grandfathered").innerHTML = grandfathered.length ? grandfathered.map((g) => {
+      const sends = isSender(g.email);
+      const until = g.expires_at ? (g.active ? ` · until ${date(g.expires_at)}` : ` · expired ${date(g.expires_at)}`) : "";
+      const toggle = senders === null ? "" :
+        `<button class="btn${sends ? " revoke" : " approve"}" data-email="${esc(g.email)}" data-send="${sends ? "0" : "1"}">${sends ? "Stop sending lists" : "Allow sending lists"}</button>`;
+      return `
+      <div class="card">
+        <div class="who">
+          <div class="tb">${esc(g.tb_username || g.display_name || g.email)}${sends ? '<span class="chip approved">can send</span>' : ""}</div>
+          ${g.tb_username || g.display_name ? `<div class="email">${esc(g.email)}${g.display_name && g.tb_username ? " · " + esc(g.display_name) : ""}</div>` : ""}
+          <div class="extra">${esc(source[g.source] || g.source)}${until}${g.note ? " · " + esc(g.note) : ""}</div>
+        </div>
+        <div class="actions">${toggle}</div>
+      </div>`;
+    }).join("") : `<p class="empty">${senders === null ? esc(sendersNote || "Not available yet.") : "No grandfathered users."}</p>`;
+    $("grandfathered").querySelectorAll("button[data-send]").forEach((btn) => {
+      btn.addEventListener("click", () => setSender(btn.dataset.email, btn.dataset.send === "1", btn));
+    });
+  }
+
   function renderSenders() {
+    renderGrandfathered();
     if (senders === null) {
       $("senders").innerHTML = `<p class="empty">${esc(sendersNote || "Not available yet.")}</p>`;
       $("sender-form").classList.add("hidden");
@@ -220,6 +248,7 @@
     try {
       const r = await api("/admin/senders/list");
       senders = r.senders || [];
+      grandfathered = r.grandfathered || [];
     } catch (err) {
       senders = null;
       sendersNote = err.message;
