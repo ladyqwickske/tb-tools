@@ -230,11 +230,15 @@
       return;
     }
     $("sender-form").classList.remove("hidden");
-    $("senders").innerHTML = senders.length ? senders.map((x) => `
+    $("senders").innerHTML = senders.length ? senders.map((s) => {
+      // Grandfathered senders who never registered: use the allowlist's name.
+      const g = grandfathered.find((y) => y.email.toLowerCase() === s.email.toLowerCase()) || {};
+      return { ...s, tb_username: s.tb_username || g.tb_username || "", display_name: s.display_name || g.display_name || "" };
+    }).map((x) => `
       <div class="card">
         <div class="who">
           <div class="tb">${esc(x.tb_username || x.display_name || x.email)}</div>
-          <div class="email">${esc(x.email)}${x.display_name && x.tb_username ? " · " + esc(x.display_name) : ""}</div>
+          ${x.tb_username || x.display_name ? `<div class="email">${esc(x.email)}${x.display_name && x.tb_username ? " · " + esc(x.display_name) : ""}</div>` : ""}
           <div class="extra">Allowed ${date(x.added_at)}${x.added_by ? " by " + esc(x.added_by) : ""}</div>
         </div>
         <div class="actions"><button class="btn revoke" data-email="${esc(x.email)}" data-send="0">Stop sending</button></div>
