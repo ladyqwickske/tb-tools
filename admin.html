@@ -69,7 +69,7 @@
 <body>
 <header>
   <a href="index.html">← TB Tools</a>
-  <a href="lists.html">My lists</a>
+  <span><a href="admin-lists.html">Players' calculators</a> &nbsp; <a href="lists.html">My lists</a></span>
 </header>
 <main>
   <h1>cCc members</h1>
@@ -99,7 +99,8 @@
     <div id="rows"></div>
 
     <h2>Grandfathered users</h2>
-    <p class="sub" style="text-align:left;margin-top:0">Full access without a subscription: the <em>grandfathered_users</em> table and the old GitHub allowlist. They can receive lists; allow them here to send lists too.</p>
+    <p class="sub" style="text-align:left;margin-top:0">Full access without a subscription: the <em>grandfathered_users</em> table and the old GitHub allowlist. They can receive lists; allow them here to send lists too. Use <em>Name…</em> to set the name others see them under (send dialog, "sent by").</p>
+    <div class="msg warn hidden" id="gf-problems"></div>
     <div id="grandfathered"></div>
 
     <h2>Can send lists to members</h2>
@@ -109,6 +110,14 @@
       <button class="btn approve" type="submit">Allow sending</button>
     </form>
     <div id="senders"></div>
+
+    <h2>Admins</h2>
+    <p class="sub" style="text-align:left;margin-top:0">Admins can use this page (cCc approvals, senders, names) and open players' calculators on <a href="admin-lists.html" style="color:inherit">Players' calculators</a>. Only the owner can add or remove admins.</p>
+    <form class="add hidden" id="admin-form">
+      <label>Google email<input type="email" id="admin-email" required placeholder="officer@gmail.com" /></label>
+      <button class="btn approve" type="submit">Make admin</button>
+    </form>
+    <div id="admins"></div>
   </section>
 </main>
 
@@ -121,6 +130,8 @@
   let senders = null;       // null = calc_senders table not set up yet
   let grandfathered = [];
   let sendersNote = "";
+  let problems = [];
+  let adminInfo = null;     // /admin/admins/list result
   const $ = (id) => document.getElementById(id);
 
   function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
@@ -138,7 +149,7 @@
       body: JSON.stringify({ id_token: idToken, ...(extra || {}) }),
     });
     const body = await res.json().catch(() => ({}));
-    if (res.status === 403) throw new Error("This Google account is not an admin (add it to ADMIN_EMAILS on the Worker).");
+    if (res.status === 403) throw new Error(body.detail || "This Google account is not an admin.");
     if (res.status === 401) {
       TBSession.expired();
       throw new Error("Your sign-in expired. Please sign in again.");
@@ -205,8 +216,9 @@
     $("grandfathered").innerHTML = grandfathered.length ? grandfathered.map((g) => {
       const sends = isSender(g.email);
       const until = g.expires_at ? (g.active ? ` · until ${date(g.expires_at)}` : ` · expired ${date(g.expires_at)}`) : "";
-      const toggle = senders === null ? "" :
-        `<button class="btn${sends ? " revoke" : " approve"}" data-email="${esc(g.email)}" data-send="${sends ? "0" : "1"}">${sends ? "Stop sending lists" : "Allow sending lists"}</button>`;
+      const toggle = (senders === null ? "" :
+        `<button class="btn${sends ? " revoke" : " approve"}" data-email="${esc(g.email)}" data-send="${sends ? "0" : "1"}">${sends ? "Stop sending lists" : "Allow sending lists"}</button>`) +
+        `<button class="btn" data-email="${esc(g.email)}" data-name="${esc(g.name_override || g.display_name || "")}">Name…</button>`;
       return `
       <div class="card">
         <div class="who">
@@ -220,6 +232,11 @@
     $("grandfathered").querySelectorAll("button[data-send]").forEach((btn) => {
       btn.addEventListener("click", () => setSender(btn.dataset.email, btn.dataset.send === "1", btn));
     });
+    $("grandfathered").querySelectorAll("button[data-name]").forEach((btn) => {
+      btn.addEventListener("click", () => setName(btn.dataset.email, btn.dataset.name, btn));
+    });
+    $("gf-problems").textContent = problems.join(" ") + (problems.length ? " Set their names with Name… instead." : "");
+    $("gf-problems").classList.toggle("hidden", !problems.length);
   }
 
   function renderSenders() {
@@ -253,6 +270,7 @@
       const r = await api("/admin/senders/list");
       senders = r.senders || [];
       grandfathered = r.grandfathered || [];
+      problems = r.problems || [];
     } catch (err) {
       senders = null;
       sendersNote = err.message;
@@ -273,11 +291,79 @@
     }
   }
 
+  // ── names (2026-10-08): the name a member is shown under ──
+  async function setName(email, current, btn) {
+    const name = prompt(`Name for ${email}\n(shown in the send dialog and as "sent by"; leave empty to remove)`, current || "");
+    if (name === null) return;
+    if (btn) btn.disabled = true;
+    try {
+      await api("/admin/names/set", { email, name: name.trim() });
+      await loadSenders();
+      render();
+      status(name.trim() ? `${esc(email)} is now shown as <strong>${esc(name.trim())}</strong>.` : `Name for ${esc(email)} removed.`, "");
+      $("status").classList.remove("hidden");
+    } catch (err) {
+      status(esc(err.message), "error");
+      $("status").classList.remove("hidden");
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  // ── admins (2026-10-08): owners add/remove them ──
+  async function loadAdmins() {
+    try {
+      adminInfo = await api("/admin/admins/list");
+    } catch (err) {
+      adminInfo = { error: err.message };
+    }
+  }
+
+  function renderAdmins() {
+    const a = adminInfo || {};
+    if (a.error) { $("admins").innerHTML = `<p class="empty">${esc(a.error)}</p>`; return; }
+    $("admin-form").classList.toggle("hidden", !a.is_owner || a.set_up === false);
+    const owners = (a.owners || []).map((o) => `
+      <div class="card">
+        <div class="who"><div class="tb">${esc(o.email)}<span class="chip approved">owner</span></div></div>
+      </div>`).join("");
+    const added = (a.admins || []).map((x) => `
+      <div class="card">
+        <div class="who">
+          <div class="tb">${esc(x.name || x.email)}</div>
+          ${x.name ? `<div class="email">${esc(x.email)}</div>` : ""}
+          <div class="extra">Admin since ${date(x.added_at)}${x.added_by ? " · added by " + esc(x.added_by) : ""}</div>
+        </div>
+        <div class="actions">${a.is_owner ? `<button class="btn revoke" data-admin="${esc(x.email)}">Remove admin</button>` : ""}</div>
+      </div>`).join("");
+    const note = a.set_up === false ? `<p class="empty">Run migration_2026-10-08_admins_and_names.sql on the database to add more admins.</p>` : "";
+    $("admins").innerHTML = owners + added + note || `<p class="empty">No admins yet.</p>`;
+    $("admins").querySelectorAll("button[data-admin]").forEach((btn) => {
+      btn.addEventListener("click", () => setAdmin(btn.dataset.admin, false, btn));
+    });
+  }
+
+  async function setAdmin(email, allow, btn) {
+    if (!allow && !confirm(`Remove ${email} as admin?`)) return;
+    if (btn) btn.disabled = true;
+    try {
+      await api("/admin/admins/set", { email, allow });
+      await loadAdmins();
+      renderAdmins();
+      status(`${esc(email)} ${allow ? "is now an admin" : "is no longer an admin"}.`, "");
+      $("status").classList.remove("hidden");
+    } catch (err) {
+      status(esc(err.message), "error");
+      $("status").classList.remove("hidden");
+      if (btn) btn.disabled = false;
+    }
+  }
+
   async function load() {
     try {
       const data = await api("/admin/ccc/list");
       members = data.members || [];
-      await loadSenders();
+      await Promise.all([loadSenders(), loadAdmins()]);
+      renderAdmins();
       $("coupon-warn").classList.toggle("hidden", !!data.coupon_configured);
       $("admin").classList.remove("hidden");
       $("status").classList.add("hidden");
@@ -316,6 +402,15 @@
     if (!email) return;
     await act(email, "add", e.submitter, { tb_username: $("add-tb").value.trim() || undefined, note: $("add-note").value.trim() || undefined });
     $("add-form").reset();
+    if (e.submitter) e.submitter.disabled = false;
+  });
+
+  $("admin-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("admin-email").value.trim();
+    if (!email) return;
+    await setAdmin(email, true, e.submitter);
+    $("admin-form").reset();
     if (e.submitter) e.submitter.disabled = false;
   });
 

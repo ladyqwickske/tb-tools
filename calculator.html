@@ -83,6 +83,9 @@
   .msg strong { color: var(--ink); }
   .msg.error { border-color: var(--danger); color: var(--danger-bright); }
   .msg.ok { border-color: var(--emerald); color: var(--emerald-bright); }
+  /* admin working in a player's calculator (?user=...) */
+  .admin-banner { border-color: var(--gold); color: var(--gold-bright); }
+  .admin-banner a { color: var(--gold-bright); }
   .hidden { display: none !important; }
 
   /* main tabs */
@@ -281,8 +284,9 @@
 </header>
 
 <main>
-  <h1>Battle Calculator</h1>
+  <h1 id="page-title">Battle Calculator</h1>
   <p class="sub" id="intro">Sign in with the Google account you use in TB-Tools.</p>
+  <div class="msg admin-banner hidden" id="admin-banner" role="status"></div>
 
   <div id="g_id_signin_container"></div>
   <div class="msg hidden" id="status-msg" role="status"></div>
@@ -409,6 +413,10 @@
   let outputs = [];       // computed lists from the Worker
   let saving = false;
   let canSend = false;     // may send lists to other members (admins + allowed senders)
+  // Admin mode (2026-10-08): calculator.html?user=<email>, opened from
+  // admin-lists.html -- an admin looks at / fixes a player's calculator.
+  // Same page, but it loads and saves THAT player's data.
+  const ADMIN_USER = (new URLSearchParams(location.search).get("user") || "").trim();
   let sendMembers = null; // cached /calc/send/members result
 
   const $ = (id) => document.getElementById(id);
@@ -455,6 +463,12 @@
       TBSession.expired();
       return true;
     }
+    if (ADMIN_USER && res.status === 403) {
+      $("app").classList.add("hidden");
+      showMessage($("status-msg"), "<strong>Only admins can open another player's calculator.</strong><br>" +
+        `<a href="calculator.html">Open your own calculator</a>`, "error");
+      return true;
+    }
     if (res.status === 403 && body.error === "no_calc_access") {
       $("app").classList.add("hidden");
       showMessage($("status-msg"), body.ccc === "pending"
@@ -473,9 +487,11 @@
   }
 
   async function loadAll() {
-    showMessage($("status-msg"), "Loading your calculator…");
+    showMessage($("status-msg"), ADMIN_USER ? "Loading the player's calculator…" : "Loading your calculator…");
     try {
-      const { res, body } = await api("/calc/web/load", {});
+      const { res, body } = ADMIN_USER
+        ? await api("/admin/calc/load", { email: ADMIN_USER })
+        : await api("/calc/web/load", {});
       if (handleAccessError(res, body)) return;
       if (!res.ok) throw new Error(errorText(res, body));
       catalog = body.catalog;
@@ -493,6 +509,8 @@
 
   function adopt(body) {
     if (body.can_send !== undefined) canSend = !!body.can_send;
+    if (ADMIN_USER) canSend = false;
+    if (body.player) showPlayerBanner(body.player);
     data = body.data;
     updatedAt = body.updated_at ?? null;
     outputs = body.lists || [];
@@ -506,13 +524,17 @@
     try {
       const next = JSON.parse(JSON.stringify(data));
       mutate(next);
-      const { res, body } = await api("/calc/web/save", { data: next, base_updated_at: updatedAt });
+      const { res, body } = ADMIN_USER
+        ? await api("/admin/calc/save", { email: ADMIN_USER, data: next, base_updated_at: updatedAt })
+        : await api("/calc/web/save", { data: next, base_updated_at: updatedAt });
       if (handleAccessError(res, body)) return false;
       if (res.status === 409) {
         adopt(body);
         renderSelectors();
         renderResults();
-        appMessage("<strong>Your calculator was changed in another tab or on another device.</strong><br>" +
+        appMessage((ADMIN_USER
+          ? "<strong>This player's calculator was changed meanwhile (by them or another admin).</strong><br>"
+          : "<strong>Your calculator was changed in another tab or on another device.</strong><br>") +
           "That newer copy is loaded now — your edits are still in the form, press Save again to apply them.", "error");
         return false;
       }
@@ -528,6 +550,17 @@
       saving = false;
       document.querySelectorAll("#app button.btn").forEach((b) => (b.disabled = false));
     }
+  }
+
+  function showPlayerBanner(player) {
+    const who = player.name || player.email;
+    $("page-title").textContent = `Battle Calculator — ${who}`;
+    document.title = `${who} — Battle Calculator (admin)`;
+    showMessage($("admin-banner"),
+      `<strong>Admin: you're working in ${esc(who)}'s calculator</strong> (${esc(player.email)}).<br>` +
+      "Everything you save goes straight into their calculator: online right away, in their desktop app the next time they start it." +
+      (player.has_calc_access ? "" : "<br>Note: this account has no Battle Calculator access at the moment.") +
+      ` <a href="admin-lists.html">← All players</a>`);
   }
 
   // ── shared rendering ─────────────────────────────────────────
