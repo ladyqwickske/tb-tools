@@ -112,11 +112,7 @@
     <div id="senders"></div>
 
     <h2>Admins</h2>
-    <p class="sub" style="text-align:left;margin-top:0">Admins can use this page (cCc approvals, senders, names) and open players' calculators on <a href="admin-lists.html" style="color:inherit">Players' calculators</a>. Only the owner can add or remove admins.</p>
-    <form class="add hidden" id="admin-form">
-      <label>Google email<input type="email" id="admin-email" required placeholder="officer@gmail.com" /></label>
-      <button class="btn approve" type="submit">Make admin</button>
-    </form>
+    <p class="sub" style="text-align:left;margin-top:0">Admins can use this page (cCc approvals, senders, names) and open players' calculators on <a href="admin-lists.html" style="color:inherit">Players' calculators</a>. Only grandfathered users can become admins, and only the owner can make or remove them.</p>
     <div id="admins"></div>
   </section>
 </main>
@@ -321,35 +317,42 @@
   function renderAdmins() {
     const a = adminInfo || {};
     if (a.error) { $("admins").innerHTML = `<p class="empty">${esc(a.error)}</p>`; return; }
-    $("admin-form").classList.toggle("hidden", !a.is_owner || a.set_up === false);
-    const owners = (a.owners || []).map((o) => `
+    if (a.set_up === false) {
+      $("admins").innerHTML = `<p class="empty">Run migration_2026-10-08_admins_and_names.sql on the database to add admins.</p>`;
+      return;
+    }
+    // Shown by name; the email only when there's no name yet (set one with Name… above).
+    const label = (x) => x.name ? esc(x.name) : `${esc(x.email)} <span class="extra">(no name yet — use Name… above)</span>`;
+    const card = (x, chip, button) => `
       <div class="card">
-        <div class="who"><div class="tb">${esc(o.email)}<span class="chip approved">owner</span></div></div>
-      </div>`).join("");
-    const added = (a.admins || []).map((x) => `
-      <div class="card">
-        <div class="who">
-          <div class="tb">${esc(x.name || x.email)}</div>
-          ${x.name ? `<div class="email">${esc(x.email)}</div>` : ""}
-          <div class="extra">Admin since ${date(x.added_at)}${x.added_by ? " · added by " + esc(x.added_by) : ""}</div>
-        </div>
-        <div class="actions">${a.is_owner ? `<button class="btn revoke" data-admin="${esc(x.email)}">Remove admin</button>` : ""}</div>
-      </div>`).join("");
-    const note = a.set_up === false ? `<p class="empty">Run migration_2026-10-08_admins_and_names.sql on the database to add more admins.</p>` : "";
-    $("admins").innerHTML = owners + added + note || `<p class="empty">No admins yet.</p>`;
+        <div class="who"><div class="tb">${label(x)}${chip}</div></div>
+        <div class="actions">${button}</div>
+      </div>`;
+    const owners = (a.owners || []).map((o) => card(o, '<span class="chip approved">owner</span>', "")).join("");
+    const people = (a.candidates || []).map((c) => card(c,
+      c.is_admin ? '<span class="chip approved">admin</span>' : "",
+      !a.is_owner ? "" : c.is_admin
+        ? `<button class="btn revoke" data-admin="${esc(c.email)}" data-allow="0" data-who="${esc(c.name || c.email)}">Remove admin</button>`
+        : `<button class="btn approve" data-admin="${esc(c.email)}" data-allow="1" data-who="${esc(c.name || c.email)}">Make admin</button>`)).join("");
+    // Admins who are no longer grandfathered: still listed, so they can be removed.
+    const leftovers = (a.admins || []).filter((x) => !x.grandfathered).map((x) => card(x,
+      '<span class="chip approved">admin</span><span class="chip denied">not grandfathered</span>',
+      a.is_owner ? `<button class="btn revoke" data-admin="${esc(x.email)}" data-allow="0" data-who="${esc(x.name || x.email)}">Remove admin</button>` : "")).join("");
+    $("admins").innerHTML = owners + people + leftovers || `<p class="empty">No grandfathered users.</p>`;
     $("admins").querySelectorAll("button[data-admin]").forEach((btn) => {
-      btn.addEventListener("click", () => setAdmin(btn.dataset.admin, false, btn));
+      btn.addEventListener("click", () => setAdmin(btn.dataset.admin, btn.dataset.allow === "1", btn, btn.dataset.who));
     });
   }
 
-  async function setAdmin(email, allow, btn) {
-    if (!allow && !confirm(`Remove ${email} as admin?`)) return;
+  async function setAdmin(email, allow, btn, who) {
+    who = who || email;
+    if (!allow && !confirm(`Remove ${who} as admin?`)) return;
     if (btn) btn.disabled = true;
     try {
       await api("/admin/admins/set", { email, allow });
       await loadAdmins();
       renderAdmins();
-      status(`${esc(email)} ${allow ? "is now an admin" : "is no longer an admin"}.`, "");
+      status(`${esc(who)} ${allow ? "is now an admin" : "is no longer an admin"}.`, "");
       $("status").classList.remove("hidden");
     } catch (err) {
       status(esc(err.message), "error");
@@ -402,15 +405,6 @@
     if (!email) return;
     await act(email, "add", e.submitter, { tb_username: $("add-tb").value.trim() || undefined, note: $("add-note").value.trim() || undefined });
     $("add-form").reset();
-    if (e.submitter) e.submitter.disabled = false;
-  });
-
-  $("admin-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = $("admin-email").value.trim();
-    if (!email) return;
-    await setAdmin(email, true, e.submitter);
-    $("admin-form").reset();
     if (e.submitter) e.submitter.disabled = false;
   });
 
