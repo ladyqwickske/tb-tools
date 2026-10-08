@@ -357,6 +357,10 @@
       <div class="grid-4" id="capacity-fields"></div>
       <div class="section-title"><span>Troop stats (top tier)</span></div>
       <p class="hint" style="margin-top:0">Strength and health per unit, as shown in the game. The four Monsters share Kraken's stats; all Mercenaries share one bonus.</p>
+      <div class="actions" style="margin-top:0">
+        <button class="btn ghost" id="record-standard" title="Royal Lion = Monster, every other troop (and Josephine's Health) = Monster - 100">Standard</button>
+        <span class="hint" style="margin:0">Fill in the Monster (Kraken) values, then press Standard to fill in all other troops.</span>
+      </div>
       <div id="stat-fields"></div>
       <div class="actions">
         <button class="btn" id="record-save">Save record</button>
@@ -1005,6 +1009,25 @@
     return Number.isFinite(v) && v > 0 ? v : 0;
   }
 
+  // "Standard" (2026-10-08, as in the desktop app / original CCC): Royal
+  // Lion = Monster Strength/Health, every other Leadership troop = Monster
+  // - 100, Josephine Health = Monster Health - 100. Doesn't save by itself.
+  const STANDARD_KINDS = ["corax", "smiter", "purifier", "punisher", "royal_lion", "whitemane", "legitimist", "duelist"];
+  function fillStandard() {
+    const mStr = num("st-kraken-strength");
+    const mHp = num("st-kraken-health");
+    if (!mStr && !mHp) return appMessage("Fill in the Monster (Kraken) Strength and Health first, then press Standard.", "error");
+    const fmt = (v) => String(Math.max(Math.round(v * 10) / 10, 0));
+    for (const kind of STANDARD_KINDS) {
+      if (!catalog.troops[kind]) continue;
+      const offset = kind === "royal_lion" ? 0 : 100;
+      if (catalog.troops[kind].has_strength && $(`st-${kind}-strength`)) $(`st-${kind}-strength`).value = fmt(mStr - offset);
+      if ($(`st-${kind}-health`)) $(`st-${kind}-health`).value = fmt(mHp - offset);
+    }
+    if ($("st-josephine-health")) $("st-josephine-health").value = fmt(mHp - 100);
+    appMessage("Standard values filled in — press <em>Save record</em> to keep them.", "ok", true);
+  }
+
   async function saveRecord() {
     const name = $("record-name").value.trim();
     const editing = $("record-select").value;
@@ -1131,6 +1154,7 @@
 
   $("record-select").addEventListener("change", (e) => loadRecordIntoEditor(e.target.value));
   $("record-save").addEventListener("click", saveRecord);
+  $("record-standard").addEventListener("click", fillStandard);
   $("list-send").addEventListener("click", openSendDialog);
   $("send-go").addEventListener("click", sendList);
   $("send-cancel").addEventListener("click", () => $("send-dialog").close());
