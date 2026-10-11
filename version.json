@@ -1,7 +1,7 @@
 {
-  "version": "0.2.0",
-  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.2.0/TB-Tools-0.2.0.zip",
-  "release_notes": "",
-  "published_at": "2026-10-09",
+  "version": "0.2.1",
+  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.2.1/TB-Tools-0.2.1.zip",
+  "release_notes": "Changes to auto-crypter and the way it finds crypts",
+  "published_at": "2026-10-10",
   "required": false
 }
