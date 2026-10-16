@@ -62,12 +62,19 @@
     return { token, payload: p };
   }
 
+  // site-nav.js listens for this to show or hide the Admin link.
+  function changed() {
+    try { window.dispatchEvent(new CustomEvent("tbsession:change")); } catch (e) {}
+  }
+
   function remember(token) {
     try { localStorage.setItem(KEY, token); } catch (e) { /* private mode: page still works, just no carry-over */ }
+    changed();
   }
 
   function forget() {
-    try { localStorage.removeItem(KEY); } catch (e) {}
+    try { localStorage.removeItem(KEY); localStorage.removeItem("tbtools.navAdmin"); } catch (e) {}
+    changed();
   }
 
   function esc(s) {

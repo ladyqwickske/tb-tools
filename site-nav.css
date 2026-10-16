@@ -1,0 +1,52 @@
+/* site-nav.css — the header and menu shared by every TB-Tools page
+   (2026-10-16). The links themselves are in each page's <header>; site-nav.js
+   marks the current page, shows "Admin" to admins and folds the menu on phones. */
+header.site-header {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  padding: 14px clamp(16px, 4vw, 40px);
+  border-bottom: 1px solid rgba(212,175,55,0.15);
+  background: rgba(5,6,10,0.6);
+  font-family: 'Oswald', sans-serif;
+}
+.site-header .site-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex: 0 0 auto; }
+.site-header .site-brand img { height: 30px; width: 30px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(212,175,55,0.35)); }
+.site-header .site-brand span { letter-spacing: 0.14em; font-size: 0.78rem; text-transform: uppercase; color: #f2d68f; }
+.site-header .site-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px 18px; margin: 0; padding: 0; list-style: none; }
+.site-header .site-nav a {
+  display: inline-block;
+  padding: 4px 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a8a692;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.site-header .site-nav a:hover { color: #f2d68f; border-bottom-color: #8a742f; }
+.site-header .site-nav a[aria-current="page"] { color: #f2d68f; border-bottom-color: #d4af37; }
+.site-header .site-nav .site-admin a { color: #6fa373; }
+.site-header .site-nav .site-admin a:hover, .site-header .site-nav .site-admin a[aria-current="page"] { color: #8fc493; border-bottom-color: #6fa373; }
+.site-header .site-nav [hidden] { display: none; }
+.site-header .site-menu-toggle { display: none; }
+/* session.js puts the signed-in email + "Sign out" in the header. */
+.site-header #tb-session-bar { flex: 1 0 100%; }
+.site-header .site-nav a:focus-visible, .site-header .site-menu-toggle:focus-visible { outline: 2px solid #f2d68f; outline-offset: 3px; }
+
+@media (max-width: 760px) {
+  .js-site-nav .site-header .site-menu-toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 12px; background: transparent; color: #f2d68f;
+    border: 1px solid #1c2440; border-radius: 2px; cursor: pointer;
+    font: inherit; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .js-site-nav .site-header .site-nav { display: none; flex: 1 0 100%; flex-direction: column; align-items: stretch; gap: 0; }
+  .js-site-nav .site-header.open .site-nav { display: flex; }
+  .site-header .site-nav a { display: block; padding: 10px 2px; border-bottom: 1px solid #1c2440; }
+  .site-header .site-nav a[aria-current="page"] { border-bottom-color: #d4af37; }
+}

@@ -30,8 +30,6 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--void); color: var(--ink); font-family: var(--body); line-height: 1.5; }
-  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(212,175,55,0.15); }
-  header a { font-family: var(--utility); font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); text-decoration: none; }
   main { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
   h1 { font-family: var(--display); color: var(--gold-bright); font-size: 1.4rem; margin: 0 0 4px; }
   h2 { font-family: var(--utility); font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--emerald-bright); margin: 26px 0 8px; }
@@ -88,14 +86,30 @@
   .log li { padding: 5px 0; border-top: 1px solid var(--panel-line); color: var(--ink-dim); overflow-wrap: anywhere; }
   .log li b { font-family: var(--utility); font-weight: 500; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-bright); margin-right: 6px; }
   details summary { cursor: pointer; font-family: var(--utility); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); margin-top: 12px; }
+  .admin-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
+  .admin-tabs a { padding: 6px 12px; border: 1px solid var(--panel-line); border-radius: 2px; font-family: var(--utility); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); text-decoration: none; }
+  .admin-tabs a[aria-current="page"] { color: var(--gold-bright); border-color: var(--gold); }
 </style>
+<link rel="stylesheet" href="site-nav.css" />
+<script src="site-nav.js" defer></script>
 </head>
 <body>
-<header>
-  <a href="index.html">← TB Tools</a>
-  <span><a href="admin-lists.html">Players' calculators</a> &nbsp; <a href="lists.html">My lists</a></span>
+<header class="site-header" data-page="admin">
+  <a class="site-brand" href="index.html"><img src="tools-logo.png" alt="" /><span>Q's TB Tools</span></a>
+  <button type="button" class="site-menu-toggle" aria-expanded="false" aria-controls="site-nav">&#9776; Menu</button>
+  <ul class="site-nav" id="site-nav">
+    <li><a href="index.html" data-page="index">Home</a></li>
+    <li><a href="index.html#download">Download</a></li>
+    <li><a href="index.html#pricing">Pricing</a></li>
+    <li><a href="install.html" data-page="install">Installation Guide</a></li>
+    <li><a href="calculator.html" data-page="calculator">Battle Calculator</a></li>
+    <li><a href="lists.html" data-page="lists">My Battle Lists</a></li>
+    <li><a href="devices.html" data-page="devices subscribe subscribe-success">My Account</a></li>
+    <li class="site-admin" hidden><a href="admin.html" data-page="admin">Admin</a></li>
+  </ul>
 </header>
 <main>
+  <p class="admin-tabs"><a href="admin.html" aria-current="page">cCc members</a> <a href="admin-lists.html">Players' calculators</a></p>
   <h1>cCc members</h1>
   <p class="sub">Approved members get the Battle Calculator free and 50% off Auto-Crypt. Revoking removes calculator access immediately and drops the discount from their next renewal.</p>
 

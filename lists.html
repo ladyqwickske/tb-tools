@@ -41,27 +41,6 @@
     overflow-x: hidden;
   }
   a { color: var(--gold-bright); }
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba(212,175,55,0.15);
-  }
-  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-  .brand img { height: 30px; width: 30px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(212,175,55,0.35)); }
-  .brand-word { font-family: var(--utility); letter-spacing: 0.14em; font-size: 0.76rem; color: var(--gold-bright); }
-  header nav { display: flex; gap: 16px; }
-  header nav a {
-    font-family: var(--utility);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: var(--ink-dim);
-  }
-  header nav a:hover { color: var(--gold-bright); }
 
   main { max-width: 620px; margin: 0 auto; padding: 22px 16px 80px; }
   h1 { font-family: var(--display); font-size: 1.35rem; color: var(--gold-bright); margin: 0 0 4px; text-align: center; letter-spacing: 0.03em; }
@@ -168,17 +147,23 @@
   .signed-in button { background: none; border: none; color: var(--gold-dim); font-family: inherit; font-size: inherit; text-decoration: underline; cursor: pointer; }
   :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
 </style>
+<link rel="stylesheet" href="site-nav.css" />
+<script src="site-nav.js" defer></script>
 </head>
 <body>
-<header>
-  <a class="brand" href="index.html">
-    <img src="tools-logo.png" alt="" />
-    <span class="brand-word">Q's TB Tools</span>
-  </a>
-  <nav>
-    <a href="calculator.html">Calculator</a>
-    <a href="devices.html">Account</a>
-  </nav>
+<header class="site-header" data-page="lists">
+  <a class="site-brand" href="index.html"><img src="tools-logo.png" alt="" /><span>Q's TB Tools</span></a>
+  <button type="button" class="site-menu-toggle" aria-expanded="false" aria-controls="site-nav">&#9776; Menu</button>
+  <ul class="site-nav" id="site-nav">
+    <li><a href="index.html" data-page="index">Home</a></li>
+    <li><a href="index.html#download">Download</a></li>
+    <li><a href="index.html#pricing">Pricing</a></li>
+    <li><a href="install.html" data-page="install">Installation Guide</a></li>
+    <li><a href="calculator.html" data-page="calculator">Battle Calculator</a></li>
+    <li><a href="lists.html" data-page="lists">My Battle Lists</a></li>
+    <li><a href="devices.html" data-page="devices subscribe subscribe-success">My Account</a></li>
+    <li class="site-admin" hidden><a href="admin.html" data-page="admin">Admin</a></li>
+  </ul>
 </header>
 
 <main>
