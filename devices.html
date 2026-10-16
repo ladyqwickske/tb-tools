@@ -408,6 +408,12 @@
         </div>`;
       if (ccc === "approved") {
         html += `<p class="sub-note">Battle Calculator free · Auto-Crypt 50% off</p>`;
+        // 2026-10-16: the free Auto-Crypt trial has to be claimed; it doesn't start on approval.
+        if (!entitlements.includes("autocrypt")) {
+          html += `<p class="sub-note">No Auto-Crypt yet? Your free 7-day trial isn't started automatically — <a href="subscribe.html">claim it on the Subscribe page</a>.</p>`;
+        }
+      } else if (ccc === "pending") {
+        html += `<p class="sub-note">Once you're approved, claim your free 7-day Auto-Crypt trial on the <a href="subscribe.html">Subscribe page</a> — it doesn't start on its own.</p>`;
       }
     } else {
       html += `<p class="sub-note">In the cCc clan? <a href="subscribe.html#ccc">Request free Battle Calculator access</a></p>`;

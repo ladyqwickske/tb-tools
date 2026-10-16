@@ -661,14 +661,15 @@
       }
     } else if (st.ccc === "pending") {
       box.innerHTML = `<strong>cCc request pending</strong><br>You'll get free Battle Calculator access once it's approved. ` +
-        `If you subscribe to Auto-Crypt now, your 50% discount is added to your subscription when you're approved.`;
+        `After approval, come back to this page to claim your free ${st.ccc_free_trial_days || 7}-day Auto-Crypt trial — it doesn't start on its own. ` +
+        `If you'd rather subscribe to Auto-Crypt now, your 50% discount is added to your subscription when you're approved.`;
     } else {
       box.innerHTML = `
         <div class="consent-row">
           <input type="checkbox" id="ccc-request" />
           <label for="ccc-request" class="consent-label"><strong>I'm a member of the cCc clan</strong></label>
         </div>
-        <p class="ccc-hint">cCc members get the Battle Calculator for free and 50% off Auto-Crypt, after approval. Tick this to send a request — no payment needed.</p>`;
+        <p class="ccc-hint">cCc members get the Battle Calculator for free and 50% off Auto-Crypt, after approval. Tick this to send a request — no payment needed. Once you're approved, come back here to claim your free 7-day Auto-Crypt trial; it doesn't start on its own.</p>`;
       const cb = document.getElementById("ccc-request");
       cb.addEventListener("change", () => setCccMode(cb.checked));
       if (location.hash === "#ccc") { cb.checked = true; setCccMode(true); }
@@ -716,7 +717,8 @@
       done.innerHTML = body.ccc === "approved"
         ? `You're already an approved cCc member. <a href="devices.html">Go to your account →</a>`
         : `<strong>Request sent!</strong><br>Once it's approved you can sign in to TB-Tools with this Google account and use the Battle Calculator. ` +
-          `Check your status any time on <a href="devices.html">your account page</a>.`;
+          `<br><br><strong>Your free 7-day Auto-Crypt trial is claimed separately:</strong> after approval, come back to this page, sign in and press <em>Start free trial</em>. ` +
+          `<br><br>Check your status any time on <a href="devices.html">your account page</a>.`;
       done.style.display = "block";
       btn.style.display = "none";
       document.getElementById("ccc-box").style.display = "none";
