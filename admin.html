@@ -124,23 +124,7 @@
   <section id="admin" class="hidden">
     <div class="msg warn hidden" id="coupon-warn">STRIPE_COUPON_CCC_AUTOCRYPT isn't set on the Worker, so approved members currently pay full price for Auto-Crypt. The free calculator works regardless.</div>
 
-    <h2>Add a member directly</h2>
-    <form class="add" id="add-form">
-      <label>Google email<input type="email" id="add-email" required placeholder="member@gmail.com" /></label>
-      <label>TB username<input type="text" id="add-tb" placeholder="in-game name" /></label>
-      <label>Clan<select id="add-clan"><option value="">— not set —</option></select></label>
-      <label>Note<input type="text" id="add-note" placeholder="optional" /></label>
-      <button class="btn approve" type="submit">Add as approved</button>
-    </form>
-
-    <h2>Members per clan</h2>
-    <p class="sub" style="text-align:left;margin-top:0">Approved cCc members and active grandfathered users, grouped by the clan set for them. Set someone's clan with the clan picker on their card below.</p>
-    <div class="msg warn hidden" id="clan-note"></div>
-    <div class="clan-grid" id="clan-overview"></div>
-
-    <h2>Clan list check</h2>
-    <p class="sub" style="text-align:left;margin-top:0">Every day the members above are looked up on the clans' own member lists (Members, Former Members and the rename history on each clan's site), by linked Google account first, then by name or old name. Moving to another cCc clan or a rename is followed; only someone on no clan's Members list is listed here and emailed to you, once.</p>
-    <div id="roster"><p class="empty">Loading…</p></div>
+    <div class="msg warn hidden" id="pending-banner"></div>
 
     <h2>Requests &amp; members</h2>
     <div class="filter-row">
@@ -155,6 +139,24 @@
       </label>
     </div>
     <div id="rows"></div>
+
+    <h2>Add a member directly</h2>
+    <form class="add" id="add-form">
+      <label>Google email<input type="email" id="add-email" required placeholder="member@gmail.com" /></label>
+      <label>TB username<input type="text" id="add-tb" placeholder="in-game name" /></label>
+      <label>Clan<select id="add-clan"><option value="">— not set —</option></select></label>
+      <label>Note<input type="text" id="add-note" placeholder="optional" /></label>
+      <button class="btn approve" type="submit">Add as approved</button>
+    </form>
+
+    <h2>Members per clan</h2>
+    <p class="sub" style="text-align:left;margin-top:0">Approved cCc members and active grandfathered users, grouped by the clan set for them. Set someone's clan with the clan picker on their card.</p>
+    <div class="msg warn hidden" id="clan-note"></div>
+    <div class="clan-grid" id="clan-overview"></div>
+
+    <h2>Clan list check</h2>
+    <p class="sub" style="text-align:left;margin-top:0">Every day the members on this page are looked up on the clans' own member lists (Members, Former Members and the rename history on each clan's site), by linked Google account first, then by name or old name. Moving to another cCc clan or a rename is followed; only someone on no clan's Members list is listed here and emailed to you, once.</p>
+    <div id="roster"><p class="empty">Loading…</p></div>
 
     <h2>Grandfathered users</h2>
     <p class="sub" style="text-align:left;margin-top:0">Full access without a subscription: the <em>grandfathered_users</em> table and the old GitHub allowlist. They can receive lists; allow them here to send lists too. Use <em>Name…</em> to set the name others see them under (send dialog, "sent by").</p>
@@ -192,6 +194,10 @@
   let roster = null;        // /admin/roster/status result
   const $ = (id) => document.getElementById(id);
 
+  // Alphabetical, ignoring case and accents (2026-10-16).
+  function byName(nameOf) {
+    return (a, b) => String(nameOf(a) || "").localeCompare(String(nameOf(b) || ""), undefined, { sensitivity: "base" });
+  }
   function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
   function date(unix) { return unix ? new Date(unix * 1000).toLocaleDateString() : "—"; }
   function status(html, kind) {
@@ -239,11 +245,23 @@
     $("n-pending").textContent = `(${counts.pending})`;
     $("n-approved").textContent = `(${counts.approved})`;
     $("n-other").textContent = `(${counts.other})`;
+    const banner = $("pending-banner");
+    banner.innerHTML = counts.pending
+      ? `<strong>${counts.pending} cCc request${counts.pending === 1 ? "" : "s"} waiting for approval.</strong>${filter === "pending" ? "" : ' <a href="#rows" id="show-pending" style="color:inherit">Show them</a>'}`
+      : "";
+    banner.classList.toggle("hidden", !counts.pending);
+    const show = $("show-pending");
+    if (show) show.addEventListener("click", (e) => {
+      e.preventDefault();
+      $("filters").querySelector('button[data-f="pending"]').click();
+      $("rows").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
 
     const shown = members.filter((m) =>
       filter === "all" ? true
       : filter === "other" ? (m.status === "denied" || m.status === "revoked")
-      : m.status === filter).filter((m) => clanFilter === "*" || (m.clan || "") === clanFilter);
+      : m.status === filter).filter((m) => clanFilter === "*" || (m.clan || "") === clanFilter)
+      .sort(byName((m) => m.tb_username || m.display_name || m.email));
 
     $("rows").innerHTML = shown.length ? shown.map((m) => `
       <div class="card">
@@ -578,7 +596,7 @@
       // Grandfathered senders who never registered: use the allowlist's name.
       const g = grandfathered.find((y) => y.email.toLowerCase() === s.email.toLowerCase()) || {};
       return { ...s, tb_username: s.tb_username || g.tb_username || "", display_name: s.display_name || g.display_name || "" };
-    }).map((x) => `
+    }).sort(byName((x) => x.tb_username || x.display_name || x.email)).map((x) => `
       <div class="card">
         <div class="who">
           <div class="tb">${esc(x.tb_username || x.display_name || x.email)}</div>
