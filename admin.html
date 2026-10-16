@@ -79,6 +79,15 @@
   .clan-col li { padding: 2px 0; border-top: 1px solid rgba(28,36,64,0.6); overflow-wrap: anywhere; }
   .clan-col li:first-child { border-top: 0; }
   .clan-col .tag { font-size: 0.72rem; color: var(--ink-dim); font-style: italic; }
+  .roster-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: space-between; }
+  .roster-clans { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .roster-clans span { font-family: var(--utility); font-size: 0.7rem; letter-spacing: 0.06em; padding: 3px 8px; border: 1px solid var(--panel-line); border-radius: 2px; color: var(--ink-dim); }
+  .roster-clans span.ok { color: var(--emerald-bright); border-color: rgba(111,163,115,0.5); }
+  .roster-clans span.bad { color: var(--danger-bright); border-color: var(--danger); }
+  .log { list-style: none; margin: 6px 0 0; padding: 0; font-size: 0.86rem; }
+  .log li { padding: 5px 0; border-top: 1px solid var(--panel-line); color: var(--ink-dim); overflow-wrap: anywhere; }
+  .log li b { font-family: var(--utility); font-weight: 500; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-bright); margin-right: 6px; }
+  details summary { cursor: pointer; font-family: var(--utility); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); margin-top: 12px; }
 </style>
 </head>
 <body>
@@ -109,6 +118,10 @@
     <p class="sub" style="text-align:left;margin-top:0">Approved cCc members and active grandfathered users, grouped by the clan set for them. Set someone's clan with the clan picker on their card below.</p>
     <div class="msg warn hidden" id="clan-note"></div>
     <div class="clan-grid" id="clan-overview"></div>
+
+    <h2>Clan list check</h2>
+    <p class="sub" style="text-align:left;margin-top:0">Every day the members above are looked up on the clans' own member lists (Members, Former Members and the rename history on each clan's site), by linked Google account first, then by name or old name. Moving to another cCc clan or a rename is followed; only someone on no clan's Members list is listed here and emailed to you, once.</p>
+    <div id="roster"><p class="empty">Loading…</p></div>
 
     <h2>Requests &amp; members</h2>
     <div class="filter-row">
@@ -157,6 +170,7 @@
   let clans = [];           // [{id, name, kingdom}] from /admin/ccc/list; [] = Worker without clans yet
   let clansSetUp = false;   // member_clans table exists
   let clanFilter = "*";     // "*" = all, "" = no clan yet, else a clan id
+  let roster = null;        // /admin/roster/status result
   const $ = (id) => document.getElementById(id);
 
   function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
@@ -215,7 +229,7 @@
     $("rows").innerHTML = shown.length ? shown.map((m) => `
       <div class="card">
         <div class="who">
-          <div class="tb">${esc(m.tb_username || "(no TB name)")}<span class="chip ${esc(m.status)}">${esc(m.status)}</span>${clanChip(m.clan)}</div>
+          <div class="tb">${esc(m.tb_username || "(no TB name)")}<span class="chip ${esc(m.status)}">${esc(m.status)}</span>${clanChip(m.clan)}${rosterChip(m.email)}</div>
           <div class="email">${esc(m.email)}${m.display_name ? " · " + esc(m.display_name) : ""}</div>
           <div class="extra">Requested ${date(m.requested_at)}${m.decided_at ? " · decided " + date(m.decided_at) : ""} · ${esc(subText(m))}${m.note ? " · " + esc(m.note) : ""}</div>
         </div>
@@ -231,6 +245,103 @@
     bindClanPickers($("rows"));
     renderSenders();
     renderClans();
+    renderRoster();
+  }
+
+  // ── clan list check (2026-10-16): the daily roster check ──
+  function rosterOf(email) {
+    const key = String(email).toLowerCase();
+    return roster && roster.people ? roster.people.find((r) => r.email === key) : null;
+  }
+  function rosterChip(email) {
+    const r = rosterOf(email);
+    if (!r) return "";
+    const c = clanById(r.clan);
+    if (r.status === "left") return `<span class="chip denied" title="${esc(r.detail || "")}">left ${esc(c ? c.name : "clan")}</span>`;
+    if (r.status === "not_found") return `<span class="chip denied">not on clan lists</span>`;
+    if (r.status === "in_clan" && r.roster_name) return `<span class="chip clan" title="Name on the ${esc(c ? c.name : "clan")} list">as ${esc(r.roster_name)}</span>`;
+    return "";
+  }
+  function personName(email) {
+    const key = String(email).toLowerCase();
+    const m = members.find((x) => x.email.toLowerCase() === key);
+    const g = grandfathered.find((x) => x.email.toLowerCase() === key);
+    return (m && (m.tb_username || m.display_name)) || (g && (g.tb_username || g.display_name)) || "";
+  }
+  function when(unix) { return unix ? new Date(unix * 1000).toLocaleString() : "—"; }
+
+  function renderRoster() {
+    const el = $("roster");
+    if (!roster) { el.innerHTML = `<p class="empty">Loading…</p>`; return; }
+    if (roster.error) { el.innerHTML = `<p class="empty">${esc(roster.error)}</p>`; return; }
+    if (!roster.set_up) {
+      el.innerHTML = `<p class="empty">Run migration_2026-10-16_roster_check.sql on the database (and deploy the latest worker.js) to start the daily check.</p>`;
+      return;
+    }
+    const run = roster.last_run;
+    const sum = (run && run.summary) || {};
+    const byId = new Map((sum.clans || []).map((c) => [c.id, c]));
+    const clanTags = (roster.sources || []).map((src) => {
+      const c = byId.get(src.id);
+      if (!src.set_up) return `<span>${esc(src.name)}: not set up</span>`;
+      if (!c) return `<span>${esc(src.name)}: not checked yet</span>`;
+      return c.ok ? `<span class="ok">${esc(src.name)}: ${c.members} on the list</span>`
+                  : `<span class="bad" title="${esc(c.error || "")}">${esc(src.name)}: couldn't be read</span>`;
+    }).join("");
+    const review = (roster.people || []).filter((r) => r.status === "left" || r.status === "not_found")
+      .sort((a, b) => b.changed_at - a.changed_at);
+    const reviewHtml = review.length ? review.map((r) => {
+      const c = clanById(r.clan);
+      const name = personName(r.email) || r.roster_name || r.email;
+      const what = r.status === "left"
+        ? `Left ${esc(c ? c.name : "the clan")}${r.roster_name ? " as " + esc(r.roster_name) : ""}${r.detail ? " " + esc(r.detail) : ""}`
+        : "On no clan's Members or Former Members list — renamed without a link, never added, or a different TB name? Set their name with Name… if it's wrong.";
+      return `
+      <div class="card">
+        <div class="who">
+          <div class="tb">${esc(name)}<span class="chip denied">${r.status === "left" ? "left" : "not found"}</span></div>
+          <div class="email">${esc(r.email)}</div>
+          <div class="extra">${what} · since ${date(r.changed_at)}</div>
+        </div>
+      </div>`;
+    }).join("") : `<p class="empty">${run ? "Everyone was found on a clan list." : "No check has run yet."}</p>`;
+    const log = (roster.log || []).slice(0, 40);
+    el.innerHTML = `
+      <div class="roster-head">
+        <span class="extra" style="font-size:0.86rem;color:var(--ink-dim)">${run ? `Last check ${esc(when(run.at))}${run.trigger === "cron" ? " (daily)" : ""}` : "Not run yet"}${sum.error ? " · " + esc(sum.error) : ""}</span>
+        <button class="btn" id="roster-run">Check now</button>
+      </div>
+      <div class="roster-clans">${clanTags}</div>
+      ${reviewHtml}
+      ${log.length ? `<details><summary>Recent changes (${log.length})</summary><ul class="log">${log.map((x) =>
+        `<li><b>${esc(x.kind.replace("_", " "))}</b>${esc(date(x.at))} · ${esc(x.detail || x.email)}</li>`).join("")}</ul></details>` : ""}`;
+    $("roster-run").addEventListener("click", (e) => runRoster(e.currentTarget));
+  }
+
+  async function loadRoster() {
+    try {
+      roster = await api("/admin/roster/status");
+    } catch (err) {
+      roster = { error: /not_found|404/.test(err.message) ? "The Worker doesn't have the clan list check yet: deploy the latest worker.js." : err.message };
+    }
+  }
+
+  async function runRoster(btn) {
+    if (btn) { btn.disabled = true; btn.textContent = "Checking…"; }
+    try {
+      const r = await api("/admin/roster/run");
+      const s = r.summary || {};
+      await load();
+      const c = s.counts || {};
+      status(s.error ? esc(s.error)
+        : `Checked: ${c.in_clan || 0} on a clan list, ${c.left || 0} left, ${c.not_found || 0} not found${c.unchecked ? `, ${c.unchecked} not checked` : ""}. ${s.events ? `${s.events} change(s)${s.email ? " · email: " + esc(s.email) : ""}.` : "Nothing new."}`,
+        s.error ? "error" : "");
+      $("status").classList.remove("hidden");
+    } catch (err) {
+      status(esc(err.message), "error");
+      $("status").classList.remove("hidden");
+      if (btn) { btn.disabled = false; btn.textContent = "Check now"; }
+    }
   }
 
   // ── clans (2026-10-16): which cCc clan a member is in ──
@@ -334,7 +445,7 @@
       return `
       <div class="card">
         <div class="who">
-          <div class="tb">${esc(g.tb_username || g.display_name || g.email)}${sends ? '<span class="chip approved">can send</span>' : ""}${clanChip(g.clan)}</div>
+          <div class="tb">${esc(g.tb_username || g.display_name || g.email)}${sends ? '<span class="chip approved">can send</span>' : ""}${clanChip(g.clan)}${rosterChip(g.email)}</div>
           ${g.tb_username || g.display_name ? `<div class="email">${esc(g.email)}${g.display_name && g.tb_username ? " · " + esc(g.display_name) : ""}</div>` : ""}
           <div class="extra">${esc(source[g.source] || g.source)}${until}${g.note ? " · " + esc(g.note) : ""}</div>
         </div>
@@ -485,7 +596,7 @@
       clans = Array.isArray(data.clans) ? data.clans : [];
       clansSetUp = data.clans_set_up !== false;
       setupClanControls();
-      await Promise.all([loadSenders(), loadAdmins()]);
+      await Promise.all([loadSenders(), loadAdmins(), loadRoster()]);
       renderAdmins();
       $("coupon-warn").classList.toggle("hidden", !!data.coupon_configured);
       $("admin").classList.remove("hidden");
