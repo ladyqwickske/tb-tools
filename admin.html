@@ -64,6 +64,21 @@
   input[type="text"], input[type="email"] { padding: 9px 11px; background: var(--void); border: 1px solid var(--panel-line); border-radius: 2px; color: var(--ink); font-family: var(--body); font-size: 0.94rem; width: 100%; }
   #g_id_signin_container { margin: 12px 0; }
   .empty { color: var(--ink-dim); font-style: italic; padding: 10px 0; }
+  select { padding: 8px 10px; background: var(--void); border: 1px solid var(--panel-line); border-radius: 2px; color: var(--ink); font-family: var(--body); font-size: 0.9rem; }
+  select:disabled { opacity: 0.5; cursor: wait; }
+  .actions select { padding: 6px 8px; font-size: 0.82rem; }
+  .chip.clan { background: transparent; color: var(--gold-bright); border: 1px solid var(--gold-dim); }
+  .clan-filter { display: flex; align-items: center; gap: 8px; margin-left: auto; font-family: var(--utility); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+  .filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .clan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+  .clan-col { background: var(--panel); border: 1px solid var(--panel-line); border-top: 2px solid var(--gold-dim); border-radius: 4px; padding: 10px 12px; min-width: 0; }
+  .clan-col.none { border-top-color: var(--danger); }
+  .clan-col h3 { font-family: var(--display); color: var(--gold-bright); font-size: 1rem; margin: 0; }
+  .clan-col .k { font-family: var(--utility); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); margin: 2px 0 8px; }
+  .clan-col ul { list-style: none; margin: 0; padding: 0; font-size: 0.88rem; }
+  .clan-col li { padding: 2px 0; border-top: 1px solid rgba(28,36,64,0.6); overflow-wrap: anywhere; }
+  .clan-col li:first-child { border-top: 0; }
+  .clan-col .tag { font-size: 0.72rem; color: var(--ink-dim); font-style: italic; }
 </style>
 </head>
 <body>
@@ -85,16 +100,27 @@
     <form class="add" id="add-form">
       <label>Google email<input type="email" id="add-email" required placeholder="member@gmail.com" /></label>
       <label>TB username<input type="text" id="add-tb" placeholder="in-game name" /></label>
+      <label>Clan<select id="add-clan"><option value="">— not set —</option></select></label>
       <label>Note<input type="text" id="add-note" placeholder="optional" /></label>
       <button class="btn approve" type="submit">Add as approved</button>
     </form>
 
+    <h2>Members per clan</h2>
+    <p class="sub" style="text-align:left;margin-top:0">Approved cCc members and active grandfathered users, grouped by the clan set for them. Set someone's clan with the clan picker on their card below.</p>
+    <div class="msg warn hidden" id="clan-note"></div>
+    <div class="clan-grid" id="clan-overview"></div>
+
     <h2>Requests &amp; members</h2>
-    <div class="filters" id="filters">
-      <button data-f="pending" aria-pressed="true">Pending <span id="n-pending"></span></button>
-      <button data-f="approved" aria-pressed="false">Approved <span id="n-approved"></span></button>
-      <button data-f="other" aria-pressed="false">Denied / revoked <span id="n-other"></span></button>
-      <button data-f="all" aria-pressed="false">All</button>
+    <div class="filter-row">
+      <div class="filters" id="filters">
+        <button data-f="pending" aria-pressed="true">Pending <span id="n-pending"></span></button>
+        <button data-f="approved" aria-pressed="false">Approved <span id="n-approved"></span></button>
+        <button data-f="other" aria-pressed="false">Denied / revoked <span id="n-other"></span></button>
+        <button data-f="all" aria-pressed="false">All</button>
+      </div>
+      <label class="clan-filter" id="clan-filter-wrap">Clan
+        <select id="clan-filter"><option value="*">All clans</option><option value="">No clan yet</option></select>
+      </label>
     </div>
     <div id="rows"></div>
 
@@ -128,6 +154,9 @@
   let sendersNote = "";
   let problems = [];
   let adminInfo = null;     // /admin/admins/list result
+  let clans = [];           // [{id, name, kingdom}] from /admin/ccc/list; [] = Worker without clans yet
+  let clansSetUp = false;   // member_clans table exists
+  let clanFilter = "*";     // "*" = all, "" = no clan yet, else a clan id
   const $ = (id) => document.getElementById(id);
 
   function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
@@ -181,16 +210,16 @@
     const shown = members.filter((m) =>
       filter === "all" ? true
       : filter === "other" ? (m.status === "denied" || m.status === "revoked")
-      : m.status === filter);
+      : m.status === filter).filter((m) => clanFilter === "*" || (m.clan || "") === clanFilter);
 
     $("rows").innerHTML = shown.length ? shown.map((m) => `
       <div class="card">
         <div class="who">
-          <div class="tb">${esc(m.tb_username || "(no TB name)")}<span class="chip ${esc(m.status)}">${esc(m.status)}</span></div>
+          <div class="tb">${esc(m.tb_username || "(no TB name)")}<span class="chip ${esc(m.status)}">${esc(m.status)}</span>${clanChip(m.clan)}</div>
           <div class="email">${esc(m.email)}${m.display_name ? " · " + esc(m.display_name) : ""}</div>
           <div class="extra">Requested ${date(m.requested_at)}${m.decided_at ? " · decided " + date(m.decided_at) : ""} · ${esc(subText(m))}${m.note ? " · " + esc(m.note) : ""}</div>
         </div>
-        <div class="actions">${actionsFor(m)}</div>
+        <div class="actions">${clanPicker(m.email, m.clan)}${actionsFor(m)}</div>
       </div>`).join("") : `<p class="empty">Nothing here.</p>`;
 
     $("rows").querySelectorAll("button[data-action]").forEach((btn) => {
@@ -199,7 +228,94 @@
     $("rows").querySelectorAll("button[data-send]").forEach((btn) => {
       btn.addEventListener("click", () => setSender(btn.dataset.email, btn.dataset.send === "1", btn));
     });
+    bindClanPickers($("rows"));
     renderSenders();
+    renderClans();
+  }
+
+  // ── clans (2026-10-16): which cCc clan a member is in ──
+  function clanById(id) { return clans.find((c) => c.id === id); }
+  function clanLabel(c) { return `${c.name} (K${c.kingdom})`; }
+  function clanChip(id) {
+    const c = clanById(id);
+    return c ? `<span class="chip clan">${esc(c.name)}</span>` : "";
+  }
+  function clanPicker(email, current) {
+    if (!clans.length || !clansSetUp) return "";
+    const opts = [`<option value="">— clan —</option>`]
+      .concat(clans.map((c) => `<option value="${esc(c.id)}"${c.id === current ? " selected" : ""}>${esc(clanLabel(c))}</option>`));
+    return `<select data-clan-email="${esc(email)}" aria-label="Clan for ${esc(email)}">${opts.join("")}</select>`;
+  }
+  function bindClanPickers(root) {
+    root.querySelectorAll("select[data-clan-email]").forEach((sel) => {
+      sel.addEventListener("change", () => setClan(sel.dataset.clanEmail, sel.value, sel));
+    });
+  }
+
+  function setupClanControls() {
+    const ready = clans.length && clansSetUp;
+    $("clan-note").textContent = !clans.length
+      ? "The Worker doesn't know about clans yet: deploy the latest worker.js."
+      : "Run migration_2026-10-16_member_clans.sql on the database to start setting clans.";
+    $("clan-note").classList.toggle("hidden", !!ready);
+    $("clan-filter-wrap").classList.toggle("hidden", !ready);
+    const extra = clans.map((c) => `<option value="${esc(c.id)}">${esc(clanLabel(c))}</option>`).join("");
+    const f = $("clan-filter");
+    f.innerHTML = `<option value="*">All clans</option><option value="">No clan yet</option>` + extra;
+    f.value = ready && (clanFilter === "*" || clanFilter === "" || clanById(clanFilter)) ? clanFilter : "*";
+    clanFilter = f.value;
+    const add = $("add-clan");
+    add.innerHTML = `<option value="">— not set —</option>` + extra;
+    add.closest("label").classList.toggle("hidden", !ready);
+  }
+
+  // Everyone with access through cCc or grandfathering, once each.
+  function clanPeople() {
+    const byEmail = new Map();
+    const put = (email, name, clan, tag) => {
+      const key = String(email).toLowerCase();
+      const had = byEmail.get(key);
+      if (had) { had.clan = had.clan || clan || ""; if (!had.name) had.name = name; return; }
+      byEmail.set(key, { email, name, clan: clan || "", tag });
+    };
+    members.filter((m) => m.status === "approved")
+      .forEach((m) => put(m.email, m.tb_username || m.display_name || "", m.clan, ""));
+    grandfathered.filter((g) => g.active !== false)
+      .forEach((g) => put(g.email, g.tb_username || g.display_name || "", g.clan, "grandfathered"));
+    return [...byEmail.values()].sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email, undefined, { sensitivity: "base" }));
+  }
+
+  function renderClans() {
+    if (!clans.length || !clansSetUp) { $("clan-overview").innerHTML = ""; return; }
+    const people = clanPeople();
+    const col = (title, sub, list, cls) => `
+      <div class="clan-col${cls ? " " + cls : ""}">
+        <h3>${esc(title)}</h3>
+        <p class="k">${esc(sub)} · ${list.length} ${list.length === 1 ? "member" : "members"}</p>
+        ${list.length ? `<ul>${list.map((p) => `<li title="${esc(p.email)}">${esc(p.name || p.email)}${p.tag ? ` <span class="tag">${esc(p.tag)}</span>` : ""}</li>`).join("")}</ul>` : `<p class="empty" style="padding:0">Nobody yet.</p>`}
+      </div>`;
+    const cols = clans.map((c) => col(c.name, "Kingdom " + c.kingdom, people.filter((p) => p.clan === c.id), ""));
+    const none = people.filter((p) => !clanById(p.clan));
+    if (none.length) cols.push(col("No clan yet", "to sort out", none, "none"));
+    $("clan-overview").innerHTML = cols.join("");
+  }
+
+  async function setClan(email, clan, sel) {
+    if (sel) sel.disabled = true;
+    try {
+      await api("/admin/clans/set", { email, clan });
+      const key = String(email).toLowerCase();
+      members.forEach((m) => { if (m.email.toLowerCase() === key) m.clan = clan; });
+      grandfathered.forEach((g) => { if (g.email.toLowerCase() === key) g.clan = clan; });
+      render();
+      const c = clanById(clan);
+      status(c ? `${esc(email)} is now in <strong>${esc(c.name)}</strong>.` : `Clan for ${esc(email)} removed.`, "");
+      $("status").classList.remove("hidden");
+    } catch (err) {
+      status(esc(err.message), "error");
+      $("status").classList.remove("hidden");
+      if (sel) sel.disabled = false;
+    }
   }
 
   // ── who may send lists (2026-10-07) ──
@@ -218,11 +334,11 @@
       return `
       <div class="card">
         <div class="who">
-          <div class="tb">${esc(g.tb_username || g.display_name || g.email)}${sends ? '<span class="chip approved">can send</span>' : ""}</div>
+          <div class="tb">${esc(g.tb_username || g.display_name || g.email)}${sends ? '<span class="chip approved">can send</span>' : ""}${clanChip(g.clan)}</div>
           ${g.tb_username || g.display_name ? `<div class="email">${esc(g.email)}${g.display_name && g.tb_username ? " · " + esc(g.display_name) : ""}</div>` : ""}
           <div class="extra">${esc(source[g.source] || g.source)}${until}${g.note ? " · " + esc(g.note) : ""}</div>
         </div>
-        <div class="actions">${toggle}</div>
+        <div class="actions">${clanPicker(g.email, g.clan)}${toggle}</div>
       </div>`;
     }).join("") : `<p class="empty">${senders === null ? esc(sendersNote || "Not available yet.") : "No grandfathered users."}</p>`;
     $("grandfathered").querySelectorAll("button[data-send]").forEach((btn) => {
@@ -231,6 +347,7 @@
     $("grandfathered").querySelectorAll("button[data-name]").forEach((btn) => {
       btn.addEventListener("click", () => setName(btn.dataset.email, btn.dataset.name, btn));
     });
+    bindClanPickers($("grandfathered"));
     $("gf-problems").textContent = problems.join(" ") + (problems.length ? " Set their names with Name… instead." : "");
     $("gf-problems").classList.toggle("hidden", !problems.length);
   }
@@ -365,6 +482,9 @@
     try {
       const data = await api("/admin/ccc/list");
       members = data.members || [];
+      clans = Array.isArray(data.clans) ? data.clans : [];
+      clansSetUp = data.clans_set_up !== false;
+      setupClanControls();
       await Promise.all([loadSenders(), loadAdmins()]);
       renderAdmins();
       $("coupon-warn").classList.toggle("hidden", !!data.coupon_configured);
@@ -399,11 +519,16 @@
     render();
   });
 
+  $("clan-filter").addEventListener("change", () => {
+    clanFilter = $("clan-filter").value;
+    render();
+  });
+
   $("add-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("add-email").value.trim();
     if (!email) return;
-    await act(email, "add", e.submitter, { tb_username: $("add-tb").value.trim() || undefined, note: $("add-note").value.trim() || undefined });
+    await act(email, "add", e.submitter, { tb_username: $("add-tb").value.trim() || undefined, clan: $("add-clan").value || undefined, note: $("add-note").value.trim() || undefined });
     $("add-form").reset();
     if (e.submitter) e.submitter.disabled = false;
   });
