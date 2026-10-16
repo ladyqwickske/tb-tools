@@ -84,6 +84,11 @@
   .roster-clans span.bad { color: var(--danger-bright); border-color: var(--danger); }
   .log { list-style: none; margin: 6px 0 0; padding: 0; font-size: 0.86rem; }
   .log li { padding: 5px 0; border-top: 1px solid var(--panel-line); color: var(--ink-dim); overflow-wrap: anywhere; }
+  .link-panel { flex: 1 0 100%; display: grid; grid-template-columns: minmax(150px, 200px) minmax(180px, 1fr) auto; gap: 8px; align-items: end; padding-top: 10px; border-top: 1px dashed var(--panel-line); }
+  .link-panel label { font-family: var(--utility); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); display: grid; gap: 4px; }
+  .link-panel .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .link-panel .hint { grid-column: 1 / -1; margin: 0; font-size: 0.8rem; color: var(--ink-dim); font-style: italic; }
+  @media (max-width: 600px) { .link-panel { grid-template-columns: 1fr; } }
   .log li b { font-family: var(--utility); font-weight: 500; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-bright); margin-right: 6px; }
   details summary { cursor: pointer; font-family: var(--utility); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); margin-top: 12px; }
   .admin-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
@@ -247,7 +252,7 @@
           <div class="email">${esc(m.email)}${m.display_name ? " · " + esc(m.display_name) : ""}</div>
           <div class="extra">Requested ${date(m.requested_at)}${m.decided_at ? " · decided " + date(m.decided_at) : ""} · ${esc(subText(m))}${m.note ? " · " + esc(m.note) : ""}</div>
         </div>
-        <div class="actions">${clanPicker(m.email, m.clan)}${actionsFor(m)}</div>
+        <div class="actions">${clanPicker(m.email, m.clan)}${linkButton(m.email)}${actionsFor(m)}</div>
       </div>`).join("") : `<p class="empty">Nothing here.</p>`;
 
     $("rows").querySelectorAll("button[data-action]").forEach((btn) => {
@@ -257,6 +262,7 @@
       btn.addEventListener("click", () => setSender(btn.dataset.email, btn.dataset.send === "1", btn));
     });
     bindClanPickers($("rows"));
+    bindLinkButtons($("rows"));
     renderSenders();
     renderClans();
     renderRoster();
@@ -267,14 +273,22 @@
     const key = String(email).toLowerCase();
     return roster && roster.people ? roster.people.find((r) => r.email === key) : null;
   }
+  function linkOf(email) {
+    const key = String(email).toLowerCase();
+    return roster && roster.links ? roster.links.find((l) => l.email === key) : null;
+  }
   function rosterChip(email) {
+    const l = linkOf(email);
     const r = rosterOf(email);
-    if (!r) return "";
+    const lc = l && clanById(l.clan);
+    const linkChip = l ? `<span class="chip clan" title="Linked by hand${l.updated_by ? " (" + esc(l.updated_by) + ")" : ""}">🔗 ${esc(l.member_name)}${lc ? " · " + esc(lc.name) : ""}</span>` : "";
+    if (!r) return linkChip;
+    if (l && r.status === "in_clan") return linkChip;
     const c = clanById(r.clan);
-    if (r.status === "left") return `<span class="chip denied" title="${esc(r.detail || "")}">left ${esc(c ? c.name : "clan")}</span>`;
-    if (r.status === "not_found") return `<span class="chip denied">not on clan lists</span>`;
+    if (r.status === "left") return linkChip + `<span class="chip denied" title="${esc(r.detail || "")}">left ${esc(c ? c.name : "clan")}</span>`;
+    if (r.status === "not_found") return linkChip + `<span class="chip denied">not on clan lists</span>`;
     if (r.status === "in_clan" && r.roster_name) return `<span class="chip clan" title="Name on the ${esc(c ? c.name : "clan")} list">as ${esc(r.roster_name)}</span>`;
-    return "";
+    return linkChip;
   }
   function personName(email) {
     const key = String(email).toLowerCase();
@@ -283,6 +297,80 @@
     return (m && (m.tb_username || m.display_name)) || (g && (g.tb_username || g.display_name)) || "";
   }
   function when(unix) { return unix ? new Date(unix * 1000).toLocaleString() : "—"; }
+
+  // ── link an account to a clan member by hand (2026-10-16) ──
+  const clanNames = {};     // clan id -> { members, former } (loaded once per page visit)
+  function linkButton(email) {
+    if (!roster || !roster.set_up || !Array.isArray(roster.links) || !clans.length) return "";
+    return `<button class="btn" data-link="${esc(email)}">${linkOf(email) ? "Link…" : "Link to clan member…"}</button>`;
+  }
+  function bindLinkButtons(root) {
+    root.querySelectorAll("button[data-link]").forEach((btn) => {
+      btn.addEventListener("click", () => openLinkPanel(btn.closest(".card"), btn.dataset.link));
+    });
+  }
+  async function namesFor(clan) {
+    if (!clanNames[clan]) clanNames[clan] = api("/admin/roster/members", { clan }).catch((err) => { delete clanNames[clan]; throw err; });
+    return clanNames[clan];
+  }
+  function openLinkPanel(card, email) {
+    document.querySelectorAll(".link-panel").forEach((x) => x.remove());
+    const l = linkOf(email);
+    const startClan = (l && l.clan) || (rosterOf(email) || {}).clan || (members.concat(grandfathered).find((x) => x.email.toLowerCase() === email.toLowerCase()) || {}).clan || clans[0].id;
+    const panel = document.createElement("div");
+    panel.className = "link-panel";
+    panel.innerHTML = `
+      <label>Clan<select class="lp-clan">${clans.map((c) => `<option value="${esc(c.id)}"${c.id === startClan ? " selected" : ""}>${esc(c.name)}</option>`).join("")}</select></label>
+      <label>Name on that clan's list<input type="text" class="lp-name" list="lp-names" autocomplete="off" value="${esc(l ? l.member_name : "")}" placeholder="start typing…" /><datalist id="lp-names"></datalist></label>
+      <div class="row">
+        <button class="btn approve lp-save">Save link</button>
+        ${l ? `<button class="btn revoke lp-remove">Remove link</button>` : ""}
+        <button class="btn lp-cancel">Cancel</button>
+      </div>
+      <p class="hint lp-hint">The daily check then uses this member for ${esc(email)}, before any automatic matching, and keeps following them when they're renamed or move to another cCc clan.</p>`;
+    card.appendChild(panel);
+    const sel = panel.querySelector(".lp-clan"), input = panel.querySelector(".lp-name"), hint = panel.querySelector(".lp-hint");
+    async function fill() {
+      const list = panel.querySelector("#lp-names");
+      list.innerHTML = "";
+      try {
+        const n = await namesFor(sel.value);
+        list.innerHTML = n.members.map((x) => `<option value="${esc(x)}"></option>`).join("") +
+          n.former.map((x) => `<option value="${esc(x)}">former member</option>`).join("");
+      } catch (err) {
+        hint.textContent = "This clan's list couldn't be loaded: " + err.message;
+      }
+    }
+    sel.addEventListener("change", fill);
+    fill();
+    input.focus();
+    panel.querySelector(".lp-cancel").addEventListener("click", () => panel.remove());
+    panel.querySelector(".lp-save").addEventListener("click", (e) => saveLink(email, sel.value, input.value.trim(), e.currentTarget));
+    const rm = panel.querySelector(".lp-remove");
+    if (rm) rm.addEventListener("click", (e) => saveLink(email, "", "", e.currentTarget));
+  }
+  async function saveLink(email, clan, name, btn) {
+    if (clan && !name) { status("Enter the member's name on the clan list.", "error"); $("status").classList.remove("hidden"); return; }
+    if (btn) btn.disabled = true;
+    try {
+      const r = await api("/admin/roster/link", { email, clan, member_name: name });
+      if (r.link) {
+        const key = email.toLowerCase();
+        members.forEach((m) => { if (m.email.toLowerCase() === key) m.clan = clan; });
+        grandfathered.forEach((g) => { if (g.email.toLowerCase() === key) g.clan = clan; });
+      }
+      await loadRoster();
+      render();
+      const c = clanById(clan);
+      status(r.link ? `${esc(email)} is now linked to <strong>${esc(r.link.member_name)}</strong> (${esc(c ? c.name : clan)})${r.link.former ? " — a former member there" : ""}. Use Check now to update the overview.`
+                    : `Link for ${esc(email)} removed.`, "");
+      $("status").classList.remove("hidden");
+    } catch (err) {
+      status(esc(err.message), "error");
+      $("status").classList.remove("hidden");
+      if (btn) btn.disabled = false;
+    }
+  }
 
   function renderRoster() {
     const el = $("roster");
@@ -463,7 +551,7 @@
           ${g.tb_username || g.display_name ? `<div class="email">${esc(g.email)}${g.display_name && g.tb_username ? " · " + esc(g.display_name) : ""}</div>` : ""}
           <div class="extra">${esc(source[g.source] || g.source)}${until}${g.note ? " · " + esc(g.note) : ""}</div>
         </div>
-        <div class="actions">${clanPicker(g.email, g.clan)}${toggle}</div>
+        <div class="actions">${clanPicker(g.email, g.clan)}${linkButton(g.email)}${toggle}</div>
       </div>`;
     }).join("") : `<p class="empty">${senders === null ? esc(sendersNote || "Not available yet.") : "No grandfathered users."}</p>`;
     $("grandfathered").querySelectorAll("button[data-send]").forEach((btn) => {
@@ -473,6 +561,7 @@
       btn.addEventListener("click", () => setName(btn.dataset.email, btn.dataset.name, btn));
     });
     bindClanPickers($("grandfathered"));
+    bindLinkButtons($("grandfathered"));
     $("gf-problems").textContent = problems.join(" ") + (problems.length ? " Set their names with Name… instead." : "");
     $("gf-problems").classList.toggle("hidden", !problems.length);
   }
