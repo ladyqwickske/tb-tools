@@ -300,7 +300,7 @@
       if (!src.set_up) return `<span>${esc(src.name)}: not set up</span>`;
       if (!c) return `<span>${esc(src.name)}: not checked yet</span>`;
       return c.ok ? `<span class="ok">${esc(src.name)}: ${c.members} on the list</span>`
-                  : `<span class="bad" title="${esc(c.error || "")}">${esc(src.name)}: couldn't be read</span>`;
+                  : `<span class="bad">${esc(src.name)}: couldn't be read${c.error ? " — " + esc(c.error) : ""}</span>`;
     }).join("");
     const review = (roster.people || []).filter((r) => r.status === "left" || r.status === "not_found")
       .sort((a, b) => b.changed_at - a.changed_at);
