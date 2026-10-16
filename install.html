@@ -50,26 +50,6 @@
     background-repeat: no-repeat;
     background-size: 100% 100%;
   }
-  header {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px clamp(20px, 5vw, 56px);
-    border-bottom: 1px solid rgba(212,175,55,0.15);
-  }
-  header nav a {
-    font-family: var(--utility);
-    font-size: 0.78rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: var(--ink-dim);
-    border-bottom: 1px solid transparent;
-    transition: color 0.25s ease, border-color 0.25s ease;
-  }
-  header nav a:hover { color: var(--gold-bright); border-color: var(--gold); }
   .hero {
     position: relative;
     z-index: 1;
@@ -316,17 +296,33 @@
   footer .foot-links a { color: var(--ink-dim); text-decoration: none; }
   footer .foot-links a:hover { color: var(--gold-bright); }
   :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+  .step-card h3 {
+    font-family: var(--display);
+    color: var(--gold-bright);
+    font-size: 1.1rem;
+    margin: 26px 0 8px;
+    scroll-margin-top: 24px;
+  }
+  .step-card { scroll-margin-top: 24px; }
 </style>
+<link rel="stylesheet" href="site-nav.css" />
+<script src="site-nav.js" defer></script>
 </head>
 <body>
 <div class="stars"></div>
-<header>
-  <nav>
-    <a href="index.html">← Back to TB-Tools</a>
-  </nav>
-  <nav>
-    <a href="devices.html">My Account</a>
-  </nav>
+<header class="site-header" data-page="install">
+  <a class="site-brand" href="index.html"><img src="tools-logo.png" alt="" /><span>Q's TB Tools</span></a>
+  <button type="button" class="site-menu-toggle" aria-expanded="false" aria-controls="site-nav">&#9776; Menu</button>
+  <ul class="site-nav" id="site-nav">
+    <li><a href="index.html" data-page="index">Home</a></li>
+    <li><a href="index.html#download">Download</a></li>
+    <li><a href="index.html#pricing">Pricing</a></li>
+    <li><a href="install.html" data-page="install">Installation Guide</a></li>
+    <li><a href="calculator.html" data-page="calculator">Battle Calculator</a></li>
+    <li><a href="lists.html" data-page="lists">My Battle Lists</a></li>
+    <li><a href="devices.html" data-page="devices subscribe subscribe-success">My Account</a></li>
+    <li class="site-admin" hidden><a href="admin.html" data-page="admin">Admin</a></li>
+  </ul>
 </header>
 
 <section class="hero">
@@ -340,7 +336,7 @@
   <a href="#download">1. Download</a>
   <a href="#copy">2. Install the folder</a>
   <a href="#launch">3. First launch</a>
-  <a href="#display">4. Set your display &amp; zoom</a>
+  <a href="#mode">4. Choose a mode</a>
   <a href="#configure">5. Configure the app</a>
   <a href="#run">6. Run it</a>
   <a href="#help">Need help?</a>
@@ -352,12 +348,13 @@
     <div class="step-head"><h2>What you'll need</h2></div>
     <ul class="req-list">
       <li>Windows 10 or Windows 11.</li>
-      <li>Google Chrome installed, with you logged into the Total Battle account you want to automate.</li>
-      <li>A screen resolution of 1024×768, 1366×768, 1680×1050, 1760×990, or 1920×1080. Need something else? Email <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a>.</li>
+      <li>Google Chrome installed.</li>
+      <li>Total Battle set to <strong>English</strong> — Auto-Crypter recognises the English game screens only.</li>
+      <li>In Chrome mode: any screen resolution and any Windows scaling. In Desktop mode: one of the supported resolutions (see step 4).</li>
       <li>About 10 minutes, before your next crypting session.</li>
     </ul>
     <div class="note-box">
-      <strong>Why the display settings matter:</strong> Auto-Crypter finds buttons and crypts by their exact position on screen. Step 4 below walks through the handful of settings that need to stay fixed so it always clicks in the right place.
+      <strong>New in 1.0 — Chrome mode:</strong> Auto-Crypter can now control the game in a Chrome window of its own, so it runs in the background while you use your PC, at any screen resolution. Step 4 explains how to pick between Chrome mode and the classic Desktop mode.
     </div>
   </article>
 
@@ -366,7 +363,7 @@
     <p>Grab the latest version below. It comes as a single .zip file and contains <strong>both</strong> Auto-Crypter and the Battle Calculator — there's nothing separate to download for either tool. Which tools you can use depends on your subscription or trial.</p>
     <div class="download-row">
       <a class="cta primary" id="download-btn"
-         href="https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-0.1.2/TB-Tools_0.1.2.zip">Download TB-Tools v0.1.2</a>
+         href="https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-1.0.1/TB-Tools-1.0.1.zip">Download TB-Tools v1.0.1</a>
     </div>
   </article>
 
@@ -377,6 +374,7 @@
       <li>Unzip the download.</li>
       <li>Copy the <strong>entire</strong> TB-Tools folder to where you want to run it from — your Desktop or a dedicated Programs folder both work well.</li>
       <li>Don't move or copy just <code>TB-Tools.exe</code> on its own — it won't launch without the rest of the folder.</li>
+      <li>Updating from an older version? Replace the old TB-Tools folder with the new one. Your settings and Chrome sign-ins are kept in your own user folder, so they stay.</li>
     </ol>
   </article>
 
@@ -386,16 +384,45 @@
       <li>Open the TB-Tools folder and double-click <code>TB-Tools.exe</code>.</li>
       <li>Sign in with the Google account tied to your Total Battle play, and accept the access prompt TB-Tools shows you.</li>
       <li>Once that's done, the main TB-Tools window opens and you're ready for setup.</li>
+      <li>Want the app in another language? Click the globe button (🌐) at the top right — 10 languages are available. The new language applies after a restart.</li>
     </ol>
   </article>
 
-  <article class="step-card" id="display">
-    <div class="step-head"><span class="step-num">4</span><h2>Set your display &amp; zoom</h2></div>
-    <p>Five settings need to match exactly, every time you run Auto-Crypter — not just today. Go through each one now:</p>
+  <article class="step-card" id="mode">
+    <div class="step-head"><span class="step-num">4</span><h2>Choose a mode</h2></div>
+    <p>Auto-Crypter can control the game in two ways. Switch in the <em>General</em> tab → <em>Game control</em> with the tick box <strong>“Control the game through Chrome (can run in the background)”</strong>. Ticked = Chrome mode, not ticked = Desktop mode. A new install starts in Desktop mode.</p>
+
+    <div class="note-box">
+      <strong>Chrome mode is the easiest choice for most players:</strong> your mouse and keyboard stay free, the game window may be covered or hidden, any screen resolution and Windows scaling works, and your own Chrome is left untouched. You can also keep a separate Login for each Total Battle account.
+    </div>
+
+    <h3 id="chrome-mode">Chrome mode — runs in the background</h3>
+    <ol>
+      <li>Tick <strong>“Control the game through Chrome (can run in the background)”</strong>.</li>
+      <li>Click <strong>Open game in Chrome</strong>. A separate Chrome window opens with Total Battle — your own Chrome, bookmarks and passwords are not used.</li>
+      <li>Sign in to Total Battle <strong>in that window</strong>. You only do this once per Login; the sign-in is remembered.</li>
+      <li>Got more than one Total Battle account? Use <em>Add…</em> next to <em>Login</em> to give each one its own window and sign-in, and pick the right one before you press Start.</li>
+    </ol>
+    <p>Two settings still matter in Chrome mode:</p>
+    <div class="setting-block">
+      <p class="setting-title">Chrome page zoom <span class="setting-value">— 100%</span></p>
+      <p>In the game window TB-Tools opened, press <code>Ctrl+0</code> to make sure the page isn't zoomed. The game page itself is always 1920×1080; on a smaller screen it's simply shown scaled down.</p>
+    </div>
+    <div class="setting-block">
+      <p class="setting-title">Total Battle's in-game map zoom <span class="setting-value">— 125%</span></p>
+      <p>This one's inside the game. On the world map, use Total Battle's own zoom control to set it to 125%, and leave it there.</p>
+    </div>
+    <p>Handy options under <em>Game control</em>, all on by default: <strong>Full screen</strong> (the game without tabs and address bar), <strong>Hide while running</strong> (the game window moves out of sight during a run and comes back when it stops) and <strong>Check before START</strong> (shows you a picture of the game first, so you can check you're signed in and the right crypts are ticked).</p>
+    <div class="warn-box">
+      <strong>During a run:</strong> don't minimise the game window (the game slows to a crawl — covering it or “Hide while running” is fine), and don't close the game window or TB-Tools.
+    </div>
+
+    <h3 id="desktop-mode">Desktop mode — uses your real mouse</h3>
+    <p>Auto-Crypter looks at your screen and moves your mouse like a player would, so you can't use the PC during a run. These settings need to stay fixed every time:</p>
 
     <div class="setting-block">
       <p class="setting-title">Screen resolution <span class="setting-value">— one of the supported sizes</span></p>
-      <p>Right-click your desktop → <em>Display settings</em> → set <em>Display resolution</em> to 1024×768, 1366×768, 1680×1050, 1760×990, or 1920×1080.</p>
+      <p>Right-click your desktop → <em>Display settings</em> → set <em>Display resolution</em> to 1024×768, 1366×768, 1600×900, 1680×1050, 1760×990, 1920×1080 or 1920×1200. Need something else? Use Chrome mode, or email <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a>.</p>
     </div>
 
     <div class="setting-block">
@@ -415,11 +442,16 @@
 
     <div class="setting-block">
       <p class="setting-title">Total Battle's in-game map zoom <span class="setting-value">— 125%</span></p>
-      <p>This one's inside the game, not Chrome or Windows. On the world map, use Total Battle's own zoom control to set it to 125%, and leave it there.</p>
+      <p>On the world map, use Total Battle's own zoom control to set it to 125%, and leave it there.</p>
+    </div>
+
+    <div class="setting-block">
+      <p class="setting-title">Game window <span class="setting-value">— maximised on the main monitor</span></p>
+      <p>Keep it visible, uncovered and in front during a run — don't move or minimise it.</p>
     </div>
 
     <div class="warn-box">
-      <strong>Don't mix these up:</strong> Chrome's browser zoom (100%) and Total Battle's in-game map zoom (125%) are two different settings. Auto-Crypter needs both set correctly at the same time.
+      <strong>Don't mix these up:</strong> Chrome's browser zoom (100%) and Total Battle's in-game map zoom (125%) are two different settings. Auto-Crypter needs both set correctly at the same time, in either mode.
     </div>
   </article>
 
@@ -427,8 +459,8 @@
     <div class="step-head"><span class="step-num">5</span><h2>Configure Auto-Crypter</h2></div>
     <p>Back in the app, a few quick choices before your first run:</p>
     <ul>
-      <li><strong>Select your Total Battle window</strong> — so Auto-Crypter knows which browser window to watch.</li>
-      <li><strong>Choose your captains</strong> — up to three per run.</li>
+      <li><strong>Choose your captains</strong> — up to three per run. With three, you can also send two of them to the same crypt.</li>
+      <li><strong>Optional: use speed-ups</strong> — each march gets a speed-up, and marches with more than 20 seconds left get another one while you wait.</li>
       <li><strong>Set your crypt filters</strong> — exclude any crypt types you don't want it to run (this will slow things down a little, so only exclude what you need to).</li>
       <li><strong>Optional: set a run limit</strong> — cap it by time or by number of marches, or leave it unlimited.</li>
     </ul>
@@ -436,17 +468,17 @@
 
   <article class="step-card" id="run">
     <div class="step-head"><span class="step-num">6</span><h2>Run it</h2></div>
-    <p>Open Total Battle to the watchtower or crypt list, then:</p>
+    <p>In the game (in Chrome mode: the window TB-Tools opened), go to your city or the world map, and in the Watchtower tick only the crypts you want. Auto-Crypter opens the Watchtower's crypt list by itself and starts searching where you left the list — so if you scroll it down to leave the nearest crypts for clanmates, it respects that and only looks higher up when crypts get scarce. Then:</p>
     <ul>
-      <li>Click <strong>Start</strong> in the app, or press <code>F9</code>, to begin.</li>
+      <li>Click <strong>Start</strong> in the app, or press <code>F9</code>, to begin. In Chrome mode, confirm the picture of the game and carry on using your PC.</li>
       <li>Press <code>Ctrl+Q</code> any time to stop immediately.</li>
-      <li>Keep an eye on it while it runs, and check the <strong>Logs</strong> area in the app if anything looks off.</li>
+      <li>Keep an eye on it now and then, and check the <strong>Logs</strong> area in the app if anything looks off. It stops by itself when a limit is reached, you run out of Tar or crypt keys, or the game page stops responding.</li>
     </ul>
   </article>
 
   <article class="step-card help-card" id="help">
     <h2 style="font-family: var(--display); color: var(--gold-bright); margin: 0 0 8px;">Need a hand?</h2>
-    <p>Stuck on a step, or running a resolution that isn't listed above? Email <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a> and we'll help you sort it out.</p>
+    <p>Stuck on a step, or need Desktop mode at a resolution that isn't listed above? Email <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a> and we'll help you sort it out.</p>
     <a class="cta secondary" href="index.html">← Back to TB-Tools</a>
   </article>
 

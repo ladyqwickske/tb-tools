@@ -49,32 +49,6 @@
     background-repeat: no-repeat;
     background-size: 100% 100%;
   }
-  header {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px clamp(20px, 5vw, 56px);
-    border-bottom: 1px solid rgba(212,175,55,0.15);
-  }
-  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-  .brand img {
-    height: 34px; width: 34px; object-fit: contain;
-    filter: drop-shadow(0 0 6px rgba(212,175,55,0.35));
-  }
-  .brand-word { font-family: var(--utility); letter-spacing: 0.14em; font-size: 0.8rem; color: var(--gold-bright); }
-  header nav a {
-    font-family: var(--utility);
-    font-size: 0.78rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: var(--ink-dim);
-    border-bottom: 1px solid transparent;
-    transition: color 0.25s ease, border-color 0.25s ease;
-  }
-  header nav a:hover { color: var(--gold-bright); border-color: var(--gold); }
 
   main { position: relative; z-index: 1; display: flex; justify-content: center; padding: 90px 20px 130px; }
   .eyebrow {
@@ -149,17 +123,24 @@
   footer .foot-links a:hover { color: var(--gold-bright); }
   :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
 </style>
+<link rel="stylesheet" href="site-nav.css" />
+<script src="site-nav.js" defer></script>
 </head>
 <body>
 <div class="stars"></div>
-<header>
-  <a class="brand" href="index.html">
-    <img src="tools-logo.png" alt="Q's TB Tools" />
-    <span class="brand-word">Q's TB Tools</span>
-  </a>
-  <nav>
-    <a href="index.html">← Back to TB Tools</a>
-  </nav>
+<header class="site-header" data-page="subscribe-success">
+  <a class="site-brand" href="index.html"><img src="tools-logo.png" alt="" /><span>Q's TB Tools</span></a>
+  <button type="button" class="site-menu-toggle" aria-expanded="false" aria-controls="site-nav">&#9776; Menu</button>
+  <ul class="site-nav" id="site-nav">
+    <li><a href="index.html" data-page="index">Home</a></li>
+    <li><a href="index.html#download">Download</a></li>
+    <li><a href="index.html#pricing">Pricing</a></li>
+    <li><a href="install.html" data-page="install">Installation Guide</a></li>
+    <li><a href="calculator.html" data-page="calculator">Battle Calculator</a></li>
+    <li><a href="lists.html" data-page="lists">My Battle Lists</a></li>
+    <li><a href="devices.html" data-page="devices subscribe subscribe-success">My Account</a></li>
+    <li class="site-admin" hidden><a href="admin.html" data-page="admin">Admin</a></li>
+  </ul>
 </header>
 
 <main>
