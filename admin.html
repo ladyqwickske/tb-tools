@@ -194,6 +194,10 @@
   let roster = null;        // /admin/roster/status result
   const $ = (id) => document.getElementById(id);
 
+  // Alphabetical, ignoring case and accents (2026-10-16).
+  function byName(nameOf) {
+    return (a, b) => String(nameOf(a) || "").localeCompare(String(nameOf(b) || ""), undefined, { sensitivity: "base" });
+  }
   function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
   function date(unix) { return unix ? new Date(unix * 1000).toLocaleDateString() : "—"; }
   function status(html, kind) {
@@ -256,7 +260,8 @@
     const shown = members.filter((m) =>
       filter === "all" ? true
       : filter === "other" ? (m.status === "denied" || m.status === "revoked")
-      : m.status === filter).filter((m) => clanFilter === "*" || (m.clan || "") === clanFilter);
+      : m.status === filter).filter((m) => clanFilter === "*" || (m.clan || "") === clanFilter)
+      .sort(byName((m) => m.tb_username || m.display_name || m.email));
 
     $("rows").innerHTML = shown.length ? shown.map((m) => `
       <div class="card">
@@ -591,7 +596,7 @@
       // Grandfathered senders who never registered: use the allowlist's name.
       const g = grandfathered.find((y) => y.email.toLowerCase() === s.email.toLowerCase()) || {};
       return { ...s, tb_username: s.tb_username || g.tb_username || "", display_name: s.display_name || g.display_name || "" };
-    }).map((x) => `
+    }).sort(byName((x) => x.tb_username || x.display_name || x.email)).map((x) => `
       <div class="card">
         <div class="who">
           <div class="tb">${esc(x.tb_username || x.display_name || x.email)}</div>
