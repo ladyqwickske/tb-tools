@@ -200,6 +200,7 @@
   }
   .download-panel .tool-status { background: var(--emerald-bright); }
   .download-panel > p { max-width: 58ch; margin-left: auto; margin-right: auto; }
+  .download-panel .video-block { text-align: left; }
   .download-includes {
     display: flex;
     flex-wrap: wrap;
@@ -649,6 +650,15 @@
     <p class="download-meta">Windows · portable .zip — just unzip and run, no installer.</p>
     <p class="release-notes" id="release-notes"></p>
     <p class="download-note">Haven't picked a plan yet? Download first — you can <a href="#pricing">choose a plan</a> or start a trial whenever you're ready.</p>
+
+    <h3 class="tool-subheading">Installation video</h3>
+    <p>From download to first start, step by step.</p>
+    <div class="video-block js-video" data-video="XrKGh0h5_Y4" data-subtitles data-title="TB-Tools installation video">
+      <div class="video-frame">
+        <button type="button" class="video-poster" aria-label="Play the TB-Tools installation video"></button>
+      </div>
+      <p class="video-note">In English, with subtitles in 10 languages: they switch on in your browser's language when available, or pick one with the <strong>CC</strong> / ⚙ button in the player. Or watch it <a href="https://youtu.be/XrKGh0h5_Y4" style="color:var(--gold-bright);">on YouTube</a>.</p>
+    </div>
   </article>
   <article class="tool-card" id="tools-list">
     <span class="tool-status">Available</span>
@@ -685,6 +695,15 @@
       <li><strong>It doesn't stop until you want it to.</strong> No caps on marches, crypts, or hours — run it for a quick top-up or let it carry a full session, or set a time or march limit.</li>
     </ul>
     <p style="font-size:0.85rem; color:var(--ink-dim);">Chrome mode works at any screen resolution and Windows scaling. Desktop mode needs one of 1024×768, 1366×768, 1600×900, 1680×1050, 1760×990, 1920×1080 or 1920×1200 at 100% scaling. Available in 10 languages. Full setup details are in the <a href="install.html" style="color:var(--gold-bright);">installation guide</a>.</p>
+
+    <h3 class="tool-subheading">Video tutorial</h3>
+    <p>See how to set up Auto-Crypt and start your first run.</p>
+    <div class="video-block js-video" data-video="Kr5JRE32bk0" data-subtitles data-title="Auto-Crypt tutorial">
+      <div class="video-frame">
+        <button type="button" class="video-poster" aria-label="Play the Auto-Crypt tutorial"></button>
+      </div>
+      <p class="video-note">In English, with subtitles in 10 languages: they switch on in your browser's language when available, or pick one with the <strong>CC</strong> / ⚙ button in the player. Or watch it <a href="https://youtu.be/Kr5JRE32bk0" style="color:var(--gold-bright);">on YouTube</a>.</p>
+    </div>
 
 
     <div class="closing-block">
@@ -957,12 +976,20 @@
 
 
 <script>
-  // Battle Calculator tutorials (desktop + web): each shows the thumbnail and
-  // only loads YouTube (privacy-enhanced domain) when the visitor presses play.
+  // Tutorial videos: each shows the thumbnail and only loads YouTube
+  // (privacy-enhanced domain) when the visitor presses play. A block either
+  // has language buttons (one video per language) or a single data-video;
+  // data-subtitles (2026-10-19) turns on YouTube's subtitles in the
+  // browser's language for visitors who don't read English.
+  const browserLang = (navigator.language || "en").toLowerCase();
+  const subtitleLang = browserLang.indexOf("pt") === 0 ? "pt-BR" : browserLang.split("-")[0];
   document.querySelectorAll(".js-video").forEach(function (root) {
     const frame = root.querySelector(".video-frame");
     const title = root.dataset.title || "Video";
     const buttons = root.querySelectorAll(".video-langs button");
+    const subtitles = root.hasAttribute("data-subtitles") && subtitleLang !== "en"
+      ? "&cc_load_policy=1&cc_lang_pref=" + encodeURIComponent(subtitleLang) + "&hl=" + encodeURIComponent(subtitleLang)
+      : "";
 
     function poster(id) {
       frame.innerHTML = '<button type="button" class="video-poster"></button>';
@@ -973,7 +1000,7 @@
     }
     function play(id) {
       frame.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + id +
-        '?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+        '?autoplay=1&rel=0' + subtitles + '" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
       frame.firstChild.title = title;
     }
     function select(b) {
@@ -983,8 +1010,9 @@
     buttons.forEach(function (b) {
       b.addEventListener("click", function () { select(b); });
     });
+    if (!buttons.length) { poster(root.dataset.video); return; }
     // Turkish browsers start on the Turkish video (the second button).
-    const turkish = (navigator.language || "").toLowerCase().indexOf("tr") === 0;
+    const turkish = browserLang.indexOf("tr") === 0;
     select(buttons[turkish && buttons[1] ? 1 : 0]);
   });
 </script>
