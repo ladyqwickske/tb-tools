@@ -114,7 +114,7 @@
   </ul>
 </header>
 <main>
-  <p class="admin-tabs"><a href="admin.html" aria-current="page">cCc members</a> <a href="admin-lists.html">Players' calculators</a></p>
+  <p class="admin-tabs"><a href="admin.html" aria-current="page">cCc members</a> <a href="admin-lists.html">Players' calculators</a> <a href="admin-subs.html" id="subs-tab" class="hidden">Subscriptions</a></p>
   <h1>cCc members</h1>
   <p class="sub">Approved members get the Battle Calculator free and 50% off Auto-Crypt. Revoking removes calculator access immediately and drops the discount from their next renewal.</p>
 
@@ -785,6 +785,8 @@
         $("g_id_signin_container").classList.add("hidden");
         status("Loading…");
         load();
+        // Subscriptions tab: only for the one account the Worker allows (2026-10-26).
+        api("/account/status").then((r) => $("subs-tab").classList.toggle("hidden", !r.can_view_subscriptions)).catch(() => {});
       },
     });
   };
