@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Subscriptions — Q's TB Tools Admin</title>
+<link rel="icon" href="tools-logo.png" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="session.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #05060a;
+    --panel: #0c1020;
+    --panel-line: #1c2440;
+    --gold: #d4af37;
+    --gold-bright: #f2d68f;
+    --gold-dim: #8a742f;
+    --emerald-bright: #6fa373;
+    --danger: #c25b5b;
+    --danger-bright: #e08585;
+    --ink: #e9e6da;
+    --ink-dim: #a8a692;
+    --display: 'Cinzel', serif;
+    --body: 'Spectral', serif;
+    --utility: 'Oswald', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--void); color: var(--ink); font-family: var(--body); line-height: 1.5; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-family: var(--display); color: var(--gold-bright); font-size: 1.4rem; margin: 0 0 4px; }
+  h2 { font-family: var(--utility); font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--emerald-bright); margin: 26px 0 8px; }
+  p.sub { color: var(--ink-dim); font-style: italic; margin: 0 0 16px; font-size: 0.92rem; }
+  .hidden { display: none !important; }
+  .msg { padding: 12px 14px; border: 1px solid var(--panel-line); background: var(--panel); border-radius: 3px; color: var(--ink-dim); margin: 10px 0; font-size: 0.9rem; }
+  .msg.error { border-color: var(--danger); color: var(--danger-bright); }
+  .msg.warn { border-color: var(--gold-dim); color: var(--gold-bright); }
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filters button, .btn {
+    padding: 7px 12px; background: transparent; color: var(--ink-dim); border: 1px solid var(--panel-line);
+    border-radius: 2px; font-family: var(--utility); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+  }
+  .filters button[aria-pressed="true"] { color: var(--gold-bright); border-color: var(--gold); }
+  .btn.approve { color: var(--emerald-bright); border-color: var(--emerald-bright); }
+  .btn.deny, .btn.revoke { color: var(--danger-bright); border-color: var(--danger); }
+  .btn:disabled { opacity: 0.5; cursor: wait; }
+  .card { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; padding: 12px 14px; margin-top: 8px; display: flex; gap: 12px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+  .who { min-width: 0; flex: 1 1 280px; }
+  .who .tb { font-family: var(--utility); font-size: 1.02rem; color: var(--ink); }
+  .who .email { font-size: 0.84rem; color: var(--ink-dim); word-break: break-all; }
+  .who .extra { font-size: 0.78rem; color: var(--ink-dim); font-style: italic; }
+  .chip { font-family: var(--utility); font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; margin-left: 6px; vertical-align: middle; }
+  .chip.pending { background: var(--gold); color: var(--void); }
+  .chip.approved { background: var(--emerald-bright); color: var(--void); }
+  .chip.denied, .chip.revoked { background: var(--danger); color: var(--void); }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  form.add { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; align-items: end; }
+  form.add label { font-family: var(--utility); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); display: grid; gap: 4px; }
+  input[type="text"], input[type="email"] { padding: 9px 11px; background: var(--void); border: 1px solid var(--panel-line); border-radius: 2px; color: var(--ink); font-family: var(--body); font-size: 0.94rem; width: 100%; }
+  #g_id_signin_container { margin: 12px 0; }
+  .empty { color: var(--ink-dim); font-style: italic; padding: 10px 0; }
+  .counts { font-family: var(--utility); font-size: 0.74rem; letter-spacing: 0.06em; color: var(--ink-dim); white-space: nowrap; }
+  a.btn { text-decoration: none; display: inline-block; }
+  .btn.open { color: var(--gold-bright); border-color: var(--gold); }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+  .tile { background: var(--panel); border: 1px solid var(--panel-line); border-top: 2px solid var(--gold-dim); border-radius: 4px; padding: 10px 12px; }
+  .tile .n { font-family: var(--display); color: var(--gold-bright); font-size: 1.6rem; line-height: 1.1; }
+  .tile .k { font-family: var(--utility); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+  .tile .s { font-size: 0.78rem; color: var(--ink-dim); font-style: italic; }
+  .filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+  select { padding: 7px 10px; background: var(--void); border: 1px solid var(--panel-line); border-radius: 2px; color: var(--ink); font-family: var(--body); font-size: 0.88rem; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--panel-line); border-radius: 4px; background: var(--panel); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { padding: 8px 10px; text-align: left; border-top: 1px solid var(--panel-line); vertical-align: top; }
+  thead th { border-top: 0; font-family: var(--utility); font-weight: 500; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th[aria-sort="ascending"]::after { content: " ▲"; color: var(--gold); }
+  thead th[aria-sort="descending"]::after { content: " ▼"; color: var(--gold); }
+  td.date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td .email { font-size: 0.78rem; color: var(--ink-dim); word-break: break-all; }
+  td .note { font-size: 0.76rem; color: var(--ink-dim); font-style: italic; }
+  .chip { margin-left: 0; white-space: nowrap; }
+  .chip.active { background: var(--emerald-bright); color: var(--void); }
+  .chip.ending, .chip.past_due { background: var(--gold); color: var(--void); }
+  .chip.ended { background: transparent; color: var(--ink-dim); border: 1px solid var(--panel-line); }
+  .admin-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
+  .admin-tabs a { padding: 6px 12px; border: 1px solid var(--panel-line); border-radius: 2px; font-family: var(--utility); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); text-decoration: none; }
+  .admin-tabs a[aria-current="page"] { color: var(--gold-bright); border-color: var(--gold); }
+  .chip.no { background: transparent; color: var(--ink-dim); border: 1px solid var(--panel-line); }
+</style>
+<link rel="stylesheet" href="site-nav.css" />
+<script src="site-nav.js" defer></script>
+</head>
+<body>
+<header class="site-header" data-page="admin">
+  <a class="site-brand" href="index.html"><img src="tools-logo.png" alt="" /><span>Q's TB Tools</span></a>
+  <button type="button" class="site-menu-toggle" aria-expanded="false" aria-controls="site-nav">&#9776; Menu</button>
+  <ul class="site-nav" id="site-nav">
+    <li><a href="index.html" data-page="index">Home</a></li>
+    <li><a href="index.html#download">Download</a></li>
+    <li><a href="index.html#pricing">Pricing</a></li>
+    <li><a href="install.html" data-page="install">Installation Guide</a></li>
+    <li><a href="calculator.html" data-page="calculator">Battle Calculator</a></li>
+    <li><a href="lists.html" data-page="lists">My Battle Lists</a></li>
+    <li><a href="devices.html" data-page="devices subscribe subscribe-success">My Account</a></li>
+    <li class="site-admin" hidden><a href="admin.html" data-page="admin">Admin</a></li>
+  </ul>
+</header>
+<main>
+  <p class="admin-tabs"><a href="admin.html">cCc members</a> <a href="admin-lists.html">Players' calculators</a> <a href="admin-subs.html" aria-current="page">Subscriptions</a></p>
+  <h1>Subscriptions</h1>
+  <p class="sub">Every TB Tools subscription and trial, with its type, start and end date, and whether the person is a cCc member. Only you can see this page.</p>
+
+  <div id="g_id_signin_container"></div>
+  <div class="msg hidden" id="status"></div>
+
+  <section id="admin" class="hidden">
+    <h2>Totals</h2>
+    <div class="tiles" id="tiles"></div>
+
+    <h2>All subscriptions <span id="n-shown"></span></h2>
+    <div class="filter-row">
+      <div class="filters" id="filters">
+        <button data-f="running" aria-pressed="true">Running</button>
+        <button data-f="ended" aria-pressed="false">Ended</button>
+        <button data-f="all" aria-pressed="false">All</button>
+      </div>
+      <select id="f-tier" aria-label="Type"><option value="">All types</option></select>
+      <select id="f-ccc" aria-label="cCc"><option value="">cCc and non-cCc</option><option value="yes">cCc members</option><option value="no">Not cCc</option></select>
+      <input type="text" id="search" placeholder="Search name or email" autocomplete="off" style="flex:1 1 180px;width:auto" />
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th data-sort="name">Player</th>
+          <th data-sort="tier">Type</th>
+          <th data-sort="state">Status</th>
+          <th data-sort="started_at" aria-sort="descending">Start</th>
+          <th data-sort="ends_at">End</th>
+          <th data-sort="ccc">cCc</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script>
+  const GOOGLE_CLIENT_ID_WEB = "47674606892-0m90hd0cd01kijo69ssuqtn1j3igp32i.apps.googleusercontent.com";
+  const WORKER_BASE_URL = "https://auto-crypt.ccc-hq.com";
+  const TIERS = { all_in: "All-In", autocrypt: "Auto-Crypt", battlecalc: "Battle Calculator" };
+  const PLANS = { monthly: "monthly", quarterly: "3 months", semiannual: "6 months", annual: "yearly", trial_7: "7-day trial", trial_14: "14-day trial" };
+  const STATES = { active: "Active", ending: "Cancelled, runs out", past_due: "Payment due", ended: "Ended" };
+  let idToken = null;
+  let subs = [];
+  let filter = "running";
+  let sortKey = "started_at";
+  let sortDir = -1;
+  const $ = (id) => document.getElementById(id);
+
+  function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+  function date(unix) { return unix ? new Date(unix * 1000).toLocaleDateString() : "—"; }
+  function status(html, kind) {
+    const el = $("status");
+    el.innerHTML = html;
+    el.className = "msg" + (kind ? " " + kind : "");
+  }
+
+  async function api(path, extra) {
+    const res = await fetch(WORKER_BASE_URL + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id_token: idToken, ...(extra || {}) }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (res.status === 403) throw new Error(body.detail || "This Google account can't see subscriptions.");
+    if (res.status === 401) {
+      TBSession.expired();
+      throw new Error("Your sign-in expired. Please sign in again.");
+    }
+    if (res.status === 404) throw new Error("The Worker doesn't have the subscriptions overview yet: deploy the latest worker.js.");
+    if (!res.ok) throw new Error(body.detail || body.error || `Request failed (${res.status})`);
+    return body;
+  }
+
+  // active | ending | past_due | ended. A paid trial has no Stripe
+  // subscription behind it, so its row stays "active" after the end date.
+  function stateOf(s) {
+    const now = Date.now() / 1000;
+    if (s.status !== "active" && s.status !== "past_due") return "ended";
+    if (PLANS[s.plan] && /^trial_/.test(s.plan) && s.ends_at && s.ends_at < now) return "ended";
+    if (s.status === "past_due") return "past_due";
+    return s.cancel_at_period_end ? "ending" : "active";
+  }
+  const isCcc = (s) => s.ccc === "approved";
+  const nameOf = (s) => s.tb_username || s.name || s.email;
+  function typeText(s) {
+    const plan = PLANS[s.plan] || s.plan;
+    return (TIERS[s.tier] || s.tier) + (plan ? " · " + plan : "");
+  }
+
+  function renderTiles() {
+    const running = subs.filter((s) => s.state !== "ended");
+    const tile = (n, k, sub) => `<div class="tile"><div class="n">${n}</div><div class="k">${esc(k)}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}</div>`;
+    const tiers = Object.keys(TIERS).concat([...new Set(subs.map((s) => s.tier))].filter((t) => !TIERS[t]));
+    $("tiles").innerHTML =
+      tile(running.length, "Running now", `${subs.length} ever`) +
+      tiers.filter((t) => subs.some((s) => s.tier === t)).map((t) => {
+        const n = running.filter((s) => s.tier === t).length;
+        return tile(n, TIERS[t] || t, `${subs.filter((s) => s.tier === t).length} ever`);
+      }).join("") +
+      tile(running.filter(isCcc).length, "cCc members", "running") +
+      tile(running.filter((s) => !isCcc(s)).length, "Not cCc", "running");
+  }
+
+  function render() {
+    const q = $("search").value.trim().toLowerCase();
+    const tier = $("f-tier").value;
+    const ccc = $("f-ccc").value;
+    const shown = subs.filter((s) => filter === "all" || (filter === "ended") === (s.state === "ended"))
+      .filter((s) => !tier || s.tier === tier)
+      .filter((s) => !ccc || (ccc === "yes") === isCcc(s))
+      .filter((s) => !q || [s.tb_username, s.name, s.email].some((v) => String(v || "").toLowerCase().includes(q)));
+    const val = (s) => sortKey === "name" ? nameOf(s).toLowerCase()
+      : sortKey === "tier" ? typeText(s)
+      : sortKey === "ccc" ? (isCcc(s) ? 0 : 1)
+      : sortKey === "state" ? Object.keys(STATES).indexOf(s.state)
+      : s[sortKey] || 0;
+    shown.sort((a, b) => { const x = val(a), y = val(b); return (x < y ? -1 : x > y ? 1 : 0) * sortDir; });
+    $("n-shown").textContent = `(${shown.length})`;
+    $("rows").innerHTML = shown.length ? shown.map((s) => {
+      const trial = s.trial_end && s.trial_end * 1000 > Date.now() ? `<div class="note">free cCc trial until ${esc(date(s.trial_end))}</div>` : "";
+      const cccOther = s.ccc && s.ccc !== "approved" ? `<div class="note">${esc(s.ccc)}</div>` : "";
+      return `
+      <tr>
+        <td>${esc(nameOf(s))}${nameOf(s) !== s.email ? `<div class="email">${esc(s.email)}</div>` : ""}</td>
+        <td>${esc(typeText(s))}${trial}</td>
+        <td><span class="chip ${s.state}">${esc(STATES[s.state])}</span></td>
+        <td class="date">${esc(date(s.started_at))}</td>
+        <td class="date">${esc(date(s.ends_at))}</td>
+        <td>${isCcc(s) ? '<span class="chip approved">Yes</span>' : '<span class="chip no">No</span>'}${cccOther}</td>
+      </tr>`;
+    }).join("") : `<tr><td colspan="6" class="empty">${subs.length ? "Nothing matches these filters." : "No subscriptions yet."}</td></tr>`;
+  }
+
+  async function load() {
+    try {
+      const r = await api("/admin/subscriptions/list");
+      subs = (r.subscriptions || []).map((s) => ({ ...s, state: stateOf(s) }));
+      const tiers = [...new Set(subs.map((s) => s.tier))];
+      $("f-tier").innerHTML = `<option value="">All types</option>` + tiers.map((t) => `<option value="${esc(t)}">${esc(TIERS[t] || t)}</option>`).join("");
+      $("admin").classList.remove("hidden");
+      $("status").classList.add("hidden");
+      renderTiles();
+      render();
+    } catch (err) {
+      status(esc(err.message), "error");
+    }
+  }
+
+  $("filters").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-f]");
+    if (!b) return;
+    filter = b.dataset.f;
+    $("filters").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    render();
+  });
+  ["f-tier", "f-ccc"].forEach((id) => $(id).addEventListener("change", render));
+  $("search").addEventListener("input", render);
+  document.querySelectorAll("th[data-sort]").forEach((th) => {
+    th.addEventListener("click", () => {
+      sortDir = sortKey === th.dataset.sort ? -sortDir : (th.dataset.sort === "started_at" || th.dataset.sort === "ends_at" ? -1 : 1);
+      sortKey = th.dataset.sort;
+      document.querySelectorAll("th[data-sort]").forEach((x) => x.removeAttribute("aria-sort"));
+      th.setAttribute("aria-sort", sortDir === 1 ? "ascending" : "descending");
+      render();
+    });
+  });
+
+  window.onload = function () {
+    TBSession.start({
+      clientId: GOOGLE_CLIENT_ID_WEB,
+      container: $("g_id_signin_container"),
+      buttonWidth: 280,
+      onSignIn: (token, email, info) => {
+        idToken = token;
+        if (info && info.refresh) return;
+        $("g_id_signin_container").classList.add("hidden");
+        status("Loading…");
+        load();
+      },
+    });
+  };
+</script>
+</body>
+</html>
