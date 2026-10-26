@@ -89,25 +89,6 @@
   .admin-tabs a { padding: 6px 12px; border: 1px solid var(--panel-line); border-radius: 2px; font-family: var(--utility); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); text-decoration: none; }
   .admin-tabs a[aria-current="page"] { color: var(--gold-bright); border-color: var(--gold); }
   .chip.no { background: transparent; color: var(--ink-dim); border: 1px solid var(--panel-line); }
-  .chip.old { background: transparent; color: var(--gold-bright); border: 1px solid var(--gold-dim); }
-  .jump { color: var(--ink-dim); font-size: 0.86rem; }
-  .jump a { color: var(--gold-bright); }
-  tr.person { cursor: pointer; }
-  tr.person:hover td, tr.person[aria-expanded="true"] td { background: rgba(212,175,55,0.05); }
-  td.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .dev { font-size: 0.8rem; white-space: nowrap; }
-  .dev + .dev { margin-top: 2px; }
-  tr.detail > td { background: var(--void); padding: 12px 14px; }
-  .strip { display: grid; grid-template-columns: repeat(auto-fill, 14px); gap: 3px; margin: 6px 0 4px; }
-  .strip span { width: 14px; height: 14px; border-radius: 2px; background: var(--panel-line); }
-  .strip span.l1 { background: #3d5a40; }
-  .strip span.l2 { background: #6fa373; }
-  .strip span.run { box-shadow: inset 0 0 0 2px var(--gold); }
-  .legend { font-size: 0.74rem; color: var(--ink-dim); display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
-  .days { width: 100%; font-size: 0.82rem; margin-top: 10px; }
-  .days th { cursor: default; }
-  .days td, .days th { padding: 5px 8px; }
 </style>
 <link rel="stylesheet" href="site-nav.css" />
 <script src="site-nav.js" defer></script>
@@ -128,10 +109,9 @@
   </ul>
 </header>
 <main>
-  <p class="admin-tabs"><a href="admin.html">cCc members</a> <a href="admin-lists.html">Players' calculators</a> <a href="admin-subs.html" aria-current="page">Subscriptions</a></p>
+  <p class="admin-tabs"><a href="admin.html">cCc members</a> <a href="admin-lists.html">Players' calculators</a> <a href="admin-subs.html" aria-current="page">Subscriptions</a> <a href="admin-usage.html">App usage</a></p>
   <h1>Subscriptions</h1>
   <p class="sub">Every TB Tools subscription and trial, with its type, start and end date, and whether the person is a cCc member. Only you can see this page.</p>
-  <p class="jump hidden" id="jump"><a href="#usage">Jump to App usage ↓</a></p>
 
   <div id="g_id_signin_container"></div>
   <div class="msg hidden" id="status"></div>
@@ -164,30 +144,6 @@
         <tbody id="rows"></tbody>
       </table>
     </div>
-
-    <h2 id="usage">App usage</h2>
-    <p class="sub" style="margin-top:0">Who opens the TB-Tools desktop app, on which computers and with which version. The app checks in when it starts and every 30 minutes while it's open. <em>Crypt runs</em> counts Auto-Crypt runs started (START, F9 or the scheduler), so opening the app only for the Battle Calculator doesn't count. Click a player for their day-by-day use.</p>
-    <div class="msg warn hidden" id="usage-note"></div>
-    <div class="tiles" id="usage-tiles"></div>
-    <div class="filter-row" style="margin-top:10px">
-      <div class="filters" id="usage-filters">
-        <button data-u="30" aria-pressed="true">Used in last 30 days</button>
-        <button data-u="all" aria-pressed="false">Everyone</button>
-      </div>
-      <input type="text" id="usage-search" placeholder="Search name or email" autocomplete="off" style="flex:1 1 180px;width:auto" />
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th data-usort="name">Player</th>
-          <th data-usort="last" aria-sort="descending">Last used</th>
-          <th data-usort="days_30">Days used<br>7 / 30 days</th>
-          <th data-usort="runs_30">Crypt runs<br>7 / 30 / all</th>
-          <th data-usort="version">Computers · version</th>
-        </tr></thead>
-        <tbody id="usage-rows"></tbody>
-      </table>
-    </div>
   </section>
 </main>
 <script>
@@ -198,13 +154,6 @@
   const STATES = { active: "Active", ending: "Cancelled, runs out", past_due: "Payment due", ended: "Ended" };
   let idToken = null;
   let subs = [];
-  let usage = null;         // /admin/usage/list result
-  let latestVersion = null; // from version.json (the update feed)
-  let usageFilter = "30";
-  let usortKey = "last";
-  let usortDir = -1;
-  let openPerson = null;
-  const TZ = -new Date().getTimezoneOffset();
   let filter = "running";
   let sortKey = "started_at";
   let sortDir = -1;
@@ -295,120 +244,6 @@
     }).join("") : `<tr><td colspan="6" class="empty">${subs.length ? "Nothing matches these filters." : "No subscriptions yet."}</td></tr>`;
   }
 
-  // ── app usage (2026-10-26) ──
-  function when(unix) { return unix ? new Date(unix * 1000).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" }) : "—"; }
-  function time(unix) { return new Date(unix * 1000).toLocaleTimeString(undefined, { timeStyle: "short" }); }
-  function ago(unix) {
-    if (!unix) return "never";
-    const d = Math.floor((Date.now() / 1000 - unix) / 86400);
-    return d <= 0 ? "today" : d === 1 ? "yesterday" : `${d} days ago`;
-  }
-  const lastUse = (p) => Math.max(p.last_used || 0, p.last_run || 0);
-  function versionChip(v) {
-    if (!v) return `<span class="chip no" title="This app version doesn't report its version yet">older</span>`;
-    const old = latestVersion && v !== latestVersion;
-    return `<span class="chip ${old ? "old" : "approved"}" title="${old ? "Latest is " + esc(latestVersion) : "Latest version"}">v${esc(v)}</span>`;
-  }
-
-  function renderUsageTiles() {
-    const now = Date.now() / 1000;
-    const ppl = usage.people;
-    const used = (days) => ppl.filter((p) => lastUse(p) >= now - days * 86400).length;
-    const devs = ppl.filter((p) => p.last_used >= now - 30 * 86400).flatMap((p) => p.devices.filter((d) => d.last_seen >= now - 30 * 86400));
-    const current = latestVersion ? devs.filter((d) => d.app_version === latestVersion).length : null;
-    const tile = (n, k, sub) => `<div class="tile"><div class="n">${n}</div><div class="k">${esc(k)}</div>${sub ? `<div class="s">${esc(sub)}</div>` : ""}</div>`;
-    $("usage-tiles").innerHTML =
-      tile(used(1), "Used today", "") +
-      tile(used(7), "Used last 7 days", "") +
-      tile(used(30), "Used last 30 days", `${ppl.filter((p) => p.last_used || p.last_run).length} ever`) +
-      tile(ppl.filter((p) => p.runs_30 > 0).length, "Ran Auto-Crypt", `last 30 days · ${ppl.reduce((n, p) => n + (p.runs_30 || 0), 0)} runs`) +
-      (latestVersion ? tile(`${current}/${devs.length}`, "On v" + latestVersion, "computers used in 30 days") : "");
-  }
-
-  function renderUsage() {
-    if (!usage) return;
-    const now = Date.now() / 1000;
-    const q = $("usage-search").value.trim().toLowerCase();
-    const val = (p) => usortKey === "name" ? nameOf(p).toLowerCase()
-      : usortKey === "last" ? lastUse(p)
-      : usortKey === "version" ? String((p.devices[0] || {}).app_version || "")
-      : p[usortKey] || 0;
-    const shown = usage.people
-      .filter((p) => usageFilter === "all" || lastUse(p) >= now - 30 * 86400 || (p.denied_30 && p.last_denied_at >= now - 30 * 86400))
-      .filter((p) => !q || [p.tb_username, p.name, p.email].some((v) => String(v || "").toLowerCase().includes(q)))
-      .sort((a, b) => { const x = val(a), y = val(b); return (x < y ? -1 : x > y ? 1 : 0) * usortDir; });
-    $("usage-rows").innerHTML = shown.length ? shown.map((p) => {
-      const devs = p.devices.length ? p.devices.map((d) => `<div class="dev" title="Last seen ${esc(when(d.last_seen))}">${esc(d.device_name || "unnamed computer")} ${versionChip(d.app_version)}</div>`).join("") : `<span class="note">—</span>`;
-      const denied = p.denied_30 ? `<div class="note">${p.denied_30} refused check-in${p.denied_30 === 1 ? "" : "s"} (${esc(String(p.last_denied_reason || "").replace(/_/g, " "))})</div>` : "";
-      const open = openPerson === p.email;
-      return `
-      <tr class="person" data-email="${esc(p.email)}" aria-expanded="${open}">
-        <td>${esc(nameOf(p))}${nameOf(p) !== p.email ? `<div class="email">${esc(p.email)}</div>` : ""}${denied}</td>
-        <td class="num">${esc(ago(lastUse(p)))}<div class="note">${esc(when(lastUse(p) || null))}</div></td>
-        <td class="num">${p.days_7} / ${p.days_30}</td>
-        <td class="num">${usage.runs_set_up ? `${p.runs_7} / ${p.runs_30} / ${p.runs_total}${p.last_run ? `<div class="note">last ${esc(ago(p.last_run))}</div>` : ""}` : "—"}</td>
-        <td>${devs}</td>
-      </tr>${open ? `<tr class="detail"><td colspan="5" id="detail">Loading…</td></tr>` : ""}`;
-    }).join("") : `<tr><td colspan="5" class="empty">${usage.people.length ? "Nobody matches." : "No app check-ins logged yet."}</td></tr>`;
-    if (openPerson && shown.some((p) => p.email === openPerson)) loadPerson(openPerson);
-  }
-
-  async function loadPerson(email) {
-    const cell = () => $("detail");
-    try {
-      const r = await api("/admin/usage/person", { email, days: 60, tz: TZ });
-      if (openPerson !== email || !cell()) return;
-      const byDay = new Map(r.days.map((d) => [d.day, d]));
-      const cells = [];
-      const today = new Date();
-      for (let i = r.period_days - 1; i >= 0; i--) {
-        const t = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
-        const key = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
-        const d = byDay.get(key);
-        const lvl = !d || !d.checkins ? "" : d.checkins >= 8 ? "l2" : "l1";
-        const tip = d ? `${t.toLocaleDateString()}: ${d.checkins ? `open ~${Math.max(0.5, d.checkins / 2)} h` : "not opened"}${d.runs ? `, ${d.runs} crypt run${d.runs === 1 ? "" : "s"}` : ""}` : `${t.toLocaleDateString()}: not used`;
-        cells.push(`<span class="${lvl}${d && d.runs ? " run" : ""}" title="${esc(tip)}"></span>`);
-      }
-      const rows = r.days.slice(0, 14).map((d) => `
-        <tr>
-          <td class="date">${esc(new Date(d.day + "T12:00:00").toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }))}</td>
-          <td class="num">${d.checkins ? `${esc(time(d.first))}–${esc(time(d.last))}` : "—"}</td>
-          <td class="num">${d.checkins ? "~" + Math.max(0.5, d.checkins / 2) + " h" : "—"}</td>
-          <td class="num">${d.runs || "—"}</td>
-          <td class="num">${d.computers > 1 ? d.computers + " computers" : d.computers ? "1 computer" : "—"}</td>
-          <td>${d.versions.map((v) => "v" + esc(v)).join(", ") || "—"}</td>
-        </tr>`).join("");
-      cell().innerHTML = `
-        <div class="legend"><span>Last ${r.period_days} days, oldest first:</span><span><i style="background:var(--panel-line)"></i>not used</span><span><i style="background:#3d5a40"></i>opened</span><span><i style="background:#6fa373"></i>open 4 h or more</span><span><i style="box-shadow:inset 0 0 0 2px var(--gold)"></i>ran Auto-Crypt</span></div>
-        <div class="strip">${cells.join("")}</div>
-        ${rows ? `<table class="days"><thead><tr><th>Day</th><th>First–last check-in</th><th>Open</th><th>Crypt runs</th><th>Computers</th><th>Version</th></tr></thead><tbody>${rows}</tbody></table>` : `<p class="empty">Not used in the last ${r.period_days} days.</p>`}
-        ${r.runs.length ? `<details><summary style="cursor:pointer;color:var(--ink-dim);font-size:0.8rem;margin-top:8px">Latest crypt runs (${r.runs.length})</summary><ul style="margin:6px 0 0;padding-left:18px;font-size:0.82rem;color:var(--ink-dim)">${r.runs.map((x) => `<li>${esc(when(x.started_at))} · ${esc(x.device_name || "unnamed computer")}${x.app_version ? " · v" + esc(x.app_version) : ""}</li>`).join("")}</ul></details>` : ""}`;
-    } catch (err) {
-      if (cell()) cell().innerHTML = `<span class="note">${esc(err.message)}</span>`;
-    }
-  }
-
-  async function loadUsage() {
-    try {
-      const [r, v] = await Promise.all([
-        api("/admin/usage/list", { tz: TZ }),
-        fetch("version.json", { cache: "no-store" }).then((x) => x.json()).catch(() => null),
-      ]);
-      usage = r;
-      latestVersion = v && v.version ? String(v.version) : null;
-      const notes = [];
-      if (!r.versions_set_up || !r.runs_set_up) notes.push("Run migration_2026-10-26_app_usage.sql on the database to start logging app versions and crypt runs.");
-      else if (!r.people.some((p) => p.devices.some((d) => d.app_version))) notes.push("Versions and crypt runs show up once people use an app release with usage reporting (the one after this change).");
-      $("usage-note").textContent = notes.join(" ");
-      $("usage-note").classList.toggle("hidden", !notes.length);
-      renderUsageTiles();
-      renderUsage();
-    } catch (err) {
-      $("usage-note").textContent = /deploy the latest/.test(err.message) ? "The Worker doesn't have app usage yet: deploy the latest worker.js." : err.message;
-      $("usage-note").classList.remove("hidden");
-    }
-  }
-
   async function load() {
     try {
       const r = await api("/admin/subscriptions/list");
@@ -419,8 +254,6 @@
       $("status").classList.add("hidden");
       renderTiles();
       render();
-      $("jump").classList.remove("hidden");
-      loadUsage();
     } catch (err) {
       status(esc(err.message), "error");
     }
@@ -442,30 +275,6 @@
       document.querySelectorAll("th[data-sort]").forEach((x) => x.removeAttribute("aria-sort"));
       th.setAttribute("aria-sort", sortDir === 1 ? "ascending" : "descending");
       render();
-    });
-  });
-
-  $("usage-filters").addEventListener("click", (e) => {
-    const b = e.target.closest("button[data-u]");
-    if (!b) return;
-    usageFilter = b.dataset.u;
-    $("usage-filters").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-    renderUsage();
-  });
-  $("usage-search").addEventListener("input", renderUsage);
-  $("usage-rows").addEventListener("click", (e) => {
-    const tr = e.target.closest("tr.person");
-    if (!tr) return;
-    openPerson = openPerson === tr.dataset.email ? null : tr.dataset.email;
-    renderUsage();
-  });
-  document.querySelectorAll("th[data-usort]").forEach((th) => {
-    th.addEventListener("click", () => {
-      usortDir = usortKey === th.dataset.usort ? -usortDir : (th.dataset.usort === "name" ? 1 : -1);
-      usortKey = th.dataset.usort;
-      document.querySelectorAll("th[data-usort]").forEach((x) => x.removeAttribute("aria-sort"));
-      th.setAttribute("aria-sort", usortDir === 1 ? "ascending" : "descending");
-      renderUsage();
     });
   });
 

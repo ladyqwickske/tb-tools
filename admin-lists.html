@@ -89,7 +89,7 @@
   </ul>
 </header>
 <main>
-  <p class="admin-tabs"><a href="admin.html">cCc members</a> <a href="admin-lists.html" aria-current="page">Players' calculators</a> <a href="admin-subs.html" id="subs-tab" class="hidden">Subscriptions</a></p>
+  <p class="admin-tabs"><a href="admin.html">cCc members</a> <a href="admin-lists.html" aria-current="page">Players' calculators</a> <a href="admin-subs.html" id="subs-tab" class="hidden">Subscriptions</a> <a href="admin-usage.html" id="usage-tab" class="hidden">App usage</a></p>
   <h1>Players' calculators</h1>
   <p class="sub">Open a player's Battle Calculator to look at their records and lists and fix them. What you save goes straight into their calculator: online right away, in their desktop app the next time they start it. Every save is logged.</p>
 
@@ -192,7 +192,7 @@
         status("Loading…");
         load();
         // Subscriptions tab: only for the one account the Worker allows (2026-10-26).
-        api("/account/status").then((r) => $("subs-tab").classList.toggle("hidden", !r.can_view_subscriptions)).catch(() => {});
+        api("/account/status").then((r) => ["subs-tab", "usage-tab"].forEach((id) => $(id).classList.toggle("hidden", !r.can_view_subscriptions))).catch(() => {});
       },
     });
   };
