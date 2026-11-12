@@ -3,5 +3,13 @@
   "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-1.0.3/TB-Tools-1.0.3.zip",
   "release_notes": "Auto-Crypter 1.0.3: runs in the background in Chrome mode, works at any screen resolution, finds crypts in a completely new way, and speaks 10 languages.",
   "published_at": "2026-10-23",
-  "required": false
+  "required": false,
+  "android": {
+    "version": "1.0.0",
+    "version_code": 10,
+    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.0/TB-AutoCrypt-Android-1.0.0.zip",
+    "release_notes": "",
+    "published_at": "2026-11-12",
+    "required": false
+  }
 }

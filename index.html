@@ -567,6 +567,7 @@
     <li><a href="index.html#download">Download</a></li>
     <li><a href="index.html#pricing">Pricing</a></li>
     <li><a href="install.html" data-page="install">Installation Guide</a></li>
+    <li><a href="android.html" data-page="android">Android App</a></li>
     <li><a href="calculator.html" data-page="calculator">Battle Calculator</a></li>
     <li><a href="lists.html" data-page="lists">My Battle Lists</a></li>
     <li><a href="devices.html" data-page="devices subscribe subscribe-success">My Account</a></li>
@@ -651,6 +652,14 @@
     <p class="release-notes" id="release-notes"></p>
     <p class="download-note">Haven't picked a plan yet? Download first — you can <a href="#pricing">choose a plan</a> or start a trial whenever you're ready.</p>
 
+    <h3 class="tool-subheading" id="android">Auto-Crypter on Android</h3>
+    <p>Crypt from your phone, no PC needed: TB Auto-Crypt for Android runs next to the Total Battle app on your phone. It's included in the Auto-Crypter and All-In plans: use the PC app, the Android app, or both, with the same account for the same price. The phone just uses one of your 2 devices.</p>
+    <div class="tool-actions">
+      <a class="cta primary js-android-download" href="https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.0/TB-AutoCrypt-Android-1.0.0.zip">Download for Android v1.0.0</a>
+      <a class="cta secondary" href="android.html">Android guide →</a>
+    </div>
+    <p class="download-meta">Android 8 or newer · a zip with the app (.apk), installed from this website — game automation apps aren't allowed in the Play Store.</p>
+
     <h3 class="tool-subheading">Installation video</h3>
     <p>From download to first start, step by step.</p>
     <div class="video-block js-video" data-video="ofY54BwEjS8" data-subtitles data-title="TB-Tools installation video">
@@ -695,6 +704,7 @@
       <li><strong>It doesn't stop until you want it to.</strong> No caps on marches, crypts, or hours — run it for a quick top-up or let it carry a full session, or set a time or march limit.</li>
     </ul>
     <p style="font-size:0.85rem; color:var(--ink-dim);">Chrome mode works at any screen resolution and Windows scaling. Desktop mode needs one of 1024×768, 1366×768, 1600×900, 1680×1050, 1760×990, 1920×1080 or 1920×1200 at 100% scaling. Available in 10 languages. Full setup details are in the <a href="install.html" style="color:var(--gold-bright);">installation guide</a>.</p>
+    <p><strong>Also on your phone.</strong> Auto-Crypter runs on Android too, with the same crypt finding and the same settings — captains, speed-ups, limits and crypts to ignore. It's part of your Auto-Crypter subscription. <a href="android.html" style="color:var(--gold-bright);">Get it for Android →</a></p>
 
     <h3 class="tool-subheading">Video tutorial</h3>
     <p>See how to set up Auto-Crypt and start your first run.</p>
@@ -791,13 +801,15 @@
       </div>
       <div class="benefit-tile">
         <p class="benefit-title">2 devices</p>
-        <p class="benefit-desc">Use TB-Tools on up to two devices — for example your main PC and your laptop.</p>
+        <p class="benefit-desc">Use TB-Tools on up to two devices — for example your main PC and your laptop, or your PC and your Android phone.</p>
       </div>
       <div class="benefit-tile">
         <p class="benefit-title">Unlimited usage</p>
         <p class="benefit-desc">No march limits. No crypt limits. No hourly limits.</p>
       </div>
     </div>
+
+    <p class="ccc-ref">Auto-Crypter on <a href="android.html">Android</a> is included in the Auto-Crypter and All-In plans: PC, Android or both, one account, same price.</p>
 
     <p class="ccc-ref">In the <span class="keep-case">cCc</span> clan? The Battle Calculator is free and Auto-Crypter is 50% off, with a free 7-day trial — <a href="#ccc">see how to get it</a>.</p>
 
@@ -953,6 +965,14 @@
           btn.textContent = `Download TB-Tools v${info.version}`;
           btn.href = info.download_url;
         });
+
+        const a = info.android;
+        if (a && a.version && a.download_url) {
+          document.querySelectorAll(".js-android-download").forEach((btn) => {
+            btn.textContent = `Download for Android v${a.version}`;
+            btn.href = a.download_url;
+          });
+        }
 
         if (info.release_notes) {
           const notesEl = document.getElementById("release-notes");
