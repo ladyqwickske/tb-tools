@@ -7,7 +7,7 @@
   "android": {
     "version": "1.0.0",
     "version_code": 10,
-    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.0/TB-AutoCrypt-1.0.0.apk",
+    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.0/TB-AutoCrypt-Android-1.0.0.zip",
     "release_notes": "",
     "published_at": "2026-11-12",
     "required": false
