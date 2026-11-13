@@ -393,6 +393,7 @@
       <li>Tap <strong>Install</strong>. If Google Play Protect warns about an unknown app, tap <strong>More details → Install anyway</strong>.</li>
       <li>Open <strong>TB Auto-Crypt</strong>.</li>
     </ol>
+    <p><strong>Your language:</strong> the app is in 10 languages (English, Deutsch, Español, Français, Italiano, Nederlands, Polski, Português (Brasil), Русский and Türkçe) and follows your phone's language. On Android 13 and newer you can also pick one just for this app: <strong>Settings → Apps → TB Auto-Crypt → Language</strong>. Game words like Crypt and Watchtower stay in English, as in the game.</p>
   </article>
 
   <article class="step-card" id="signin">
@@ -411,7 +412,7 @@
       <li><strong>Notifications → Allow.</strong> Shows that it's watching the screen, with Stop buttons.</li>
       <li><strong>Tapping in the game.</strong> On Android 13 and newer, first tap <strong>App info → ⋮ (top right) → Allow restricted settings</strong>; without it the next switch stays grey. Then <strong>Accessibility → Installed apps → TB Auto-Crypt → on</strong>. This is how it taps and swipes in the game.</li>
       <li><strong>Battery → Allow.</strong> So Android doesn't stop a run while the phone sits idle.</li>
-      <li><strong>Screen capture → Start → Start now.</strong> This is how it sees the game. If Android offers a choice, take <strong>Entire screen</strong>. Android asks again each time the app starts.</li>
+      <li><strong>Screen capture.</strong> This is how it sees the game, and you don't need to do anything here beforehand: <strong>Start run</strong> turns it on. Android then asks for permission: take <strong>Entire screen</strong> (or <em>A single app → Total Battle</em>) and tap <strong>Start</strong>. It asks again only after the app was closed or the phone restarted.</li>
     </ol>
     <div class="note-box">
       <strong>What it does with these:</strong> while a run is on, it looks at the Total Battle screen and taps in it, keeps the screen on, and notices which app is in front so it can reopen the game if it closes. It sends nothing from your phone anywhere except the sign-in and subscription check.
@@ -425,6 +426,7 @@
       <li>Captains per exploration (1 to 3), whether to explore opened rare crypts, speed-ups, and 2 captains to the second crypt.</li>
       <li>A limit: none, a duration, or a number of marches.</li>
       <li>The crypt types to ignore, with their pictures.</li>
+      <li><strong>Optional: post a crypt's location in Clan chat every X crypts</strong>, so your clan sees you're crypting and may not be at your phone when they ask something. It posts while the captains are marching and closes the chat again afterwards; it never posts in another chat by mistake. Prefer a chat of your own? Tick <strong>Post in the chat that was open last</strong> and open that chat in the game before you start the run.</li>
     </ul>
     <p>Save at the top, or just go back: that saves too.</p>
   </article>
@@ -432,16 +434,18 @@
   <article class="step-card" id="run">
     <div class="step-head"><span class="step-num">6</span><h2>Run it</h2></div>
     <ul>
-      <li>Start in the game on the map or in your city. <strong>Start run</strong> opens Total Battle and begins after 5 seconds.</li>
-      <li>Leave the phone alone while it crypts. If the game closes or crashes, the app opens it again and carries on.</li>
-      <li>Stop it with <strong>Stop run</strong> in the notification, or in the app.</li>
-      <li>Something looks off? Tap <strong>Share log</strong> in the app and email it to <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a>.</li>
+      <li>Start in the game on the map or in your city. <strong>Start run</strong> turns on the screen capture if needed, opens Total Battle and begins after 5 seconds.</li>
+      <li>Leave the phone alone while it crypts. If the game closes or crashes, the app opens it again and carries on. If the game loses its connection, it waits a little, reopens the game and carries on (up to 5 times per run).</li>
+      <li><strong>Stopping:</strong> a red <strong>■ Stop</strong> button sits at the top of the screen, over the game. <strong>Hold it for half a second</strong> (a quick touch does nothing, so it can't stop by accident). You can drag it somewhere else if it's in the way. Or use <strong>Stop run</strong> in the notification or in the app.</li>
+      <li>If a run stops by itself (the limit reached, or the game kept losing its connection), a <strong>Crypt run ended</strong> notification tells you why.</li>
+      <li>Something looks off? Tap <strong>Share log</strong> in the app and email it to <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a>. Support may ask you to try the tests under <strong>Troubleshooting</strong> at the bottom of the app.</li>
     </ul>
   </article>
 
   <article class="step-card help-card" id="help">
     <h2 style="font-family: var(--display); color: var(--gold-bright); margin: 0 0 8px;">Need a hand?</h2>
     <p><strong>Taps don't work, or the home screen acts strangely?</strong> Another app that taps the screen (a Total Battle helper, an auto-clicker) is usually the cause: turn it off in Settings → Accessibility or uninstall it, then turn TB Auto-Crypt off and on again there.</p>
+    <p><strong>Samsung phone?</strong> Samsung's Game Booster panel can pop up over the game. TB Auto-Crypt copes with it, but you can turn it off while crypting: in <strong>Game Launcher → ⋮ → Settings → Game Booster</strong>, switch off the panel and its gestures.</p>
     <p>Stuck on a step? Email <a href="mailto:support@ccc-hq.com">support@ccc-hq.com</a>, with the log from <strong>Share log</strong> if the app already runs.</p>
     <a class="cta secondary" href="index.html">← Back to TB-Tools</a>
   </article>
