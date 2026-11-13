@@ -57,6 +57,11 @@
   .chip.approved { background: var(--emerald-bright); color: var(--void); }
   .chip.denied, .chip.revoked { background: var(--danger); color: var(--void); }
   .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  /* Full access view (2026-11-13): name on top, buttons below, the same on every card. */
+  #grandfathered .card { flex-direction: column; align-items: stretch; gap: 8px; }
+  #grandfathered .who { flex: none; }
+  .gf-search { display: grid; gap: 4px; max-width: 320px; margin: 12px 0 4px; font-family: var(--utility); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+  h2 .count { font-size: 0.8em; color: var(--ink-dim); font-weight: normal; }
   form.add { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; align-items: end; }
   form.add label { font-family: var(--utility); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); display: grid; gap: 4px; }
   input[type="text"], input[type="email"], input[type="date"] { padding: 9px 11px; background: var(--void); border: 1px solid var(--panel-line); border-radius: 2px; color: var(--ink); font-family: var(--body); font-size: 0.94rem; width: 100%; }
@@ -116,9 +121,9 @@
   </ul>
 </header>
 <main>
-  <p class="admin-tabs"><a href="admin.html" aria-current="page">cCc members</a> <a href="admin-lists.html">Players' calculators</a> <a href="admin-subs.html" id="subs-tab" class="hidden">Subscriptions</a> <a href="admin-usage.html" id="usage-tab" class="hidden">App usage</a></p>
-  <h1>cCc members</h1>
-  <p class="sub">Approved members get the Battle Calculator free and 50% off Auto-Crypt. Revoking removes calculator access immediately and drops the discount from their next renewal.</p>
+  <p class="admin-tabs"><a href="admin.html" id="members-tab" aria-current="page">cCc members</a> <a href="admin.html?view=access" id="access-tab">Full access</a> <a href="admin-lists.html">Players' calculators</a> <a href="admin-subs.html" id="subs-tab" class="hidden">Subscriptions</a> <a href="admin-usage.html" id="usage-tab" class="hidden">App usage</a></p>
+  <h1 id="page-title">cCc members</h1>
+  <p class="sub" id="page-sub">Approved members get the Battle Calculator free and 50% off Auto-Crypt. Revoking removes calculator access immediately and drops the discount from their next renewal.</p>
 
   <div id="g_id_signin_container"></div>
   <div class="msg hidden" id="status"></div>
@@ -126,6 +131,7 @@
   <section id="admin" class="hidden">
     <div class="msg warn hidden" id="coupon-warn">STRIPE_COUPON_CCC_AUTOCRYPT isn't set on the Worker, so approved members currently pay full price for Auto-Crypt. The free calculator works regardless.</div>
 
+    <div data-view="members">
     <div class="msg warn hidden" id="pending-banner"></div>
 
     <h2>Requests &amp; members</h2>
@@ -160,7 +166,10 @@
     <p class="sub" style="text-align:left;margin-top:0">Every day the members on this page are looked up on the clans' own member lists (Members, Former Members and the rename history on each clan's site), by linked Google account first, then by name or old name. Moving to another cCc clan or a rename is followed; only someone on no clan's Members list is listed here and emailed to you, once.</p>
     <div id="roster"><p class="empty">Loading…</p></div>
 
-    <h2>Grandfathered users</h2>
+    </div>
+
+    <div data-view="access">
+    <h2>Grandfathered users <span class="count" id="gf-count"></span></h2>
     <p class="sub" style="text-align:left;margin-top:0">Full access without a subscription (all tools, on PC and phone). They can receive lists; allow them here to send lists too. Use <em>Name…</em> to set the name others see them under (send dialog, "sent by").</p>
     <p class="sub hidden" id="gf-owner-note" style="text-align:left;margin-top:0">Give someone full access with the form below (the same email again changes their name or end date), and take it away with <em>Remove</em>. Only the owner sees this.</p>
     <form class="add hidden" id="gf-form">
@@ -169,6 +178,7 @@
       <label>Full access until<input type="date" id="gf-until" title="Empty = no end date" /></label>
       <button class="btn approve" type="submit">Give full access</button>
     </form>
+    <label class="gf-search">Search<input type="text" id="gf-search" placeholder="name or email" autocomplete="off" /></label>
     <div class="msg warn hidden" id="gf-problems"></div>
     <div id="grandfathered"></div>
 
@@ -183,6 +193,7 @@
     <h2>Admins</h2>
     <p class="sub" style="text-align:left;margin-top:0">Admins can use this page (cCc approvals, senders, names) and open players' calculators on <a href="admin-lists.html" style="color:inherit">Players' calculators</a>. Only grandfathered users can become admins, and only the owner can make or remove them.</p>
     <div id="admins"></div>
+    </div>
   </section>
 </main>
 
@@ -202,6 +213,22 @@
   let clanFilter = "*";     // "*" = all, "" = no clan yet, else a clan id
   let roster = null;        // /admin/roster/status result
   const $ = (id) => document.getElementById(id);
+  // Two views of this page (2026-11-13): cCc members, and Full access
+  // (admin.html?view=access: the grandfathered list, senders, admins).
+  const VIEW = new URLSearchParams(location.search).get("view") === "access" ? "access" : "members";
+  function showView() {
+    document.querySelectorAll("[data-view]").forEach((el) => { el.hidden = el.dataset.view !== VIEW; });
+    $("members-tab").toggleAttribute("aria-current", VIEW === "members");
+    $("access-tab").toggleAttribute("aria-current", VIEW === "access");
+    if (VIEW === "members") $("members-tab").setAttribute("aria-current", "page");
+    else $("access-tab").setAttribute("aria-current", "page");
+    if (VIEW === "access") {
+      $("page-title").textContent = "Full access";
+      $("page-sub").textContent = "People with all tools without a subscription (the grandfathered list), who may send lists to members, and the admins.";
+      document.title = document.title.replace(/cCc members/i, "Full access");
+    }
+  }
+  showView();
 
   // Alphabetical, ignoring case and accents (2026-10-16).
   function byName(nameOf) {
@@ -568,7 +595,11 @@
     $("gf-form").classList.toggle("hidden", !owner);
     $("gf-owner-note").classList.toggle("hidden", !owner);
     const source = { table: "full access list", allowlist: "old GitHub allowlist", both: "full access list + old GitHub allowlist" };
-    $("grandfathered").innerHTML = grandfathered.length ? grandfathered.map((g) => {
+    const q = ($("gf-search").value || "").trim().toLowerCase();
+    const shown = grandfathered.filter((g) => !q ||
+      [g.email, g.tb_username, g.display_name, g.note].some((v) => String(v || "").toLowerCase().includes(q)));
+    $("gf-count").textContent = grandfathered.length ? `(${q ? shown.length + " of " : ""}${grandfathered.length})` : "";
+    $("grandfathered").innerHTML = shown.length ? shown.map((g) => {
       const sends = isSender(g.email);
       const until = g.expires_at ? (g.active ? ` · until ${date(g.expires_at)}` : ` · expired ${date(g.expires_at)}`) : "";
       const toggle = (senders === null ? "" :
@@ -585,7 +616,7 @@
         </div>
         <div class="actions">${clanPicker(g.email, g.clan)}${linkButton(g.email)}${toggle}</div>
       </div>`;
-    }).join("") : `<p class="empty">${senders === null ? esc(sendersNote || "Not available yet.") : "No grandfathered users."}</p>`;
+    }).join("") : `<p class="empty">${senders === null ? esc(sendersNote || "Not available yet.") : q ? "Nobody matches the search." : "No grandfathered users."}</p>`;
     $("grandfathered").querySelectorAll("button[data-send]").forEach((btn) => {
       btn.addEventListener("click", () => setSender(btn.dataset.email, btn.dataset.send === "1", btn));
     });
@@ -818,6 +849,8 @@
     $("add-form").reset();
     if (e.submitter) e.submitter.disabled = false;
   });
+
+  $("gf-search").addEventListener("input", () => renderGrandfathered());
 
   $("gf-form").addEventListener("submit", async (e) => {
     e.preventDefault();
