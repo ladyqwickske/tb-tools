@@ -59,7 +59,8 @@
   .actions { display: flex; gap: 6px; flex-wrap: wrap; }
   form.add { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; align-items: end; }
   form.add label { font-family: var(--utility); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); display: grid; gap: 4px; }
-  input[type="text"], input[type="email"] { padding: 9px 11px; background: var(--void); border: 1px solid var(--panel-line); border-radius: 2px; color: var(--ink); font-family: var(--body); font-size: 0.94rem; width: 100%; }
+  input[type="text"], input[type="email"], input[type="date"] { padding: 9px 11px; background: var(--void); border: 1px solid var(--panel-line); border-radius: 2px; color: var(--ink); font-family: var(--body); font-size: 0.94rem; width: 100%; }
+  input[type="date"] { color-scheme: dark; }
   #g_id_signin_container { margin: 12px 0; }
   .empty { color: var(--ink-dim); font-style: italic; padding: 10px 0; }
   select { padding: 8px 10px; background: var(--void); border: 1px solid var(--panel-line); border-radius: 2px; color: var(--ink); font-family: var(--body); font-size: 0.9rem; }
@@ -160,7 +161,14 @@
     <div id="roster"><p class="empty">Loading…</p></div>
 
     <h2>Grandfathered users</h2>
-    <p class="sub" style="text-align:left;margin-top:0">Full access without a subscription: the <em>grandfathered_users</em> table and the old GitHub allowlist. They can receive lists; allow them here to send lists too. Use <em>Name…</em> to set the name others see them under (send dialog, "sent by").</p>
+    <p class="sub" style="text-align:left;margin-top:0">Full access without a subscription (all tools, on PC and phone). They can receive lists; allow them here to send lists too. Use <em>Name…</em> to set the name others see them under (send dialog, "sent by").</p>
+    <p class="sub hidden" id="gf-owner-note" style="text-align:left;margin-top:0">Give someone full access with the form below (the same email again changes their name or end date), and take it away with <em>Remove</em>. Only the owner sees this.</p>
+    <form class="add hidden" id="gf-form">
+      <label>Google email<input type="email" id="gf-email" required placeholder="player@gmail.com" /></label>
+      <label>Name<input type="text" id="gf-name" maxlength="60" placeholder="in-game name" /></label>
+      <label>Full access until<input type="date" id="gf-until" title="Empty = no end date" /></label>
+      <button class="btn approve" type="submit">Give full access</button>
+    </form>
     <div class="msg warn hidden" id="gf-problems"></div>
     <div id="grandfathered"></div>
 
@@ -556,19 +564,24 @@
   }
 
   function renderGrandfathered() {
-    const source = { table: "grandfathered table", allowlist: "GitHub allowlist", both: "table + GitHub allowlist" };
+    const owner = !!(adminInfo && adminInfo.is_owner);
+    $("gf-form").classList.toggle("hidden", !owner);
+    $("gf-owner-note").classList.toggle("hidden", !owner);
+    const source = { table: "full access list", allowlist: "old GitHub allowlist", both: "full access list + old GitHub allowlist" };
     $("grandfathered").innerHTML = grandfathered.length ? grandfathered.map((g) => {
       const sends = isSender(g.email);
       const until = g.expires_at ? (g.active ? ` · until ${date(g.expires_at)}` : ` · expired ${date(g.expires_at)}`) : "";
       const toggle = (senders === null ? "" :
         `<button class="btn${sends ? " revoke" : " approve"}" data-email="${esc(g.email)}" data-send="${sends ? "0" : "1"}">${sends ? "Stop sending lists" : "Allow sending lists"}</button>`) +
-        `<button class="btn" data-email="${esc(g.email)}" data-name="${esc(g.name_override || g.display_name || "")}">Name…</button>`;
+        `<button class="btn" data-email="${esc(g.email)}" data-name="${esc(g.name_override || g.display_name || "")}">Name…</button>` +
+        (owner && g.source !== "allowlist"
+          ? `<button class="btn revoke" data-gf-remove="${esc(g.email)}" data-who="${esc(g.tb_username || g.display_name || g.email)}">Remove</button>` : "");
       return `
       <div class="card">
         <div class="who">
           <div class="tb">${esc(g.tb_username || g.display_name || g.email)}${sends ? '<span class="chip approved">can send</span>' : ""}${clanChip(g.clan)}${rosterChip(g.email)}</div>
           ${g.tb_username || g.display_name ? `<div class="email">${esc(g.email)}${g.display_name && g.tb_username ? " · " + esc(g.display_name) : ""}</div>` : ""}
-          <div class="extra">${esc(source[g.source] || g.source)}${until}${g.note ? " · " + esc(g.note) : ""}</div>
+          <div class="extra">${esc(source[g.source] || g.source)}${until}${g.note && g.note !== g.display_name && g.note !== g.tb_username ? " · " + esc(g.note) : ""}</div>
         </div>
         <div class="actions">${clanPicker(g.email, g.clan)}${linkButton(g.email)}${toggle}</div>
       </div>`;
@@ -578,6 +591,9 @@
     });
     $("grandfathered").querySelectorAll("button[data-name]").forEach((btn) => {
       btn.addEventListener("click", () => setName(btn.dataset.email, btn.dataset.name, btn));
+    });
+    $("grandfathered").querySelectorAll("button[data-gf-remove]").forEach((btn) => {
+      btn.addEventListener("click", () => removeGrandfathered(btn.dataset.gfRemove, btn.dataset.who, btn));
     });
     bindClanPickers($("grandfathered"));
     bindLinkButtons($("grandfathered"));
@@ -620,6 +636,43 @@
     } catch (err) {
       senders = null;
       sendersNote = err.message;
+    }
+  }
+
+  // ── full access list (2026-11-13): grandfathered_users, owner only ──
+  async function setGrandfathered(email, name, untilDate, btn) {
+    if (btn) btn.disabled = true;
+    try {
+      // The end of the chosen day, local time.
+      const until = untilDate ? Math.floor(new Date(untilDate + "T23:59:59").getTime() / 1000) : null;
+      await api("/admin/grandfathered/set", { email, name, until });
+      await loadSenders();
+      render();
+      status(`${esc(name || email)} has full access${until ? " until " + date(until) : ""}.`, "");
+      $("status").classList.remove("hidden");
+      return true;
+    } catch (err) {
+      status(esc(err.message), "error");
+      $("status").classList.remove("hidden");
+      return false;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function removeGrandfathered(email, who, btn) {
+    if (!confirm(`Take full access away from ${who}?\n\nWithout a subscription or cCc membership they can't use the tools any more.`)) return;
+    if (btn) btn.disabled = true;
+    try {
+      await api("/admin/grandfathered/set", { email, remove: true });
+      await loadSenders();
+      render();
+      status(`${esc(who)} no longer has full access.`, "");
+      $("status").classList.remove("hidden");
+    } catch (err) {
+      status(esc(err.message), "error");
+      $("status").classList.remove("hidden");
+      if (btn) btn.disabled = false;
     }
   }
 
@@ -764,6 +817,13 @@
     await act(email, "add", e.submitter, { tb_username: $("add-tb").value.trim() || undefined, clan: $("add-clan").value || undefined, note: $("add-note").value.trim() || undefined });
     $("add-form").reset();
     if (e.submitter) e.submitter.disabled = false;
+  });
+
+  $("gf-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("gf-email").value.trim();
+    if (!email) return;
+    if (await setGrandfathered(email, $("gf-name").value.trim(), $("gf-until").value, e.submitter)) $("gf-form").reset();
   });
 
   $("sender-form").addEventListener("submit", async (e) => {
