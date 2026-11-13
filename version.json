@@ -5,10 +5,10 @@
   "published_at": "2026-10-23",
   "required": false,
   "android": {
-    "version": "1.0.1",
-    "version_code": 11,
-    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.1/TB-AutoCrypt-1.0.1.apk",
-    "release_notes": "A Stop button on top of the game, the app in 10 languages, reconnecting after a dropped connection, and optional Clan chat posting.",
+    "version": "1.0.2",
+    "version_code": 12,
+    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.2/TB-AutoCrypt-1.0.2.apk",
+    "release_notes": "The Stop button stops when held (no more accidental stops), Samsung Game Tools no longer gets in the way, and a game page that's open is closed by itself.",
     "published_at": "2026-11-13",
     "required": false
   }
