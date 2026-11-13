@@ -5,11 +5,11 @@
   "published_at": "2026-10-23",
   "required": false,
   "android": {
-    "version": "1.0.0",
-    "version_code": 10,
-    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.0/TB-AutoCrypt-1.0.0.apk",
-    "release_notes": "",
-    "published_at": "2026-11-12",
+    "version": "1.0.1",
+    "version_code": 11,
+    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.1/TB-AutoCrypt-1.0.1.apk",
+    "release_notes": "A Stop button on top of the game, the app in 10 languages, reconnecting after a dropped connection, and optional Clan chat posting.",
+    "published_at": "2026-11-13",
     "required": false
   }
 }
