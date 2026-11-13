@@ -5,10 +5,10 @@
   "published_at": "2026-10-23",
   "required": false,
   "android": {
-    "version": "1.0.2",
-    "version_code": 12,
-    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.2/TB-AutoCrypt-1.0.2.apk",
-    "release_notes": "The Stop button stops when held (no more accidental stops), Samsung Game Tools no longer gets in the way, and a game page that's open is closed by itself.",
+    "version": "1.0.3",
+    "version_code": 13,
+    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.3/TB-AutoCrypt-1.0.3.apk",
+    "release_notes": "No more \"Are you sure you want to log out?\" questions in the middle of a run.",
     "published_at": "2026-11-13",
     "required": false
   }
