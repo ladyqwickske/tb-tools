@@ -5,10 +5,10 @@
   "published_at": "2026-10-23",
   "required": false,
   "android": {
-    "version": "1.0.4",
-    "version_code": 14,
-    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.4/TB-AutoCrypt-1.0.4.apk",
-    "release_notes": "Saves battery: the screen capture now switches itself off 10 minutes after your last run.",
+    "version": "1.0.5",
+    "version_code": 15,
+    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.5/TB-AutoCrypt-1.0.5.apk",
+    "release_notes": "Rare crypts that weren't recognised (and got closed) are explored again.",
     "published_at": "2026-11-14",
     "required": false
   }
