@@ -314,8 +314,15 @@
         </label>
         <div class="grid-2">
           <label class="field"><span>Uses record</span><select id="list-record"></select></label>
-          <label class="field"><span>Formula</span><select id="list-formula"></select></label>
+          <label class="field"><span>Formula group</span>
+            <select id="list-formula-group">
+              <option value="auto">Automatic (based on troops)</option>
+              <option value="original">Original formulas (I/II)</option>
+              <option value="lower">Lower-tier formulas (III-VII)</option>
+            </select>
+          </label>
         </div>
+        <label class="field"><span>Formula</span><select id="list-formula"></select></label>
         <p class="hint" id="list-formula-desc"></p>
       </div>
 
@@ -632,7 +639,6 @@
       if (!groups.has(g)) groups.set(g, []);
       groups.get(g).push({ l, i });
     });
-    const shortFormula = (f) => String(f || "").split(" (")[0];
     const useGroups = groups.size > 1;
     const prevResult = $("results-select").value;
     $("results-select").innerHTML = [...groups.keys()].sort(byName).map((g) => {
@@ -700,19 +706,54 @@
 
   let selectedKeys = new Set();
 
-  function buildStaticForms() {
-    // Formula dropdown.
-    $("list-formula").innerHTML = catalog.formulas
-      .map((f) => `<option value="${esc(f.id)}">${esc(f.label)}</option>`).join("");
+  function shortFormula(f) { return String(f || "").split(" (")[0]; }
 
-    // Troop picker: per group, one row per tier (II, I, VII) like the desktop app.
+  // Formula group (2026-11-15): "lower" lists the opt-in III-VII variants
+  // (formulas with a base_id), "original" the rest; "auto" picks lower when
+  // the selected non-Mercenary troops contain no tier I/II.
+  function automaticFormulaGroup() {
+    const tiers = [...selectedKeys].filter((key) => {
+      const t = catalog.troops[key.split("#")[0]];
+      return t && t.group !== "Mercenary";
+    }).map((key) => Number(key.split("#")[1]));
+    return tiers.length && !tiers.some((tier) => tier === 1 || tier === 2) ? "lower" : "original";
+  }
+
+  function refreshFormulaChoices(preferredId = $("list-formula").value) {
+    const mode = $("list-formula-group").value;
+    const group = mode === "auto" ? automaticFormulaGroup() : mode;
+    const selected = catalog.formulas.find((formula) => formula.id === preferredId);
+    if (group === "original" && selected && selected.base_id) preferredId = selected.base_id;
+    if (group === "lower") {
+      const variant = catalog.formulas.find((formula) => formula.base_id === preferredId);
+      if (variant) preferredId = variant.id;
+    }
+    let formulas = catalog.formulas.filter((formula) => Boolean(formula.base_id) === (group === "lower"));
+    // A Worker without the lower-tier variants: just offer what it has.
+    if (!formulas.length) formulas = catalog.formulas;
+    $("list-formula").innerHTML = formulas.map((formula) => {
+      const base = formula.base_id && catalog.formulas.find((f) => f.id === formula.base_id);
+      const label = base ? shortFormula(base.label) : formula.label;
+      return `<option value="${esc(formula.id)}">${esc(label)}</option>`;
+    }).join("");
+    if (formulas.some((formula) => formula.id === preferredId)) $("list-formula").value = preferredId;
+    updateFormulaDesc();
+    maybeAutofillListName();
+  }
+
+  function buildStaticForms() {
+    refreshFormulaChoices(catalog.formulas[0].id);
+
+    // Troop picker: per group, one row per tier (II, I, VII, VI ... III)
+    // like the desktop app -- whatever tiers the catalog offers.
+    const tierRows = [...new Set(catalog.troop_order.flatMap((kind) => catalog.troops[kind].tiers))];
     let html = "";
     for (const group of GROUPS) {
       const kinds = catalog.troop_order.filter((k) => catalog.troops[k].group === group);
       if (!kinds.length) continue;
       html += `<div class="picker-group"><div class="section-title" style="margin-top:12px"><span>${esc(GROUP_TITLES[group] || group)}</span>` +
         `<button type="button" data-group="${esc(group)}">${group === "Mercenary" ? "All" : "All II"}</button></div>`;
-      for (const tier of [2, 1, 7]) {
+      for (const tier of tierRows) {
         const tierKinds = kinds.filter((k) => catalog.troops[k].tiers.includes(tier));
         if (!tierKinds.length) continue;
         // At most 4 tiles per row, like every other family (only the 17
@@ -760,6 +801,7 @@
     document.querySelectorAll("#picker .tile").forEach((tile) => {
       tile.setAttribute("aria-pressed", String(selectedKeys.has(tile.dataset.key)));
     });
+    if ($("list-formula-group").value === "auto") refreshFormulaChoices();
   }
 
   function loadListIntoEditor(name) {
@@ -767,14 +809,19 @@
     if (list) {
       $("list-name").value = list.name;
       if (data.records[list.record_name]) $("list-record").value = list.record_name;
-      $("list-formula").value = list.formula_id;
       selectedKeys = new Set(list.selected_kinds);
+      // Keep the saved formula, even when it belongs to the other group.
+      const formula = catalog.formulas.find((f) => f.id === list.formula_id) || catalog.formulas[0];
+      const group = formula.base_id ? "lower" : "original";
+      $("list-formula-group").value = group === automaticFormulaGroup() ? "auto" : group;
+      refreshFormulaChoices(formula.id);
     } else {
       $("list-name").value = "";
       lastAutoListName = "";
       if (data.records[data.last_record]) $("list-record").value = data.last_record;
-      $("list-formula").value = catalog.formulas[0].id;
       selectedKeys = new Set();
+      $("list-formula-group").value = "auto";
+      refreshFormulaChoices(catalog.formulas[0].id);
     }
     $("list-delete").classList.toggle("hidden", !list);
     $("list-send").classList.toggle("hidden", !(list && canSend));
@@ -1148,6 +1195,7 @@
 
   $("list-select").addEventListener("change", (e) => loadListIntoEditor(e.target.value));
   $("list-record").addEventListener("change", () => { maybeAutofillListName(); schedulePreview(); });
+  $("list-formula-group").addEventListener("change", () => { refreshFormulaChoices(); schedulePreview(); });
   $("list-formula").addEventListener("change", () => { updateFormulaDesc(); maybeAutofillListName(); schedulePreview(); });
   $("picker").addEventListener("click", (e) => {
     const all = e.target.closest("[data-group]");
