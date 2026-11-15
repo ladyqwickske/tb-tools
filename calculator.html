@@ -715,6 +715,9 @@
   const TIER_ROWS = [2, 1, 7, 6, 5, 4, 3];   // highest tier first
   const STACK_GROUPS = ["Guardsman", "Specialist", "Monster"];
   const STACK_CHOICES = [2, 3];
+  // In the chooser only, tiers II and I go by their real troop level (IX,
+  // VIII), so it reads IX down to III; the tiles keep the game's badges.
+  const CHOOSER_TIER_LABELS = { 2: "IX", 1: "VIII" };
   const DEFAULT_STACK = { count: 3, top: 2 };  // II, I, VII: the picker as it was
   let stackOf = {};                            // group -> { count, top }
   let shownExtra = new Set();                  // Siege / Mercenary: on or off
@@ -838,7 +841,7 @@
           `<select data-stack="${esc(group)}"><option value="0">None</option>` +
           STACK_CHOICES.map((n) => `<option value="${n}">${n}</option>`).join("") + `</select>` +
           `<select data-top="${esc(group)}">` + haveTiers.map((tier) =>
-            `<option value="${tier}">${esc(catalog.tier_labels[tier] || String(tier))}</option>`).join("") + `</select>`;
+            `<option value="${tier}">${esc(CHOOSER_TIER_LABELS[tier] || catalog.tier_labels[tier] || String(tier))}</option>`).join("") + `</select>`;
       } else {
         shownExtra.add(group);
         extras += `<label><input type="checkbox" data-family="${esc(group)}" /> ${title}</label>`;
