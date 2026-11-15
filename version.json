@@ -1,6 +1,6 @@
 {
   "version": "1.0.6",
-  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-1.0.3/TB-Tools-1.0.3.zip",
+  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-1.0.6/TB-Tools-1.0.6.zip",
   "release_notes": "Auto-Crypter 1.0.6: Supports the new layout (beta version) + allows posting crypts in the channel",
   "published_at": "2026-11-15",
   "required": false,
