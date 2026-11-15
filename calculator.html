@@ -195,14 +195,11 @@
 
   /* troop picker */
   #picker-filter { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
-  .filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .filter-row > span { font-family: var(--utility); font-size: 0.72rem; color: var(--ink-dim); min-width: 5.5em; }
-  .chip {
-    padding: 4px 10px; border-radius: 999px; cursor: pointer;
-    background: var(--panel); border: 1px solid var(--panel-line); color: var(--ink-dim);
-    font-family: var(--utility); font-size: 0.72rem;
-  }
-  .chip[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-bright); background: #1a1a22; }
+  .filter-grid { display: grid; grid-template-columns: auto minmax(90px, 150px) minmax(90px, 150px); gap: 6px 10px; align-items: center; }
+  .filter-grid span, .filter-row label { font-family: var(--utility); font-size: 0.72rem; color: var(--ink-dim); }
+  .filter-grid select { padding: 4px 6px; font-size: 0.8rem; }
+  .filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+  .filter-row label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
   .picker-group { margin-top: 10px; }
   .tier-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; margin-top: 6px; }
   .tile {
@@ -711,27 +708,48 @@
   // ── Lists tab ────────────────────────────────────────────────
 
   let selectedKeys = new Set();
-  // 2026-11-15: which tiers and troop families the picker shows. With
-  // Tiers III-VI every tile at once is too much, so you choose first; a
-  // tier or family you switch off also leaves the list.
-  const TIER_ROWS = [2, 1, 7, 6, 5, 4, 3];
-  const DEFAULT_TIERS = [2, 1, 7];
-  let shownTiers = new Set(DEFAULT_TIERS);
-  let shownGroups = new Set();
+  // 2026-11-15: what the picker shows. With Tiers III-VI every tile at
+  // once is too much, so per troop type you first choose how many tiers
+  // you stack (2 or 3, or none) and your highest tier -- 3 tiers from VI
+  // shows the VI, V and IV rows. A row that is hidden also leaves the list.
+  const TIER_ROWS = [2, 1, 7, 6, 5, 4, 3];   // highest tier first
+  const STACK_GROUPS = ["Guardsman", "Specialist", "Monster"];
+  const STACK_CHOICES = [2, 3];
+  const DEFAULT_STACK = { count: 3, top: 2 };  // II, I, VII: the picker as it was
+  let stackOf = {};                            // group -> { count, top }
+  let shownExtra = new Set();                  // Siege / Mercenary: on or off
 
   function keyGroupTier(key) {
     const i = key.lastIndexOf("#");
     const t = catalog.troops[key.slice(0, i)];
     return t ? [t.group, Number(key.slice(i + 1))] : null;
   }
-  const keyShown = (group, tier) => shownGroups.has(group) && (group === "Mercenary" || shownTiers.has(tier));
+  function keyShown(group, tier) {
+    const st = stackOf[group];
+    if (!st) return shownExtra.has(group);
+    const start = TIER_ROWS.indexOf(st.top);
+    return TIER_ROWS.slice(start, start + st.count).includes(tier);
+  }
 
-  /** Show only the rows whose tier and family are switched on, and drop
-   *  every selected troop that is no longer shown. */
+  /** Put the chooser's state on screen, show only the rows it asks for,
+   *  and drop every selected troop that is no longer shown. */
   function applyFilter() {
-    document.querySelectorAll("#picker-filter .chip").forEach((chip) => {
-      const on = chip.dataset.tier ? shownTiers.has(Number(chip.dataset.tier)) : shownGroups.has(chip.dataset.family);
-      chip.setAttribute("aria-pressed", String(on));
+    for (const group of Object.keys(stackOf)) {
+      const st = stackOf[group];
+      const stackSel = document.querySelector(`#picker-filter select[data-stack="${group}"]`);
+      const topSel = document.querySelector(`#picker-filter select[data-top="${group}"]`);
+      if (!stackSel || !topSel) continue;
+      // A list that stacks something other than 2 or 3 tiers gets its own option.
+      stackSel.querySelectorAll("option[data-extra]").forEach((o) => o.remove());
+      if (st.count && !STACK_CHOICES.includes(st.count)) {
+        stackSel.insertAdjacentHTML("beforeend", `<option value="${st.count}" data-extra="1">${st.count}</option>`);
+      }
+      stackSel.value = String(st.count);
+      topSel.value = String(st.top);
+      topSel.disabled = !st.count;
+    }
+    document.querySelectorAll("#picker-filter input[data-family]").forEach((box) => {
+      box.checked = shownExtra.has(box.dataset.family);
     });
     document.querySelectorAll("#picker .picker-group").forEach((box) => {
       let any = false;
@@ -749,16 +767,25 @@
     setTiles();
   }
 
-  /** Switch the picker to the tiers and families a list uses (the default
-   *  tiers and every family for a new list). */
+  /** Set the chooser for the list in the editor: per troop type its
+   *  highest tier and enough tiers to reach its lowest ("None" for a type
+   *  it doesn't use); the defaults for a new, empty list. */
   function filterForSelection() {
-    const tiers = new Set();
-    shownGroups = new Set(GROUPS);
+    const used = {};
     for (const key of selectedKeys) {
       const gt = keyGroupTier(key);
-      if (gt && gt[0] !== "Mercenary") tiers.add(gt[1]);
+      if (gt) (used[gt[0]] = used[gt[0]] || []).push(Math.max(TIER_ROWS.indexOf(gt[1]), 0));
     }
-    shownTiers = tiers.size ? tiers : new Set(DEFAULT_TIERS);
+    for (const group of Object.keys(stackOf)) {
+      if (!selectedKeys.size) stackOf[group] = { ...DEFAULT_STACK };
+      else if (used[group]) {
+        const start = Math.min(...used[group]);
+        stackOf[group] = { count: Math.max(...used[group]) - start + 1, top: TIER_ROWS[start] };
+      } else stackOf[group] = { count: 0, top: stackOf[group].top };
+    }
+    for (const group of GROUPS) {
+      if (!STACK_GROUPS.includes(group) && (!selectedKeys.size || used[group])) shownExtra.add(group);
+    }
     applyFilter();
   }
 
@@ -799,12 +826,25 @@
     const haveTiers = TIER_ROWS.filter((tier) => catalog.troop_order.some((k) =>
       catalog.troops[k].tiers.length > 1 && catalog.troops[k].tiers.includes(tier)));
     const haveGroups = GROUPS.filter((group) => catalog.troop_order.some((k) => catalog.troops[k].group === group));
-    $("picker-filter").innerHTML =
-      `<div class="filter-row"><span>Tiers to show</span>` + haveTiers.map((tier) =>
-        `<button type="button" class="chip" data-tier="${tier}">${esc(catalog.tier_labels[tier] || String(tier))}</button>`).join("") + `</div>` +
-      `<div class="filter-row"><span>Troops to show</span>` + haveGroups.map((group) =>
-        `<button type="button" class="chip" data-family="${esc(group)}">${esc(GROUP_TITLES[group] || group)}</button>`).join("") + `</div>`;
-    shownGroups = new Set(GROUPS);
+    stackOf = {};
+    shownExtra = new Set();
+    let chooser = `<div class="filter-grid"><span></span><span>Tiers to stack</span><span>Highest tier</span>`;
+    let extras = "";
+    for (const group of haveGroups) {
+      const title = esc(GROUP_TITLES[group] || group);
+      if (STACK_GROUPS.includes(group)) {
+        stackOf[group] = { ...DEFAULT_STACK };
+        chooser += `<span>${title}</span>` +
+          `<select data-stack="${esc(group)}"><option value="0">None</option>` +
+          STACK_CHOICES.map((n) => `<option value="${n}">${n}</option>`).join("") + `</select>` +
+          `<select data-top="${esc(group)}">` + haveTiers.map((tier) =>
+            `<option value="${tier}">${esc(catalog.tier_labels[tier] || String(tier))}</option>`).join("") + `</select>`;
+      } else {
+        shownExtra.add(group);
+        extras += `<label><input type="checkbox" data-family="${esc(group)}" /> ${title}</label>`;
+      }
+    }
+    $("picker-filter").innerHTML = chooser + `</div><div class="filter-row">${extras}</div>`;
     applyFilter();
 
     // Registration: capacity + per-troop stat blocks.
@@ -1227,7 +1267,9 @@
     if (all) {
       const group = all.dataset.group;
       catalog.troop_order.filter((k) => catalog.troops[k].group === group).forEach((k) => selectedKeys.add(`${k}#2`));
-      shownTiers.add(2);
+      // "All II": make sure the tier II row of that family is showing.
+      if (stackOf[group]) stackOf[group] = { count: Math.max(stackOf[group].count, 2), top: 2 };
+      else shownExtra.add(group);
       applyFilter();
       schedulePreview();
       return;
@@ -1240,12 +1282,14 @@
     setTiles();
     schedulePreview();
   });
-  $("picker-filter").addEventListener("click", (e) => {
-    const chip = e.target.closest(".chip");
-    if (!chip) return;
-    const [set, value] = chip.dataset.tier ? [shownTiers, Number(chip.dataset.tier)] : [shownGroups, chip.dataset.family];
-    if (set.has(value)) set.delete(value);
-    else set.add(value);
+  $("picker-filter").addEventListener("change", (e) => {
+    const el = e.target;
+    if (el.dataset.stack) stackOf[el.dataset.stack].count = Number(el.value);
+    else if (el.dataset.top) stackOf[el.dataset.top].top = Number(el.value);
+    else if (el.dataset.family) {
+      if (el.checked) shownExtra.add(el.dataset.family);
+      else shownExtra.delete(el.dataset.family);
+    } else return;
     applyFilter();
     schedulePreview();
   });
