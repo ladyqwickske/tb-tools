@@ -552,6 +552,8 @@
 
   function troopLabel(kind, tier) {
     const t = catalog.troops[kind];
+    // `labels` (per-tier card names, Tiers III-VII) since 2026-11-15.
+    if (t.labels && t.labels[tier]) return t.labels[tier];
     return tier === 7 && t.label_tier7 ? t.label_tier7 : t.label;
   }
   // "II" / "I" / "VII" badge -- none for the single-tier Mercenaries.
@@ -705,14 +707,15 @@
     $("list-formula").innerHTML = catalog.formulas
       .map((f) => `<option value="${esc(f.id)}">${esc(f.label)}</option>`).join("");
 
-    // Troop picker: per group, one row per tier (II, I, VII) like the desktop app.
+    // Troop picker: per group, one row per tier (II, I, VII, then VI down
+    // to III) like the desktop app.
     let html = "";
     for (const group of GROUPS) {
       const kinds = catalog.troop_order.filter((k) => catalog.troops[k].group === group);
       if (!kinds.length) continue;
       html += `<div class="picker-group"><div class="section-title" style="margin-top:12px"><span>${esc(GROUP_TITLES[group] || group)}</span>` +
         `<button type="button" data-group="${esc(group)}">${group === "Mercenary" ? "All" : "All II"}</button></div>`;
-      for (const tier of [2, 1, 7]) {
+      for (const tier of [2, 1, 7, 6, 5, 4, 3]) {
         const tierKinds = kinds.filter((k) => catalog.troops[k].tiers.includes(tier));
         if (!tierKinds.length) continue;
         // At most 4 tiles per row, like every other family (only the 17
