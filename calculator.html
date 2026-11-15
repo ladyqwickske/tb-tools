@@ -194,6 +194,15 @@
   .meta { font-size: 0.8rem; color: var(--ink-dim); font-style: italic; margin: 10px 2px 0; }
 
   /* troop picker */
+  #picker-filter { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .filter-row > span { font-family: var(--utility); font-size: 0.72rem; color: var(--ink-dim); min-width: 5.5em; }
+  .chip {
+    padding: 4px 10px; border-radius: 999px; cursor: pointer;
+    background: var(--panel); border: 1px solid var(--panel-line); color: var(--ink-dim);
+    font-family: var(--utility); font-size: 0.72rem;
+  }
+  .chip[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-bright); background: #1a1a22; }
   .picker-group { margin-top: 10px; }
   .tier-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; margin-top: 6px; }
   .tile {
@@ -320,6 +329,7 @@
       </div>
 
       <div class="section-title"><span>Troops to use</span><button type="button" id="list-clear">Clear</button></div>
+      <div id="picker-filter"></div>
       <div id="picker"></div>
 
       <div class="actions">
@@ -701,6 +711,56 @@
   // ── Lists tab ────────────────────────────────────────────────
 
   let selectedKeys = new Set();
+  // 2026-11-15: which tiers and troop families the picker shows. With
+  // Tiers III-VI every tile at once is too much, so you choose first; a
+  // tier or family you switch off also leaves the list.
+  const TIER_ROWS = [2, 1, 7, 6, 5, 4, 3];
+  const DEFAULT_TIERS = [2, 1, 7];
+  let shownTiers = new Set(DEFAULT_TIERS);
+  let shownGroups = new Set();
+
+  function keyGroupTier(key) {
+    const i = key.lastIndexOf("#");
+    const t = catalog.troops[key.slice(0, i)];
+    return t ? [t.group, Number(key.slice(i + 1))] : null;
+  }
+  const keyShown = (group, tier) => shownGroups.has(group) && (group === "Mercenary" || shownTiers.has(tier));
+
+  /** Show only the rows whose tier and family are switched on, and drop
+   *  every selected troop that is no longer shown. */
+  function applyFilter() {
+    document.querySelectorAll("#picker-filter .chip").forEach((chip) => {
+      const on = chip.dataset.tier ? shownTiers.has(Number(chip.dataset.tier)) : shownGroups.has(chip.dataset.family);
+      chip.setAttribute("aria-pressed", String(on));
+    });
+    document.querySelectorAll("#picker .picker-group").forEach((box) => {
+      let any = false;
+      box.querySelectorAll(".tier-row").forEach((row) => {
+        const show = keyShown(box.dataset.family, Number(row.dataset.tier));
+        row.classList.toggle("hidden", !show);
+        any = any || show;
+      });
+      box.classList.toggle("hidden", !any);
+    });
+    for (const key of [...selectedKeys]) {
+      const gt = keyGroupTier(key);
+      if (gt && !keyShown(gt[0], gt[1])) selectedKeys.delete(key);
+    }
+    setTiles();
+  }
+
+  /** Switch the picker to the tiers and families a list uses (the default
+   *  tiers and every family for a new list). */
+  function filterForSelection() {
+    const tiers = new Set();
+    shownGroups = new Set(GROUPS);
+    for (const key of selectedKeys) {
+      const gt = keyGroupTier(key);
+      if (gt && gt[0] !== "Mercenary") tiers.add(gt[1]);
+    }
+    shownTiers = tiers.size ? tiers : new Set(DEFAULT_TIERS);
+    applyFilter();
+  }
 
   function buildStaticForms() {
     // Formula dropdown.
@@ -713,7 +773,7 @@
     for (const group of GROUPS) {
       const kinds = catalog.troop_order.filter((k) => catalog.troops[k].group === group);
       if (!kinds.length) continue;
-      html += `<div class="picker-group"><div class="section-title" style="margin-top:12px"><span>${esc(GROUP_TITLES[group] || group)}</span>` +
+      html += `<div class="picker-group" data-family="${esc(group)}"><div class="section-title" style="margin-top:12px"><span>${esc(GROUP_TITLES[group] || group)}</span>` +
         `<button type="button" data-group="${esc(group)}">${group === "Mercenary" ? "All" : "All II"}</button></div>`;
       for (const tier of [2, 1, 7, 6, 5, 4, 3]) {
         const tierKinds = kinds.filter((k) => catalog.troops[k].tiers.includes(tier));
@@ -721,7 +781,7 @@
         // At most 4 tiles per row, like every other family (only the 17
         // single-tier Mercenaries need more than one row).
         tierKinds.forEach((kind, i) => {
-          if (i % 4 === 0) html += `${i ? "</div>" : ""}<div class="tier-row">`;
+          if (i % 4 === 0) html += `${i ? "</div>" : ""}<div class="tier-row" data-tier="${tier}">`;
           const key = `${kind}#${tier}`;
           const t = catalog.troops[kind];
           const badge = tierBadge(kind, tier);
@@ -736,6 +796,16 @@
       html += `</div>`;
     }
     $("picker").innerHTML = html;
+    const haveTiers = TIER_ROWS.filter((tier) => catalog.troop_order.some((k) =>
+      catalog.troops[k].tiers.length > 1 && catalog.troops[k].tiers.includes(tier)));
+    const haveGroups = GROUPS.filter((group) => catalog.troop_order.some((k) => catalog.troops[k].group === group));
+    $("picker-filter").innerHTML =
+      `<div class="filter-row"><span>Tiers to show</span>` + haveTiers.map((tier) =>
+        `<button type="button" class="chip" data-tier="${tier}">${esc(catalog.tier_labels[tier] || String(tier))}</button>`).join("") + `</div>` +
+      `<div class="filter-row"><span>Troops to show</span>` + haveGroups.map((group) =>
+        `<button type="button" class="chip" data-family="${esc(group)}">${esc(GROUP_TITLES[group] || group)}</button>`).join("") + `</div>`;
+    shownGroups = new Set(GROUPS);
+    applyFilter();
 
     // Registration: capacity + per-troop stat blocks.
     $("capacity-fields").innerHTML = CAPACITY_FIELDS.map(([key, label, decimals]) =>
@@ -786,7 +856,7 @@
     $("list-sent-by").classList.toggle("hidden", !sentBy);
     updateFormulaDesc();
     maybeAutofillListName();
-    setTiles();
+    filterForSelection();
     schedulePreview();
   }
 
@@ -1157,7 +1227,8 @@
     if (all) {
       const group = all.dataset.group;
       catalog.troop_order.filter((k) => catalog.troops[k].group === group).forEach((k) => selectedKeys.add(`${k}#2`));
-      setTiles();
+      shownTiers.add(2);
+      applyFilter();
       schedulePreview();
       return;
     }
@@ -1167,6 +1238,15 @@
     if (selectedKeys.has(key)) selectedKeys.delete(key);
     else selectedKeys.add(key);
     setTiles();
+    schedulePreview();
+  });
+  $("picker-filter").addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
+    const [set, value] = chip.dataset.tier ? [shownTiers, Number(chip.dataset.tier)] : [shownGroups, chip.dataset.family];
+    if (set.has(value)) set.delete(value);
+    else set.add(value);
+    applyFilter();
     schedulePreview();
   });
   $("list-clear").addEventListener("click", () => { selectedKeys.clear(); setTiles(); schedulePreview(); });
