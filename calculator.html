@@ -195,6 +195,14 @@
 
   /* troop picker */
   .picker-group { margin-top: 10px; }
+  /* tiers to stack / highest tier, per troop type (as in the desktop app) */
+  .tier-chooser { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr); gap: 6px 10px; align-items: center; margin-top: 4px; }
+  .tier-chooser .head { font-family: var(--utility); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
+  .tier-chooser .name { font-size: 0.9rem; }
+  .tier-chooser select:disabled { opacity: 0.5; }
+  .tier-chooser .checks { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.9rem; }
+  .tier-chooser .checks label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .picker-group.hidden, .tier-row.hidden { display: none; }
   .tier-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; margin-top: 6px; }
   .tile {
     position: relative;
@@ -327,6 +335,7 @@
       </div>
 
       <div class="section-title"><span>Troops to use</span><button type="button" id="list-clear">Clear</button></div>
+      <div class="tier-chooser" id="tier-chooser"></div>
       <div id="picker"></div>
 
       <div class="actions">
@@ -559,6 +568,8 @@
 
   function troopLabel(kind, tier) {
     const t = catalog.troops[kind];
+    // Per-tier card names (Tier VII and Tiers III-VI) when the Worker sends them.
+    if (t.labels && t.labels[tier]) return t.labels[tier];
     return tier === 7 && t.label_tier7 ? t.label_tier7 : t.label;
   }
   // "II" / "I" / "VII" badge -- none for the single-tier Mercenaries.
@@ -746,20 +757,22 @@
 
     // Troop picker: per group, one row per tier (II, I, VII, VI ... III)
     // like the desktop app -- whatever tiers the catalog offers.
-    const tierRows = [...new Set(catalog.troop_order.flatMap((kind) => catalog.troops[kind].tiers))];
+    const present = new Set(catalog.troop_order.flatMap((kind) => catalog.troops[kind].tiers));
+    TIER_ROWS = [...TIER_ORDER.filter((t) => present.has(t)), ...[...present].filter((t) => !TIER_ORDER.includes(t))];
+    buildTierChooser();
     let html = "";
     for (const group of GROUPS) {
       const kinds = catalog.troop_order.filter((k) => catalog.troops[k].group === group);
       if (!kinds.length) continue;
-      html += `<div class="picker-group"><div class="section-title" style="margin-top:12px"><span>${esc(GROUP_TITLES[group] || group)}</span>` +
-        `<button type="button" data-group="${esc(group)}">${group === "Mercenary" ? "All" : "All II"}</button></div>`;
-      for (const tier of tierRows) {
+      html += `<div class="picker-group" data-picker-group="${esc(group)}"><div class="section-title" style="margin-top:12px"><span>${esc(GROUP_TITLES[group] || group)}</span>` +
+        `<button type="button" data-group="${esc(group)}">All</button></div>`;
+      for (const tier of TIER_ROWS) {
         const tierKinds = kinds.filter((k) => catalog.troops[k].tiers.includes(tier));
         if (!tierKinds.length) continue;
         // At most 4 tiles per row, like every other family (only the 17
         // single-tier Mercenaries need more than one row).
         tierKinds.forEach((kind, i) => {
-          if (i % 4 === 0) html += `${i ? "</div>" : ""}<div class="tier-row">`;
+          if (i % 4 === 0) html += `${i ? "</div>" : ""}<div class="tier-row" data-row-group="${esc(group)}" data-row-tier="${tier}">`;
           const key = `${kind}#${tier}`;
           const t = catalog.troops[kind];
           const badge = tierBadge(kind, tier);
@@ -797,6 +810,108 @@
     }).join("") + `</div>`;
   }
 
+  // ── Tier chooser (as the desktop app's Create a List) ─────────
+  // Per troop type: how many tiers you stack (None, 2 or 3) and your
+  // highest tier; only those rows are shown, e.g. 3 tiers from VI shows
+  // VI, V and IV. Josephine and the Mercenaries are just on or off. A
+  // hidden row's troops leave the list: nothing stays selected unseen.
+  const TIER_ORDER = [2, 1, 7, 6, 5, 4, 3];
+  let TIER_ROWS = [];
+  const STACK_GROUPS = ["Guardsman", "Specialist", "Monster"];
+  const STACK_CHOICES = [2, 3];
+  const CHOOSER_TIER_LABELS = { 2: "IX", 1: "VIII" }; // real troop level; tiles keep II / I
+  const DEFAULT_STACK = 3;
+  const DEFAULT_TOP = 2;
+  const groupKinds = (group) => catalog.troop_order.filter((k) => catalog.troops[k].group === group);
+  const stackGroups = () => STACK_GROUPS.filter((g) => groupKinds(g).length);
+  const checkGroups = () => GROUPS.filter((g) => !STACK_GROUPS.includes(g) && groupKinds(g).length);
+
+  function buildTierChooser() {
+    let html = `<span></span><span class="head">Tiers to stack</span><span class="head">Highest tier</span>`;
+    for (const group of stackGroups()) {
+      const title = esc(GROUP_TITLES[group] || group);
+      html += `<span class="name">${title}</span>` +
+        `<select id="stack-${group}" aria-label="${title}: tiers to stack"><option value="0">None</option>` +
+        STACK_CHOICES.map((n) => `<option value="${n}">${n}</option>`).join("") + `</select>` +
+        `<select id="top-${group}" aria-label="${title}: highest tier">` +
+        TIER_ROWS.map((t) => `<option value="${t}">${esc(CHOOSER_TIER_LABELS[t] || catalog.tier_labels[t] || t)}</option>`).join("") +
+        `</select>`;
+    }
+    html += `<div class="checks">` + checkGroups().map((group) =>
+      `<label><input type="checkbox" id="show-${group}" checked /> ${esc(GROUP_TITLES[group] || group)}</label>`
+    ).join("") + `</div>`;
+    $("tier-chooser").innerHTML = html;
+  }
+
+  function visibleTiers(group) {
+    if (!STACK_GROUPS.includes(group)) {
+      const box = $(`show-${group}`);
+      return !box || box.checked ? TIER_ROWS : [];
+    }
+    const count = Number($(`stack-${group}`).value) || 0;
+    const start = TIER_ROWS.indexOf(Number($(`top-${group}`).value));
+    return TIER_ROWS.slice(start, start + count);
+  }
+
+  // Show only the chosen rows; drop the troops of every hidden row.
+  function applyTierFilter() {
+    const shown = new Set();
+    document.querySelectorAll("#picker .tier-row").forEach((row) => {
+      const group = row.dataset.rowGroup;
+      const show = visibleTiers(group).includes(Number(row.dataset.rowTier));
+      row.classList.toggle("hidden", !show);
+      if (show) shown.add(group);
+      else row.querySelectorAll(".tile").forEach((tile) => selectedKeys.delete(tile.dataset.key));
+    });
+    document.querySelectorAll("#picker .picker-group").forEach((el) => {
+      el.classList.toggle("hidden", !shown.has(el.dataset.pickerGroup));
+    });
+    for (const group of stackGroups()) {
+      $(`top-${group}`).disabled = !Number($(`stack-${group}`).value);
+    }
+    setTiles();
+  }
+
+  // Set the chooser for a list's keys: per troop type the highest tier it
+  // uses and enough tiers to reach its lowest one ("None" when unused).
+  // Without keys: a new list's defaults (3 tiers from IX: II, I and VII).
+  function setTierFilter(keys) {
+    const used = {};
+    for (const key of keys || []) {
+      const [kind, tierStr] = key.split("#");
+      const t = catalog.troops[kind];
+      if (!t) continue;
+      const index = TIER_ROWS.indexOf(Number(tierStr));
+      (used[t.group] = used[t.group] || []).push(index < 0 ? 0 : index);
+    }
+    for (const group of stackGroups()) {
+      const stack = $(`stack-${group}`);
+      const top = $(`top-${group}`);
+      let count = 0;
+      let start = top.selectedIndex;
+      if (!keys) {
+        count = DEFAULT_STACK;
+        start = TIER_ROWS.indexOf(DEFAULT_TOP);
+      } else if (used[group]) {
+        start = Math.min(...used[group]);
+        count = Math.max(...used[group]) - start + 1;
+      }
+      // Drop an odd count an earlier list needed; add this list's own.
+      [...stack.options].forEach((o) => {
+        if (o.value !== "0" && !STACK_CHOICES.includes(Number(o.value))) o.remove();
+      });
+      if (count && ![...stack.options].some((o) => Number(o.value) === count)) {
+        stack.insertAdjacentHTML("beforeend", `<option value="${count}">${count}</option>`);
+      }
+      stack.value = String(count);
+      top.selectedIndex = Math.max(start, 0);
+    }
+    for (const group of checkGroups()) {
+      if (!keys || used[group]) $(`show-${group}`).checked = true;
+    }
+    applyTierFilter();
+  }
+
   function setTiles() {
     document.querySelectorAll("#picker .tile").forEach((tile) => {
       tile.setAttribute("aria-pressed", String(selectedKeys.has(tile.dataset.key)));
@@ -830,7 +945,7 @@
     $("list-sent-by").classList.toggle("hidden", !sentBy);
     updateFormulaDesc();
     maybeAutofillListName();
-    setTiles();
+    setTierFilter(list ? list.selected_kinds : null);
     schedulePreview();
   }
 
@@ -1200,8 +1315,10 @@
   $("picker").addEventListener("click", (e) => {
     const all = e.target.closest("[data-group]");
     if (all) {
+      // "All": every troop of this type in the rows the chooser shows.
       const group = all.dataset.group;
-      catalog.troop_order.filter((k) => catalog.troops[k].group === group).forEach((k) => selectedKeys.add(`${k}#2`));
+      document.querySelectorAll(`#picker .tier-row[data-row-group="${group}"]:not(.hidden) .tile`)
+        .forEach((tile) => selectedKeys.add(tile.dataset.key));
       setTiles();
       schedulePreview();
       return;
@@ -1214,6 +1331,7 @@
     setTiles();
     schedulePreview();
   });
+  $("tier-chooser").addEventListener("change", () => { applyTierFilter(); schedulePreview(); });
   $("list-clear").addEventListener("click", () => { selectedKeys.clear(); setTiles(); schedulePreview(); });
   $("list-save").addEventListener("click", saveList);
   $("list-delete").addEventListener("click", deleteList);
