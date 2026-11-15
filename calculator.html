@@ -320,8 +320,16 @@
         <label class="field"><span>List name</span>
           <input type="text" id="list-name" maxlength="80" autocomplete="off" placeholder="Filled in as record · formula — or type your own" />
         </label>
+        <label class="field"><span>Uses record</span><select id="list-record"></select></label>
+      </div>
+
+      <!-- Levels first, then the formula, then the troops (2026-11-15). -->
+      <div class="section-title"><span>Troop levels</span></div>
+      <div class="tier-chooser" id="tier-chooser"></div>
+
+      <div class="section-title"><span>Formula</span></div>
+      <div class="stack">
         <div class="grid-2">
-          <label class="field"><span>Uses record</span><select id="list-record"></select></label>
           <label class="field"><span>Formula group</span>
             <select id="list-formula-group">
               <option value="auto">Automatic (based on troops)</option>
@@ -329,13 +337,12 @@
               <option value="lower">Lower-tier formulas (III-VII)</option>
             </select>
           </label>
+          <label class="field"><span>Formula</span><select id="list-formula"></select></label>
         </div>
-        <label class="field"><span>Formula</span><select id="list-formula"></select></label>
         <p class="hint" id="list-formula-desc"></p>
       </div>
 
       <div class="section-title"><span>Troops to use</span><button type="button" id="list-clear">Clear</button></div>
-      <div class="tier-chooser" id="tier-chooser"></div>
       <div id="picker"></div>
 
       <div class="actions">
@@ -723,10 +730,13 @@
   // (formulas with a base_id), "original" the rest; "auto" picks lower when
   // the selected non-Mercenary troops contain no tier I/II.
   function automaticFormulaGroup() {
-    const tiers = [...selectedKeys].filter((key) => {
+    let tiers = [...selectedKeys].filter((key) => {
       const t = catalog.troops[key.split("#")[0]];
       return t && t.group !== "Mercenary";
     }).map((key) => Number(key.split("#")[1]));
+    // No troops picked yet: go by the levels chosen above instead, so the
+    // formula already fits before any tile is ticked.
+    if (!tiers.length && TIER_ROWS.length) tiers = stackGroups().flatMap((group) => visibleTiers(group));
     return tiers.length && !tiers.some((tier) => tier === 1 || tier === 2) ? "lower" : "original";
   }
 
