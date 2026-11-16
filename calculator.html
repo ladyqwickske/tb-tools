@@ -821,14 +821,15 @@
   }
 
   // ── Tier chooser (as the desktop app's Create a List) ─────────
-  // Per troop type: how many tiers you stack (None, 2 or 3) and your
+  // Per troop type: how many tiers you stack (None, 1, 2 or 3) and your
   // highest tier; only those rows are shown, e.g. 3 tiers from VI shows
-  // VI, V and IV. Josephine and the Mercenaries are just on or off. A
-  // hidden row's troops leave the list: nothing stays selected unseen.
+  // VI, V and IV. Josephine and the Mercenaries are just on or off (off
+  // for a new list). A hidden row's troops leave the list: nothing stays
+  // selected unseen.
   const TIER_ORDER = [2, 1, 7, 6, 5, 4, 3];
   let TIER_ROWS = [];
   const STACK_GROUPS = ["Guardsman", "Specialist", "Monster"];
-  const STACK_CHOICES = [2, 3];
+  const STACK_CHOICES = [1, 2, 3];
   const CHOOSER_TIER_LABELS = { 2: "IX", 1: "VIII" }; // real troop level; tiles keep II / I
   const DEFAULT_STACK = 3;
   const DEFAULT_TOP = 2;
@@ -848,7 +849,7 @@
         `</select>`;
     }
     html += `<div class="checks">` + checkGroups().map((group) =>
-      `<label><input type="checkbox" id="show-${group}" checked /> ${esc(GROUP_TITLES[group] || group)}</label>`
+      `<label><input type="checkbox" id="show-${group}" /> ${esc(GROUP_TITLES[group] || group)}</label>`
     ).join("") + `</div>`;
     $("tier-chooser").innerHTML = html;
   }
@@ -885,7 +886,26 @@
   // Set the chooser for a list's keys: per troop type the highest tier it
   // uses and enough tiers to reach its lowest one ("None" when unused).
   // Without keys: a new list's defaults (3 tiers from IX: II, I and VII).
-  function setTierFilter(keys) {
+  // With `saved` (the chooser saved with the list): use that as it was.
+  function setTierFilter(keys, saved) {
+    if (keys && saved && savedFilterFits(keys, saved)) {
+      for (const group of stackGroups()) {
+        const stack = $(`stack-${group}`);
+        const count = Number((saved.stack || {})[group]) || 0;
+        [...stack.options].forEach((o) => {
+          if (o.value !== "0" && !STACK_CHOICES.includes(Number(o.value))) o.remove();
+        });
+        if (count && ![...stack.options].some((o) => Number(o.value) === count)) {
+          stack.insertAdjacentHTML("beforeend", `<option value="${count}">${count}</option>`);
+        }
+        stack.value = String(count);
+        if (TIER_ROWS.includes((saved.top || {})[group])) $(`top-${group}`).value = String(saved.top[group]);
+      }
+      for (const group of checkGroups()) {
+        if (typeof (saved.show || {})[group] === "boolean") $(`show-${group}`).checked = saved.show[group];
+      }
+      return applyTierFilter();
+    }
     const used = {};
     for (const key of keys || []) {
       const [kind, tierStr] = key.split("#");
@@ -916,10 +936,50 @@
       stack.value = String(count);
       top.selectedIndex = Math.max(start, 0);
     }
+    // A new list starts without Siege and Mercenaries; a saved list
+    // switches on what it uses.
     for (const group of checkGroups()) {
-      if (!keys || used[group]) $(`show-${group}`).checked = true;
+      if (!keys) $(`show-${group}`).checked = false;
+      else if (used[group]) $(`show-${group}`).checked = true;
     }
     applyTierFilter();
+  }
+
+  // Changing a tier box: Siege is on while any troop type's highest tier
+  // is above VII (VIII or IX), off otherwise.
+  function maybeShowSiege() {
+    const box = $("show-Siege");
+    if (!box) return;
+    const vii = TIER_ROWS.indexOf(7);
+    box.checked = stackGroups().some((group) => Number($(`stack-${group}`).value) &&
+      TIER_ROWS.indexOf(Number($(`top-${group}`).value)) < vii);
+  }
+
+  // The chooser as saved with a list (list.tier_filter).
+  function tierFilterState() {
+    const state = { stack: {}, top: {}, show: {} };
+    for (const group of stackGroups()) {
+      state.stack[group] = Number($(`stack-${group}`).value) || 0;
+      state.top[group] = Number($(`top-${group}`).value);
+    }
+    for (const group of checkGroups()) state.show[group] = $(`show-${group}`).checked;
+    return state;
+  }
+
+  // Does a saved chooser still show every troop the list picks? (Not when
+  // the list was changed later by an app that doesn't save the chooser.)
+  function savedFilterFits(keys, saved) {
+    const stack = saved.stack || {}, top = saved.top || {}, show = saved.show || {};
+    return keys.every((key) => {
+      const [kind, tierStr] = key.split("#");
+      const t = catalog.troops[kind];
+      if (!t) return true;
+      if (STACK_GROUPS.includes(t.group)) {
+        const start = TIER_ROWS.indexOf(top[t.group]);
+        return start >= 0 && TIER_ROWS.slice(start, start + (stack[t.group] || 0)).includes(Number(tierStr));
+      }
+      return show[t.group] !== false;
+    });
   }
 
   function setTiles() {
@@ -955,7 +1015,7 @@
     $("list-sent-by").classList.toggle("hidden", !sentBy);
     updateFormulaDesc();
     maybeAutofillListName();
-    setTierFilter(list ? list.selected_kinds : null);
+    setTierFilter(list ? list.selected_kinds : null, list && list.tier_filter);
     schedulePreview();
   }
 
@@ -1046,6 +1106,7 @@
     const list = {
       name, record_name: recordName, formula_id: $("list-formula").value, selected_kinds: selected,
       batting_order: prior.filter((k) => selected.includes(k)),
+      tier_filter: tierFilterState(),
     };
     const ok = await save((d) => {
       d.lists[name] = list;
@@ -1341,7 +1402,10 @@
     setTiles();
     schedulePreview();
   });
-  $("tier-chooser").addEventListener("change", () => { applyTierFilter(); schedulePreview(); });
+  $("tier-chooser").addEventListener("change", (e) => {
+    if (e.target.tagName === "SELECT") maybeShowSiege();
+    applyTierFilter(); schedulePreview();
+  });
   $("list-clear").addEventListener("click", () => { selectedKeys.clear(); setTiles(); schedulePreview(); });
   $("list-save").addEventListener("click", saveList);
   $("list-delete").addEventListener("click", deleteList);
