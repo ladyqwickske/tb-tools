@@ -829,20 +829,26 @@
   }
 
   // The tier a stat block shows for the chosen highest tier: the best tier
-  // the troop has at or below it, else the closest one above.
+  // the troop has at or below it -- null when it has none (block hidden).
   function regTierFor(kind, top) {
-    const tiers = catalog.troops[kind].tiers;
     const rank = (t) => { const i = TIER_ROWS.indexOf(t); return i < 0 ? 99 : i; };
-    const want = rank(top);
-    const sorted = [...tiers].sort((a, b) => rank(a) - rank(b));
-    return sorted.find((t) => rank(t) >= want) ?? sorted[sorted.length - 1];
+    const sorted = [...catalog.troops[kind].tiers].sort((a, b) => rank(a) - rank(b));
+    return sorted.find((t) => rank(t) >= rank(top)) ?? null;
   }
 
+  // Pictures and names follow the highest tiers; troops you can't have at
+  // those tiers are hidden (their numbers stay and are still saved).
+  // Josephine only shows while some troop type's highest tier is above VII.
   function updateRegImages() {
+    const vii = TIER_ROWS.indexOf(7);
+    const siege = stackGroups().some((group) => TIER_ROWS.indexOf(Number($(`reg-top-${group}`).value)) < vii);
     document.querySelectorAll("#stat-fields .stat-block[data-reg-kind]").forEach((block) => {
       const kind = block.dataset.regKind;
       const select = $(`reg-top-${catalog.troops[kind].group}`);
       const tier = select ? regTierFor(kind, Number(select.value)) : 2;
+      const show = select ? tier !== null : catalog.troops[kind].group !== "Siege" || siege;
+      block.classList.toggle("hidden", !show);
+      if (!show || tier === null) return;
       const img = block.querySelector("img");
       const file = catalog.troops[kind].icons[tier];
       if (img && file) img.src = ICON_BASE + file;
