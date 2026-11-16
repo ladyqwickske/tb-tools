@@ -821,14 +821,14 @@
   }
 
   // ── Tier chooser (as the desktop app's Create a List) ─────────
-  // Per troop type: how many tiers you stack (None, 2 or 3) and your
+  // Per troop type: how many tiers you stack (None, 1, 2 or 3) and your
   // highest tier; only those rows are shown, e.g. 3 tiers from VI shows
   // VI, V and IV. Josephine and the Mercenaries are just on or off. A
   // hidden row's troops leave the list: nothing stays selected unseen.
   const TIER_ORDER = [2, 1, 7, 6, 5, 4, 3];
   let TIER_ROWS = [];
   const STACK_GROUPS = ["Guardsman", "Specialist", "Monster"];
-  const STACK_CHOICES = [2, 3];
+  const STACK_CHOICES = [1, 2, 3];
   const CHOOSER_TIER_LABELS = { 2: "IX", 1: "VIII" }; // real troop level; tiles keep II / I
   const DEFAULT_STACK = 3;
   const DEFAULT_TOP = 2;
