@@ -823,8 +823,9 @@
   // ── Tier chooser (as the desktop app's Create a List) ─────────
   // Per troop type: how many tiers you stack (None, 1, 2 or 3) and your
   // highest tier; only those rows are shown, e.g. 3 tiers from VI shows
-  // VI, V and IV. Josephine and the Mercenaries are just on or off. A
-  // hidden row's troops leave the list: nothing stays selected unseen.
+  // VI, V and IV. Josephine and the Mercenaries are just on or off (off
+  // for a new list). A hidden row's troops leave the list: nothing stays
+  // selected unseen.
   const TIER_ORDER = [2, 1, 7, 6, 5, 4, 3];
   let TIER_ROWS = [];
   const STACK_GROUPS = ["Guardsman", "Specialist", "Monster"];
@@ -848,7 +849,7 @@
         `</select>`;
     }
     html += `<div class="checks">` + checkGroups().map((group) =>
-      `<label><input type="checkbox" id="show-${group}" checked /> ${esc(GROUP_TITLES[group] || group)}</label>`
+      `<label><input type="checkbox" id="show-${group}" /> ${esc(GROUP_TITLES[group] || group)}</label>`
     ).join("") + `</div>`;
     $("tier-chooser").innerHTML = html;
   }
@@ -916,10 +917,23 @@
       stack.value = String(count);
       top.selectedIndex = Math.max(start, 0);
     }
+    // A new list starts without Siege and Mercenaries; a saved list
+    // switches on what it uses.
     for (const group of checkGroups()) {
-      if (!keys || used[group]) $(`show-${group}`).checked = true;
+      if (!keys) $(`show-${group}`).checked = false;
+      else if (used[group]) $(`show-${group}`).checked = true;
     }
     applyTierFilter();
+  }
+
+  // Picking a highest tier above VII (VIII or IX) for any troop type
+  // switches Siege back on.
+  function maybeShowSiege() {
+    const box = $("show-Siege");
+    if (!box) return;
+    const vii = TIER_ROWS.indexOf(7);
+    if (stackGroups().some((group) => Number($(`stack-${group}`).value) &&
+        TIER_ROWS.indexOf(Number($(`top-${group}`).value)) < vii)) box.checked = true;
   }
 
   function setTiles() {
@@ -1341,7 +1355,10 @@
     setTiles();
     schedulePreview();
   });
-  $("tier-chooser").addEventListener("change", () => { applyTierFilter(); schedulePreview(); });
+  $("tier-chooser").addEventListener("change", (e) => {
+    if (e.target.tagName === "SELECT") maybeShowSiege();
+    applyTierFilter(); schedulePreview();
+  });
   $("list-clear").addEventListener("click", () => { selectedKeys.clear(); setTiles(); schedulePreview(); });
   $("list-save").addEventListener("click", saveList);
   $("list-delete").addEventListener("click", deleteList);
