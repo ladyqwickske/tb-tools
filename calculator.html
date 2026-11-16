@@ -235,6 +235,8 @@
   .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 6px; }
   .stat-block { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; padding: 10px; display: grid; grid-template-columns: 48px 1fr; gap: 6px 10px; align-items: center; }
   .stat-block img { width: 48px; height: 48px; border-radius: 3px; object-fit: cover; grid-row: span 3; align-self: start; }
+  .reg-levels { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; margin: 4px 0 10px; font-size: 0.9rem; }
+  .reg-levels label { display: inline-flex; align-items: center; gap: 6px; }
   .stat-block .title { font-family: var(--utility); color: var(--ink); font-size: 0.95rem; letter-spacing: 0.02em; }
   .stat-block .title small { color: var(--ink-dim); font-size: 0.7rem; letter-spacing: 0.06em; margin-left: 4px; }
   .stat-block label { display: flex; align-items: center; gap: 8px; font-family: var(--utility); font-size: 0.72rem; color: var(--ink-dim); letter-spacing: 0.06em; }
@@ -373,6 +375,7 @@
         <button class="btn ghost" id="record-standard" title="Royal Lion = Monster, every other troop (and Josephine's Health) = Monster - 100">Standard</button>
         <span class="hint" style="margin:0">Fill in the Monster (Kraken) values, then press Standard to fill in all other troops.</span>
       </div>
+      <div class="reg-levels" id="reg-levels"></div>
       <div id="stat-fields"></div>
       <div class="actions">
         <button class="btn" id="record-save">Save record</button>
@@ -811,13 +814,40 @@
       </div>` : "") + catalog.registration_kinds.map((kind) => {
       const t = catalog.troops[kind];
       const note = kind === "kraken" ? "<small>all Monsters</small>" : `<small>${esc(t.group)}</small>`;
-      return `<div class="stat-block">
+      return `<div class="stat-block" data-reg-kind="${esc(kind)}">
         ${iconImg(t.icons[2], 48)}
-        <div class="title">${esc(t.label)}${note}</div>
+        <div class="title"><span class="reg-name">${esc(t.label)}</span>${note}</div>
         ${t.has_strength ? `<label><span>Strength</span><input type="text" class="num" data-decimals="1" inputmode="decimal" autocomplete="off" id="st-${kind}-strength" /></label>` : ""}
         <label><span>Health</span><input type="text" class="num" data-decimals="1" inputmode="decimal" autocomplete="off" id="st-${kind}-health" /></label>
       </div>`;
     }).join("") + `</div>`;
+    // Highest tier per troop type: only changes the pictures and names.
+    $("reg-levels").innerHTML = `<span class="hint" style="margin:0">Highest tier:</span>` +
+      stackGroups().map((group) => `<label>${esc(GROUP_TITLES[group] || group)} <select id="reg-top-${group}">` +
+        TIER_ROWS.map((t) => `<option value="${t}">${esc(CHOOSER_TIER_LABELS[t] || catalog.tier_labels[t] || t)}</option>`).join("") +
+        `</select></label>`).join("");
+  }
+
+  // The tier a stat block shows for the chosen highest tier: the best tier
+  // the troop has at or below it, else the closest one above.
+  function regTierFor(kind, top) {
+    const tiers = catalog.troops[kind].tiers;
+    const rank = (t) => { const i = TIER_ROWS.indexOf(t); return i < 0 ? 99 : i; };
+    const want = rank(top);
+    const sorted = [...tiers].sort((a, b) => rank(a) - rank(b));
+    return sorted.find((t) => rank(t) >= want) ?? sorted[sorted.length - 1];
+  }
+
+  function updateRegImages() {
+    document.querySelectorAll("#stat-fields .stat-block[data-reg-kind]").forEach((block) => {
+      const kind = block.dataset.regKind;
+      const select = $(`reg-top-${catalog.troops[kind].group}`);
+      const tier = select ? regTierFor(kind, Number(select.value)) : 2;
+      const img = block.querySelector("img");
+      const file = catalog.troops[kind].icons[tier];
+      if (img && file) img.src = ICON_BASE + file;
+      block.querySelector(".reg-name").textContent = troopLabel(kind, tier);
+    });
   }
 
   // ── Tier chooser (as the desktop app's Create a List) ─────────
@@ -1226,6 +1256,11 @@
       $("st-merc-strength").value = merc.strength || "";
       $("st-merc-health").value = merc.health || "";
     }
+    for (const group of stackGroups()) {
+      const tier = rec && rec.tiers && rec.tiers[group];
+      $(`reg-top-${group}`).value = String(TIER_ROWS.includes(tier) ? tier : 2);
+    }
+    updateRegImages();
     $("record-delete").classList.toggle("hidden", !rec);
   }
 
@@ -1286,7 +1321,8 @@
     if (name !== editing && data.records[name] &&
         !confirm(`A record called "${name}" already exists.\n\nReplace it with these numbers?`)) return;
     const prior = data.records[editing] || data.records[name];
-    const record = { name, troops: {} };
+    const record = { name, troops: {}, tiers: {} };
+    for (const group of stackGroups()) record.tiers[group] = Number($(`reg-top-${group}`).value);
     for (const [key, , decimals] of CAPACITY_FIELDS) {
       record[key] = decimals ? Math.round(num(`cap-${key}`) * 10) / 10 : Math.trunc(num(`cap-${key}`));
     }
@@ -1413,6 +1449,7 @@
   $("record-select").addEventListener("change", (e) => loadRecordIntoEditor(e.target.value));
   $("record-save").addEventListener("click", saveRecord);
   $("record-standard").addEventListener("click", fillStandard);
+  $("reg-levels").addEventListener("change", updateRegImages);
   $("list-send").addEventListener("click", openSendDialog);
   $("send-go").addEventListener("click", sendList);
   $("send-cancel").addEventListener("click", () => $("send-dialog").close());
