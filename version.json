@@ -1,8 +1,8 @@
 {
-  "version": "1.0.6",
-  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-1.0.6/TB-Tools-1.0.6.zip",
-  "release_notes": "Auto-Crypter 1.0.6: Supports the new layout (beta version) + allows posting crypts in the channel",
-  "published_at": "2026-11-15",
+  "version": "1.0.8",
+  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-1.0.8/TB-Tools-1.0.8.zip",
+  "release_notes": "Battle Calculator now supported from troop level 3 and upwards, also working in background mode",
+  "published_at": "2026-11-18",
   "required": false,
   "android": {
     "version": "1.0.8",
