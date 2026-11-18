@@ -5,11 +5,11 @@
   "published_at": "2026-11-15",
   "required": false,
   "android": {
-    "version": "1.0.5",
+    "version": "1.0.8",
     "version_code": 15,
-    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.5/TB-AutoCrypt-1.0.5.apk",
-    "release_notes": "Rare crypts that weren't recognised (and got closed) are explored again.",
-    "published_at": "2026-11-14",
+    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.8/TB-AutoCrypt-1.0.8.apk",
+    "release_notes": "March Speedup popping up too fast again",
+    "published_at": "2026-11-18",
     "required": false
   }
 }
