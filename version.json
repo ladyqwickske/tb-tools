@@ -5,11 +5,11 @@
   "published_at": "2026-11-18",
   "required": false,
   "android": {
-    "version": "1.0.8",
-    "version_code": 15,
-    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/android-1.0.8/TB-AutoCrypt-1.0.8.apk",
-    "release_notes": "March Speedup popping up too fast again",
-    "published_at": "2026-11-18",
+    "version": "1.0.0",
+    "version_code": 43,
+    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-android-1.0.0/TB-Tools-1.0.0.apk",
+    "release_notes": "TB Tools 1.0.0 - the big one: the Battle Calculator is now in the app!\n- Battle Calculator tab: your records and lists, the same as on the website.\n- Read from an attack report: open a report in the Journal and the app taps through your troops and fills in Strength, Health and Strength against epic monsters by itself.\n- Read from the game: Leadership, Authority and Dominance straight from the Start march screen.\n- Write to game: the app types your list's troop counts into the march screen for you (built-in pictures for most troops; calibrate a troop once if it isn't found).\n- Crypting: posts the crypt location in Clan chat again, taps Retry when the game loses its connection, and the Stop button shows how far the run is (12/100).\nStack like a pro - no more excuses for poor attacks!",
+    "published_at": "2026-11-19",
     "required": false
   }
 }
