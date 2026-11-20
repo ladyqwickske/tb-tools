@@ -302,6 +302,7 @@
         <div class="toolbar">
           <select id="results-select" aria-label="Choose a list"></select>
           <button class="btn ghost" id="results-edit">Edit</button>
+          <button class="btn danger" id="results-delete" title="Delete this list">Delete</button>
         </div>
         <div class="tabs small" role="tablist">
           <button class="tab" role="tab" id="rtab-troops" aria-selected="true">Troops</button>
@@ -316,7 +317,9 @@
     <div id="panel-lists" role="tabpanel" class="hidden">
       <div class="toolbar">
         <select id="list-select" aria-label="List to edit"></select>
+        <button class="btn danger hidden" id="list-delete-top">Delete list</button>
       </div>
+      <p class="hint" id="list-pick-hint" style="margin-top:-4px">Pick a saved list here to change or delete it.</p>
       <p class="hint sent-by hidden" id="list-sent-by"></p>
       <div class="stack">
         <label class="field"><span>List name</span>
@@ -351,7 +354,7 @@
         <button class="btn" id="list-save">Save list</button>
         <button class="btn ghost hidden" id="list-send">Send to member…</button>
         <span class="spacer"></span>
-        <button class="btn danger" id="list-delete">Delete</button>
+        <button class="btn danger" id="list-delete">Delete list</button>
       </div>
 
       <div class="preview" id="list-preview"></div>
@@ -361,6 +364,7 @@
     <div id="panel-records" role="tabpanel" class="hidden">
       <div class="toolbar">
         <select id="record-select" aria-label="Record to edit"></select>
+        <button class="btn danger hidden" id="record-delete-top">Delete record</button>
       </div>
       <div class="stack">
         <label class="field"><span>Record name</span>
@@ -380,7 +384,7 @@
       <div class="actions">
         <button class="btn" id="record-save">Save record</button>
         <span class="spacer"></span>
-        <button class="btn danger" id="record-delete">Delete</button>
+        <button class="btn danger" id="record-delete">Delete record</button>
       </div>
     </div>
 
@@ -1045,6 +1049,8 @@
       refreshFormulaChoices(catalog.formulas[0].id);
     }
     $("list-delete").classList.toggle("hidden", !list);
+    $("list-delete-top").classList.toggle("hidden", !list);
+    $("list-pick-hint").classList.toggle("hidden", !!list || !Object.keys(data.lists).length);
     $("list-send").classList.toggle("hidden", !(list && canSend));
     const sentBy = list && list.sent_by;
     $("list-sent-by").textContent = sentBy ? sentByText(sentBy) : "";
@@ -1157,14 +1163,15 @@
     }
   }
 
-  async function deleteList() {
-    const name = $("list-select").value;
+  // name: the list shown in the Results tab, or (default) the one in the editor.
+  async function deleteList(name = $("list-select").value) {
     if (!data.lists[name] || !confirm(`Delete list "${name}"? This can't be undone.`)) return;
     const ok = await save((d) => {
       delete d.lists[name];
       if (d.last_list === name) d.last_list = "";
     }, `List <strong>${esc(name)}</strong> deleted.`);
-    if (ok) {
+    // Deleted the list open in the editor: start a new one there.
+    if (ok && $("list-select").value !== NEW && !data.lists[$("list-select").value]) {
       $("list-select").value = NEW;
       loadListIntoEditor(NEW);
     }
@@ -1268,6 +1275,7 @@
     }
     updateRegImages();
     $("record-delete").classList.toggle("hidden", !rec);
+    $("record-delete-top").classList.toggle("hidden", !rec);
   }
 
   // Number fields are plain text boxes (no spinner arrows, no scroll-wheel
@@ -1450,7 +1458,9 @@
   });
   $("list-clear").addEventListener("click", () => { selectedKeys.clear(); setTiles(); schedulePreview(); });
   $("list-save").addEventListener("click", saveList);
-  $("list-delete").addEventListener("click", deleteList);
+  $("list-delete").addEventListener("click", () => deleteList());
+  $("list-delete-top").addEventListener("click", () => deleteList());
+  $("results-delete").addEventListener("click", () => deleteList($("results-select").value));
 
   $("record-select").addEventListener("change", (e) => loadRecordIntoEditor(e.target.value));
   $("record-save").addEventListener("click", saveRecord);
@@ -1463,6 +1473,7 @@
   $("send-search").addEventListener("keydown", (e) => { if (e.key === "Enter") sendList(); });
   $("send-members").addEventListener("dblclick", sendList);
   $("record-delete").addEventListener("click", deleteRecord);
+  $("record-delete-top").addEventListener("click", deleteRecord);
 
   function handleCredentialResponse(token, email, info) {
     idToken = token;
