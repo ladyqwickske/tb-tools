@@ -243,25 +243,25 @@
   .stat-block label span { width: 58px; flex-shrink: 0; }
   .stat-block input { padding: 7px 8px; font-size: 0.95rem; }
 
-  /* Forest Fury table */
+  /* Reverse stack table */
   /* every box in the form the same height, so they line up side by side */
-  .ff-form select, .ff-form input { height: 44px; padding-top: 0; padding-bottom: 0; }
-  .ff-form .grid-2 { align-items: end; }
-  .ff-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; }
-  table.ff { width: 100%; border-collapse: collapse; font-family: var(--utility); font-variant-numeric: tabular-nums; }
-  table.ff th {
+  .rs-form select, .rs-form input { height: 44px; padding-top: 0; padding-bottom: 0; }
+  .rs-form .grid-2 { align-items: end; }
+  .rs-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; }
+  table.rs { width: 100%; border-collapse: collapse; font-family: var(--utility); font-variant-numeric: tabular-nums; }
+  table.rs th {
     font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim);
     font-weight: 500; padding: 8px 8px; text-align: right; border-bottom: 1px solid var(--panel-line); white-space: nowrap;
   }
-  table.ff td { padding: 7px 8px; text-align: right; border-bottom: 1px solid var(--panel-line); color: var(--ink); white-space: nowrap; }
-  table.ff tr:last-child td { border-bottom: none; }
-  table.ff th:first-child, table.ff td:first-child { text-align: left; color: var(--gold-bright); }
-  table.ff tr.top td { background: #1a1a22; color: var(--gold-bright); font-weight: 600; }
-  table.ff td.na { color: var(--ink-dim); }
-  @media (max-width: 480px) { table.ff th, table.ff td { padding: 7px 5px; font-size: 0.88rem; } table.ff th { font-size: 0.6rem; letter-spacing: 0.04em; } }
-  .ff-notes { margin-top: 12px; display: grid; gap: 8px; }
-  .ff-notes p { margin: 0; padding: 8px 12px; border-left: 2px solid var(--gold-dim); background: var(--panel); font-size: 0.86rem; color: var(--ink-dim); }
-  .ff-notes strong { color: var(--ink); font-weight: 600; }
+  table.rs td { padding: 7px 8px; text-align: right; border-bottom: 1px solid var(--panel-line); color: var(--ink); white-space: nowrap; }
+  table.rs tr:last-child td { border-bottom: none; }
+  table.rs th:first-child, table.rs td:first-child { text-align: left; color: var(--gold-bright); }
+  table.rs tr.top td { background: #1a1a22; color: var(--gold-bright); font-weight: 600; }
+  table.rs td.na { color: var(--ink-dim); }
+  @media (max-width: 480px) { table.rs th, table.rs td { padding: 7px 5px; font-size: 0.88rem; } table.rs th { font-size: 0.6rem; letter-spacing: 0.04em; } }
+  .rs-notes { margin-top: 12px; display: grid; gap: 8px; }
+  .rs-notes p { margin: 0; padding: 8px 12px; border-left: 2px solid var(--gold-dim); background: var(--panel); font-size: 0.86rem; color: var(--ink-dim); }
+  .rs-notes strong { color: var(--ink); font-weight: 600; }
 
   .preview { margin-top: 18px; border-top: 1px dashed var(--panel-line); padding-top: 4px; }
   .preview .busy { opacity: 0.55; transition: opacity 0.15s; }
@@ -312,7 +312,7 @@
       <button class="tab" role="tab" data-tab="records" aria-selected="false">Setup</button>
       <button class="tab" role="tab" data-tab="lists" aria-selected="false">Lists</button>
       <button class="tab" role="tab" data-tab="results" aria-selected="true">Results</button>
-      <button class="tab" role="tab" data-tab="forest" aria-selected="false">Forest Fury</button>
+      <button class="tab" role="tab" data-tab="reverse" aria-selected="false">Reverse</button>
     </div>
     <div class="msg hidden" id="app-msg" role="status"></div>
 
@@ -409,23 +409,23 @@
       </div>
     </div>
 
-    <!-- ── Forest Fury (reverse stack by leadership, 2026-11-24) ── -->
-    <div id="panel-forest" role="tabpanel" class="hidden">
-      <p class="hint" style="margin:0 2px 12px">Reverse stack for Forest Fury: troop counts per G level from your Leadership alone — troop stats don't matter here.</p>
-      <div class="stack ff-form">
-        <label class="field" id="ff-record-field"><span>Take Leadership from record</span>
-          <select id="ff-record"></select>
+    <!-- ── Reverse (reverse stack by leadership, 2026-11-24) ── -->
+    <div id="panel-reverse" role="tabpanel" class="hidden">
+      <p class="hint" style="margin:0 2px 12px">Reverse stack: troop counts per G level from your Leadership alone — troop stats don't matter here.</p>
+      <div class="stack rs-form">
+        <label class="field" id="rs-record-field"><span>Take Leadership from record</span>
+          <select id="rs-record"></select>
         </label>
         <div class="grid-2">
           <label class="field"><span>Highest G level</span>
-            <select id="ff-level"></select>
+            <select id="rs-level"></select>
           </label>
           <label class="field"><span>Total Leadership</span>
-            <input type="text" inputmode="numeric" class="num" id="ff-leadership" autocomplete="off" placeholder="e.g. 200000" />
+            <input type="text" inputmode="numeric" class="num" id="rs-leadership" autocomplete="off" placeholder="e.g. 200000" />
           </label>
         </div>
       </div>
-      <div id="ff-results"></div>
+      <div id="rs-results"></div>
     </div>
 
     <p class="footer-note" id="footer-note"></p>
@@ -555,7 +555,8 @@
       $("app").classList.remove("hidden");
       buildStaticForms();
       renderAll();
-      const tab = recall(LAST_TAB_KEY);
+      // Only a tab that still exists ("forest" was renamed "reverse").
+      const tab = ["results", "lists", "records", "reverse"].includes(recall(LAST_TAB_KEY)) ? recall(LAST_TAB_KEY) : null;
       selectTab(Object.keys(data.records).length ? (tab || "results") : "records");
     } catch (err) {
       showMessage($("status-msg"), esc(err.message || "Something went wrong."), "error");
@@ -688,7 +689,7 @@
     renderResults();
     loadListIntoEditor($("list-select").value);
     loadRecordIntoEditor($("record-select").value);
-    renderForestRecords();
+    renderReverseRecords();
     $("footer-note").textContent = updatedAt
       ? `Saved to your account · last change ${new Date(updatedAt * 1000).toLocaleString()}`
       : "Nothing saved yet — your records and lists are stored with your Google account.";
@@ -1442,17 +1443,17 @@
     }
   }
 
-  // ── Forest Fury (reverse stack) ──────────────────────────────
-  // Top G level: Melee = Leadership / FF_DIVISORS[level]; every level below
+  // ── Reverse (reverse stack) ──────────────────────────────
+  // Top G level: Melee = Leadership / RS_DIVISORS[level]; every level below
   // gets 1.6x the one above. Ranged = Melee, Mounted = Melee / 2,
   // Engineering = Melee / 10, Flying = Melee / 20 (G5 and up only).
-  const FF_DIVISORS = { 1: 5, 2: 13, 3: 25.80, 4: 46.28, 5: 105.26, 6: 199.63, 7: 350.63, 8: 592.22, 9: 978.77 };
-  const FF_LEVEL_KEY = "tbtools.calc.ff.level";
-  const FF_LEAD_KEY = "tbtools.calc.ff.leadership";
-  const FF_RECORD_KEY = "tbtools.calc.ff.record";
+  const RS_DIVISORS = { 1: 5, 2: 13, 3: 25.80, 4: 46.28, 5: 105.26, 6: 199.63, 7: 350.63, 8: 592.22, 9: 978.77 };
+  const RS_LEVEL_KEY = "tbtools.calc.rs.level";
+  const RS_LEAD_KEY = "tbtools.calc.rs.leadership";
+  const RS_RECORD_KEY = "tbtools.calc.rs.record";
 
-  function forestFuryRows(topLevel, leadership) {
-    const topMelee = leadership / FF_DIVISORS[topLevel];
+  function reverseStackRows(topLevel, leadership) {
+    const topMelee = leadership / RS_DIVISORS[topLevel];
     const rows = [];
     for (let level = topLevel; level >= 1; level--) {
       const melee = topMelee * Math.pow(1.6, topLevel - level);
@@ -1464,43 +1465,43 @@
     return rows;
   }
 
-  function ffNumber(text) {
+  function rsNumber(text) {
     const n = Number(String(text || "").replace(/[\s,.'’_]/g, ""));
     return Number.isFinite(n) ? n : 0;
   }
 
-  function renderForestRecords() {
+  function renderReverseRecords() {
     const names = Object.keys(data.records).sort(byName);
-    $("ff-record-field").classList.toggle("hidden", !names.length);
-    const keep = $("ff-record").value || recall(FF_RECORD_KEY) || "";
-    $("ff-record").innerHTML = `<option value="">— type it in —</option>` + names.map((n) =>
+    $("rs-record-field").classList.toggle("hidden", !names.length);
+    const keep = $("rs-record").value || recall(RS_RECORD_KEY) || "";
+    $("rs-record").innerHTML = `<option value="">— type it in —</option>` + names.map((n) =>
       `<option value="${esc(n)}">${esc(n)} · ${fmt(data.records[n].leadership || 0)}</option>`).join("");
-    $("ff-record").value = names.includes(keep) ? keep : "";
-    if ($("ff-record").value) $("ff-leadership").value = fmt(data.records[$("ff-record").value].leadership || 0);
-    renderForest();
+    $("rs-record").value = names.includes(keep) ? keep : "";
+    if ($("rs-record").value) $("rs-leadership").value = fmt(data.records[$("rs-record").value].leadership || 0);
+    renderReverse();
   }
 
-  function renderForest() {
-    const level = Number($("ff-level").value);
-    const leadership = ffNumber($("ff-leadership").value);
-    const out = $("ff-results");
+  function renderReverse() {
+    const level = Number($("rs-level").value);
+    const leadership = rsNumber($("rs-leadership").value);
+    const out = $("rs-results");
     if (!(leadership > 0)) {
       out.innerHTML = `<div class="msg">Enter your Leadership (or pick a record) to see the troop counts.</div>`;
       return;
     }
     const whole = (n) => Math.round(n).toLocaleString();
     let html = `<div class="section-title"><span>Troop breakdown</span><span>G${level} · ${whole(leadership)} Leadership</span></div>`;
-    html += `<div class="ff-scroll"><table class="ff"><thead><tr>
+    html += `<div class="rs-scroll"><table class="rs"><thead><tr>
       <th>Level</th><th>Engineering</th><th>Flying</th><th>Mounted</th><th>Melee</th><th>Ranged</th>
       </tr></thead><tbody>`;
-    for (const r of forestFuryRows(level, leadership)) {
+    for (const r of reverseStackRows(level, leadership)) {
       html += `<tr${r.level === level ? ' class="top"' : ""}>
         <td>G${r.level}${r.level === level ? " ★" : ""}</td>
         <td>${whole(r.engineering)}</td>
         <td${r.flying == null ? ' class="na"' : ""}>${r.flying == null ? "—" : whole(r.flying)}</td>
         <td>${whole(r.mounted)}</td><td>${whole(r.melee)}</td><td>${whole(r.ranged)}</td></tr>`;
     }
-    html += `</tbody></table></div><div class="ff-notes">`;
+    html += `</tbody></table></div><div class="rs-notes">`;
     if (level >= 5) {
       html += `<p><strong>Specialist Flying (G5–G7):</strong> bring the same number of Specialist Flying troops as your Melee/Ranged count at that level.</p>`;
     }
@@ -1508,21 +1509,21 @@
     out.innerHTML = html;
   }
 
-  $("ff-level").innerHTML = Object.keys(FF_DIVISORS).map((g) => `<option value="${g}">G${g}</option>`).join("");
-  $("ff-level").value = FF_DIVISORS[recall(FF_LEVEL_KEY)] ? recall(FF_LEVEL_KEY) : "7";
-  $("ff-leadership").value = recall(FF_LEAD_KEY) || "";
-  $("ff-level").addEventListener("change", () => { store(FF_LEVEL_KEY, $("ff-level").value); renderForest(); });
-  $("ff-leadership").addEventListener("input", () => {
-    $("ff-record").value = "";
-    store(FF_RECORD_KEY, "");
-    store(FF_LEAD_KEY, $("ff-leadership").value);
-    renderForest();
+  $("rs-level").innerHTML = Object.keys(RS_DIVISORS).map((g) => `<option value="${g}">G${g}</option>`).join("");
+  $("rs-level").value = RS_DIVISORS[recall(RS_LEVEL_KEY)] ? recall(RS_LEVEL_KEY) : "7";
+  $("rs-leadership").value = recall(RS_LEAD_KEY) || "";
+  $("rs-level").addEventListener("change", () => { store(RS_LEVEL_KEY, $("rs-level").value); renderReverse(); });
+  $("rs-leadership").addEventListener("input", () => {
+    $("rs-record").value = "";
+    store(RS_RECORD_KEY, "");
+    store(RS_LEAD_KEY, $("rs-leadership").value);
+    renderReverse();
   });
-  $("ff-record").addEventListener("change", () => {
-    store(FF_RECORD_KEY, $("ff-record").value);
-    const rec = data.records[$("ff-record").value];
-    if (rec) { $("ff-leadership").value = fmt(rec.leadership || 0); store(FF_LEAD_KEY, $("ff-leadership").value); }
-    renderForest();
+  $("rs-record").addEventListener("change", () => {
+    store(RS_RECORD_KEY, $("rs-record").value);
+    const rec = data.records[$("rs-record").value];
+    if (rec) { $("rs-leadership").value = fmt(rec.leadership || 0); store(RS_LEAD_KEY, $("rs-leadership").value); }
+    renderReverse();
   });
 
   // ── tabs & events ────────────────────────────────────────────
@@ -1531,7 +1532,7 @@
     document.querySelectorAll(".tabs:not(.small) .tab").forEach((t) => {
       t.setAttribute("aria-selected", String(t.dataset.tab === which));
     });
-    for (const p of ["results", "lists", "records", "forest"]) $(`panel-${p}`).classList.toggle("hidden", p !== which);
+    for (const p of ["results", "lists", "records", "reverse"]) $(`panel-${p}`).classList.toggle("hidden", p !== which);
     store(LAST_TAB_KEY, which);
     if (which === "lists") schedulePreview();
   }
