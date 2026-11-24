@@ -244,6 +244,9 @@
   .stat-block input { padding: 7px 8px; font-size: 0.95rem; }
 
   /* Forest Fury table */
+  /* every box in the form the same height, so they line up side by side */
+  .ff-form select, .ff-form input { height: 44px; padding-top: 0; padding-bottom: 0; }
+  .ff-form .grid-2 { align-items: end; }
   .ff-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px; }
   table.ff { width: 100%; border-collapse: collapse; font-family: var(--utility); font-variant-numeric: tabular-nums; }
   table.ff th {
@@ -409,7 +412,10 @@
     <!-- ── Forest Fury (reverse stack by leadership, 2026-11-24) ── -->
     <div id="panel-forest" role="tabpanel" class="hidden">
       <p class="hint" style="margin:0 2px 12px">Reverse stack for Forest Fury: troop counts per G level from your Leadership alone — troop stats don't matter here.</p>
-      <div class="stack">
+      <div class="stack ff-form">
+        <label class="field" id="ff-record-field"><span>Take Leadership from record</span>
+          <select id="ff-record"></select>
+        </label>
         <div class="grid-2">
           <label class="field"><span>Highest G level</span>
             <select id="ff-level"></select>
@@ -418,9 +424,6 @@
             <input type="text" inputmode="numeric" class="num" id="ff-leadership" autocomplete="off" placeholder="e.g. 200000" />
           </label>
         </div>
-        <label class="field" id="ff-record-field"><span>Take Leadership from record</span>
-          <select id="ff-record"></select>
-        </label>
       </div>
       <div id="ff-results"></div>
     </div>
