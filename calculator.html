@@ -888,7 +888,51 @@
     $("reg-levels").innerHTML = `<span class="hint" style="margin:0">Highest tier:</span>` +
       stackGroups().map((group) => `<label>${esc(GROUP_TITLES[group] || group)} <select id="reg-top-${group}">` +
         TIER_ROWS.map((t) => `<option value="${t}">${esc(CHOOSER_TIER_LABELS[t] || catalog.tier_labels[t] || t)}</option>`).join("") +
+        `</select></label>`).join("") +
+      // Tiers to stack (2026-11-27): set here, every list made with this
+      // record uses these levels (shown locked under Lists). "Per list"
+      // leaves the choice to each list.
+      `<span style="flex-basis:100%;height:0"></span>` +
+      `<span class="hint" style="margin:0" title="Lists made with this record use these tiers">Tiers to stack:</span>` +
+      stackGroups().map((group) => `<label>${esc(GROUP_TITLES[group] || group)} <select id="reg-stack-${group}">` +
+        `<option value="">Per list</option><option value="0">None</option>` +
+        TIER_ROWS.map((_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("") +
         `</select></label>`).join("");
+  }
+
+  // A record's tiers to stack for a troop type (top first), or null when
+  // the record leaves that type to the lists -- as the Worker.
+  function recordStackedTiers(record, group) {
+    if (!record || !record.stacks || !Number.isInteger(record.stacks[group])) return null;
+    const top = record.tiers && TIER_ROWS.includes(record.tiers[group]) ? record.tiers[group] : DEFAULT_TOP;
+    const start = TIER_ROWS.indexOf(top);
+    return TIER_ROWS.slice(start, start + record.stacks[group]);
+  }
+
+  // The list chooser follows the record: a troop type the record stacks
+  // shows the record's levels, locked.
+  function lockListToRecord() {
+    const record = data.records[$("list-record").value];
+    let changed = false;
+    for (const group of stackGroups()) {
+      const stack = $(`stack-${group}`);
+      const top = $(`top-${group}`);
+      const locked = !!recordStackedTiers(record, group);
+      if (locked) {
+        const count = record.stacks[group];
+        const tier = TIER_ROWS.includes(record.tiers && record.tiers[group]) ? record.tiers[group] : DEFAULT_TOP;
+        if (![...stack.options].some((o) => Number(o.value) === count)) {
+          stack.insertAdjacentHTML("beforeend", `<option value="${count}">${count}</option>`);
+        }
+        if (Number(stack.value) !== count || Number(top.value) !== tier) changed = true;
+        stack.value = String(count);
+        top.value = String(tier);
+      }
+      stack.disabled = locked;
+      stack.title = top.title = locked ? "Set by the record (Setup → Registration)" : "";
+    }
+    if (changed) maybeShowSiege();
+    applyTierFilter();
   }
 
   // The tier a stat block shows for the chosen highest tier: the best tier
@@ -977,7 +1021,7 @@
       el.classList.toggle("hidden", !shown.has(el.dataset.pickerGroup));
     });
     for (const group of stackGroups()) {
-      $(`top-${group}`).disabled = !Number($(`stack-${group}`).value);
+      $(`top-${group}`).disabled = !Number($(`stack-${group}`).value) || $(`stack-${group}`).disabled;
     }
     setTiles();
   }
@@ -1117,6 +1161,7 @@
     updateFormulaDesc();
     maybeAutofillListName();
     setTierFilter(list ? list.selected_kinds : null, list && list.tier_filter);
+    lockListToRecord();
     schedulePreview();
   }
 
@@ -1331,6 +1376,8 @@
     for (const group of stackGroups()) {
       const tier = rec && rec.tiers && rec.tiers[group];
       $(`reg-top-${group}`).value = String(TIER_ROWS.includes(tier) ? tier : 2);
+      const count = rec && rec.stacks && rec.stacks[group];
+      $(`reg-stack-${group}`).value = Number.isInteger(count) ? String(count) : "";
     }
     updateRegImages();
     $("record-delete").classList.toggle("hidden", !rec);
@@ -1394,8 +1441,12 @@
     if (name !== editing && data.records[name] &&
         !confirm(`A record called "${name}" already exists.\n\nReplace it with these numbers?`)) return;
     const prior = data.records[editing] || data.records[name];
-    const record = { name, troops: {}, tiers: {} };
-    for (const group of stackGroups()) record.tiers[group] = Number($(`reg-top-${group}`).value);
+    const record = { name, troops: {}, tiers: {}, stacks: {} };
+    for (const group of stackGroups()) {
+      record.tiers[group] = Number($(`reg-top-${group}`).value);
+      const count = $(`reg-stack-${group}`).value;
+      if (count !== "") record.stacks[group] = Number(count);
+    }
     for (const [key, , decimals] of CAPACITY_FIELDS) {
       record[key] = decimals ? Math.round(num(`cap-${key}`) * 10) / 10 : Math.trunc(num(`cap-${key}`));
     }
@@ -1630,7 +1681,7 @@
   $("rtab-order").addEventListener("click", () => selectResultsTab("order"));
 
   $("list-select").addEventListener("change", (e) => loadListIntoEditor(e.target.value));
-  $("list-record").addEventListener("change", () => { maybeAutofillListName(); schedulePreview(); });
+  $("list-record").addEventListener("change", () => { maybeAutofillListName(); lockListToRecord(); schedulePreview(); });
   $("list-formula-group").addEventListener("change", () => { refreshFormulaChoices(); schedulePreview(); });
   $("list-formula").addEventListener("change", () => { updateFormulaDesc(); maybeAutofillListName(); schedulePreview(); });
   $("picker").addEventListener("click", (e) => {
