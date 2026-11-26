@@ -259,6 +259,18 @@
   table.rs tr.top td { background: #1a1a22; color: var(--gold-bright); font-weight: 600; }
   table.rs td.na { color: var(--ink-dim); }
   @media (max-width: 480px) { table.rs th, table.rs td { padding: 7px 5px; font-size: 0.88rem; } table.rs th { font-size: 0.6rem; letter-spacing: 0.04em; } }
+  /* Reverse: troops to include -- the levels of each kind, chosen apart */
+  .rs-include { margin: 14px 0 4px; display: grid; gap: 6px; }
+  .rs-include .hint { margin: 0 2px; }
+  .rs-kind { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+  .rs-kind > span { width: 118px; flex-shrink: 0; font-family: var(--utility); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--ink-dim); }
+  .rs-lvl {
+    min-width: 40px; padding: 7px 4px; background: var(--panel); border: 1px solid var(--panel-line); border-radius: 4px;
+    color: var(--ink-dim); font-family: var(--utility); font-size: 0.8rem; cursor: pointer;
+  }
+  .rs-lvl[aria-pressed="true"] { border-color: var(--gold); background: #1a1a22; color: var(--ink); box-shadow: inset 0 0 0 1px var(--gold-dim); }
+  table.rs td.off { color: var(--ink-dim); opacity: 0.45; }
+  @media (max-width: 480px) { .rs-kind > span { width: 100%; } }
   .rs-notes { margin-top: 12px; display: grid; gap: 8px; }
   .rs-notes p { margin: 0; padding: 8px 12px; border-left: 2px solid var(--gold-dim); background: var(--panel); font-size: 0.86rem; color: var(--ink-dim); }
   .rs-notes strong { color: var(--ink); font-weight: 600; }
@@ -424,6 +436,11 @@
             <input type="text" inputmode="numeric" class="num" id="rs-leadership" autocomplete="off" placeholder="e.g. 200000" />
           </label>
         </div>
+      </div>
+      <div class="rs-include">
+        <div class="section-title"><span>Troops to include</span></div>
+        <p class="hint">Tap the levels you have of each kind. The counts stay the same; counts for levels you leave out are greyed out (the apps also leave them out when writing to the game or training).</p>
+        <div id="rs-include"></div>
       </div>
       <div id="rs-results"></div>
     </div>
@@ -1451,6 +1468,47 @@
   const RS_LEVEL_KEY = "tbtools.calc.rs.level";
   const RS_LEAD_KEY = "tbtools.calc.rs.leadership";
   const RS_RECORD_KEY = "tbtools.calc.rs.record";
+  // Troops to include (2026-11-24): an account can be further along in one
+  // kind than another (G7, but S3 and E3). The counts stay as they are; a
+  // count nobody brings is greyed out. Same as the apps (ReverseStack.kt,
+  // reverse_stack.py ReverseSelection) -- keep the three in step.
+  const RS_KINDS = [["G", "Guardsmen"], ["S", "Specialists"], ["E", "Engineer corps"]];
+  const rsSelKey = (kind) => `tbtools.calc.rs.include.${kind}`;
+
+  function rsSelection() {
+    const sel = {};
+    for (const [kind] of RS_KINDS) {
+      const saved = recall(rsSelKey(kind));
+      sel[kind] = new Set(saved == null ? Object.keys(RS_DIVISORS).map(Number)
+        : saved.split(",").map(Number).filter((n) => RS_DIVISORS[n]));
+    }
+    return sel;
+  }
+
+  function rsSelectionText(sel, top) {
+    const parts = [];
+    for (const [kind] of RS_KINDS) {
+      const levels = [...sel[kind]].filter((l) => l <= top).sort((a, b) => a - b);
+      const runs = [];
+      for (const l of levels) {
+        if (runs.length && l === runs[runs.length - 1][runs[runs.length - 1].length - 1] + 1) runs[runs.length - 1].push(l);
+        else runs.push([l]);
+      }
+      if (runs.length) parts.push(runs.map((r) => r.length === 1 ? `${kind}${r[0]}` : `${kind}${r[0]}–${kind}${r[r.length - 1]}`).join(", "));
+    }
+    return parts.join(" · ");
+  }
+
+  function renderReverseInclude(top) {
+    const sel = rsSelection();
+    $("rs-include").innerHTML = RS_KINDS.map(([kind, name]) => {
+      let html = `<div class="rs-kind"><span>${name}</span>`;
+      for (let l = 1; l <= top; l++) {
+        html += `<button type="button" class="rs-lvl" data-kind="${kind}" data-level="${l}" aria-pressed="${sel[kind].has(l)}">${kind}${l}</button>`;
+      }
+      return html + `</div>`;
+    }).join("");
+  }
 
   function reverseStackRows(topLevel, leadership) {
     const topMelee = leadership / RS_DIVISORS[topLevel];
@@ -1485,6 +1543,8 @@
     const level = Number($("rs-level").value);
     const leadership = rsNumber($("rs-leadership").value);
     const out = $("rs-results");
+    renderReverseInclude(level);
+    const sel = rsSelection();
     if (!(leadership > 0)) {
       out.innerHTML = `<div class="msg">Enter your Leadership (or pick a record) to see the troop counts.</div>`;
       return;
@@ -1495,17 +1555,23 @@
       <th>Level</th><th>Engineering</th><th>Flying</th><th>Mounted</th><th>Melee</th><th>Ranged</th>
       </tr></thead><tbody>`;
     for (const r of reverseStackRows(level, leadership)) {
+      // Greyed out: a count nobody brings -- Engineering when its level isn't
+      // chosen for the Engineer corps, the rest when it's chosen for neither
+      // Guardsmen nor Specialists.
+      const offE = sel.E.has(r.level) ? "" : ' class="off"';
+      const offT = sel.G.has(r.level) || sel.S.has(r.level) ? "" : ' class="off"';
       html += `<tr${r.level === level ? ' class="top"' : ""}>
         <td>G${r.level}${r.level === level ? " ★" : ""}</td>
-        <td>${whole(r.engineering)}</td>
-        <td${r.flying == null ? ' class="na"' : ""}>${r.flying == null ? "—" : whole(r.flying)}</td>
-        <td>${whole(r.mounted)}</td><td>${whole(r.melee)}</td><td>${whole(r.ranged)}</td></tr>`;
+        <td${offE}>${whole(r.engineering)}</td>
+        <td${r.flying == null ? ' class="na"' : offT}>${r.flying == null ? "—" : whole(r.flying)}</td>
+        <td${offT}>${whole(r.mounted)}</td><td${offT}>${whole(r.melee)}</td><td${offT}>${whole(r.ranged)}</td></tr>`;
     }
     html += `</tbody></table></div><div class="rs-notes">`;
     if (level >= 5) {
       html += `<p><strong>Specialist Flying (G5–G7):</strong> bring the same number of Specialist Flying troops as your Melee/Ranged count at that level.</p>`;
     }
-    html += `<p><strong>Specialists:</strong> bring the same number of Specialist troops as Guardsmen at each level.</p></div>`;
+    html += `<p><strong>Specialists:</strong> bring the same number of Specialist troops as Guardsmen at each level.</p>`;
+    html += `<p><strong>Included:</strong> ${esc(rsSelectionText(sel, level) || "nothing")}</p></div>`;
     out.innerHTML = html;
   }
 
@@ -1517,6 +1583,15 @@
     $("rs-record").value = "";
     store(RS_RECORD_KEY, "");
     store(RS_LEAD_KEY, $("rs-leadership").value);
+    renderReverse();
+  });
+  $("rs-include").addEventListener("click", (e) => {
+    const btn = e.target.closest(".rs-lvl");
+    if (!btn) return;
+    const sel = rsSelection();
+    const kind = btn.dataset.kind, level = Number(btn.dataset.level);
+    if (sel[kind].has(level)) sel[kind].delete(level); else sel[kind].add(level);
+    store(rsSelKey(kind), [...sel[kind]].sort((a, b) => a - b).join(","));
     renderReverse();
   });
   $("rs-record").addEventListener("change", () => {
