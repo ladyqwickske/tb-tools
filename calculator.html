@@ -1447,6 +1447,8 @@
       const count = $(`reg-stack-${group}`).value;
       if (count !== "") record.stacks[group] = Number(count);
     }
+    // Troop training settings are set in the Android app: kept as they were.
+    if (prior && prior.training) record.training = prior.training;
     for (const [key, , decimals] of CAPACITY_FIELDS) {
       record[key] = decimals ? Math.round(num(`cap-${key}`) * 10) / 10 : Math.trunc(num(`cap-${key}`));
     }
