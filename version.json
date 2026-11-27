@@ -1,15 +1,20 @@
 {
-  "version": "1.0.8",
-  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-1.0.8/TB-Tools-1.0.8.zip",
-  "release_notes": "Battle Calculator now supported from troop level 3 and upwards, also working in background mode",
-  "published_at": "2026-11-18",
+  "version": "1.0.9",
+  "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-1.0.9/TB-Tools-1.0.9.zip",
+  "release_notes": "New Reverse tab in the Battle Calculator: troop counts per level from your Leadership alone, written straight into the game. Records can set the tiers to stack. Auto-Crypter: Tartaros crypts (Olympus event) are recognised and can be ignored, and a crypt it doesn't recognise no longer sends a captain to another crypt nearby. Writing to the battle screen no longer skips rows. Now also for Mac.",
+  "published_at": "2026-11-27",
   "required": false,
   "android": {
-    "version": "1.0.3",
-    "version_code": 46,
-    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-android-1.0.3/TB-Tools-1.0.3.apk",
-    "release_notes": "TB Tools 1.0.3: Write to game is more reliable: it puts each number straight into the game's box and checks on the screen that it's there -- if not, it tries again another way, and tells you which troops didn't go in. On phones where the numbers didn't land (some Xiaomi phones) it now works. The attack report reading also stops sooner when your report has no higher monsters, or no troops of a type at those tiers.",
-    "published_at": "2026-11-22",
+    "version": "1.0.9",
+    "version_code": 51,
+    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-android-1.0.9/TB-Tools-1.0.9.apk",
+    "release_notes": "TB Tools 1.0.9: New Reverse tab in the Battle Calculator: troop counts per level from your Leadership alone, written straight into the game. Records can set the tiers to stack, and Write to game is faster. Auto-Crypt: Tartaros crypts (Olympus event) are recognised and can be ignored, a crypt the app doesn't recognise no longer sends a captain to another crypt nearby, and the game is reloaded when it stops reacting to taps on the map.",
+    "published_at": "2026-11-27",
     "required": false
+  },
+  "mac": {
+    "version": "1.0.8",
+    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-1.0.9/TB-Tools-mac-1.0.8-arm64.zip",
+    "published_at": "2026-11-27"
   }
 }
