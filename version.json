@@ -13,8 +13,8 @@
     "required": false
   },
   "mac": {
-    "version": "1.0.8",
-    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-1.0.9/TB-Tools-mac-1.0.8-arm64.zip",
+    "version": "1.0.9",
+    "download_url": "https://github.com/ladyqwickske/tb-tools/releases/download/tb-tools-1.0.9/TB-Tools-mac-1.0.9-arm64.zip",
     "published_at": "2026-11-27"
   }
 }
